@@ -61,14 +61,18 @@
                 }
             }
         }
-        .profile {
-            width: 40px;
-            cursor: pointer;
-            transition: all 0.3s ease-in-out;
-            height: auto;
-            border-radius: 100%;
-            &:hover {
-                transform: translateY(-2px);
+        .buttonBlock {
+            border: none;
+            background: none;
+            .profile {
+                width: 40px;
+                cursor: pointer;
+                transition: all 0.3s ease-in-out;
+                height: auto;
+                border-radius: 100%;
+                &:hover {
+                    transform: translateY(-2px);
+                }
             }
         }
     }

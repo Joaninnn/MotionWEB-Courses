@@ -20,6 +20,9 @@ const Links = [
 
 const Header: React.FC = () => {
     const router = useRouter();
+    const handleBookClick = (): void => {
+        router.push(`/login/`);
+    };
 
     return (
         <header className={style.header}>
@@ -46,11 +49,16 @@ const Header: React.FC = () => {
                             </a>
                         ))}
                     </div>
-                    <Image
-                        className={style.profile}
-                        src={ProfileIcon}
-                        alt="profile"
-                    />
+                    <button
+                        onClick={handleBookClick}
+                        className={style.buttonBlock}
+                    >
+                        <Image
+                            className={style.profile}
+                            src={ProfileIcon}
+                            alt="profile"
+                        />
+                    </button>
                 </div>
             </div>
         </header>
