@@ -3,9 +3,7 @@
 import "./global.scss";
 import LayoutClient from "./components/LayoutClient";
 import { Provider } from "react-redux";
-import logo from "@/assets/Icons/Logo.svg";
-import { PersistGate } from "redux-persist/integration/react";
-import { store, persistor } from "../src/redux/store";
+import { store } from "../src/redux/store";
 
 export default function RootLayout({
     children,
@@ -30,9 +28,7 @@ export default function RootLayout({
 
             <body>
                 <Provider store={store}>
-                    <PersistGate loading={null} persistor={persistor}>
-                        <LayoutClient>{children}</LayoutClient>
-                    </PersistGate>
+                    <LayoutClient>{children}</LayoutClient>
                 </Provider>
             </body>
         </html>

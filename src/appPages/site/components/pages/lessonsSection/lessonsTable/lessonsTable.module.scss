@@ -1,22 +1,36 @@
+.empty {
+    width: 100wh;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    color: white;
+}
 .LessonsTable {
     background: black;
     padding: 30px 0;
+
     .content {
         display: flex;
         flex-direction: column;
         gap: 40px;
+
         .title {
             display: flex;
             flex-direction: column;
             gap: 20px;
+
             .cardsTitle {
                 color: red;
                 font-size: 50px;
             }
+
             .filters {
                 display: flex;
                 flex-direction: row;
                 gap: 10px;
+
                 .input {
                     width: 100%;
                     padding: 15px;
@@ -27,6 +41,7 @@
                     font-size: 16px;
                     appearance: none;
                 }
+
                 .input[type="date"] {
                     cursor: pointer;
                     position: relative;
@@ -39,21 +54,23 @@
                 }
             }
         }
+
         .cards {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: repeat(3, 1fr);
             gap: 25px;
+
             .card {
                 cursor: pointer;
                 padding: 20px;
                 display: flex;
                 flex-direction: column;
-                align-content: center;
                 align-items: center;
-                justify-content: center;
+                justify-content: flex-start;
                 border: 2px solid white;
                 transition: all 0.3s ease-in-out;
                 box-shadow: 5px 5px 0 rgb(255, 0, 0);
+
                 &:hover {
                     color: white;
                     box-shadow: 0 5px 15px rgba(255, 0, 0, 0.5);
@@ -61,40 +78,128 @@
                 }
 
                 .image {
-                    padding: 20px 10px;
-                    display: flex;
-                    align-content: flex-start;
-                    align-items: flex-start;
-                    justify-content: flex-start;
-                    width: 50%;
-                    height: 100%;
+                    width: 150px;
+                    height: 150px;
+                    object-fit: cover;
+                    margin-bottom: 15px;
                 }
+
                 .cardInfo {
-                    padding: 20px 0;
                     display: flex;
+                    align-items: flex-start;
                     flex-direction: column;
                     gap: 10px;
                     border-top: 2px solid white;
+                    padding-top: 15px;
+
                     h3 {
                         color: white;
+                        font-size: 18px;
                     }
+
                     p {
                         color: gray;
+                        font-size: 14px;
                     }
+
                     .date {
                         color: gray;
+                        font-size: 13px;
+                        text-align: center;
                     }
                 }
             }
         }
     }
 }
-.empty {
-    width: 100wh;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    align-content: center;
-    color: white;
+
+@media (max-width: 1200px) {
+    .LessonsTable {
+        .content {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 25px;
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .LessonsTable {
+        .content {
+            .title {
+                .cardsTitle {
+                    font-size: 36px;
+                }
+
+                .filters {
+                    flex-direction: column;
+                }
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                .image {
+                    width: 100%;
+                    max-width: 200px;
+                    height: auto;
+                }
+
+                .cardInfo {
+                    h3 {
+                        font-size: 16px;
+                    }
+
+                    p,
+                    .date {
+                        font-size: 14px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .LessonsTable {
+        padding: 20px 10px;
+
+        .title {
+            gap: 15px;
+
+            .cardsTitle {
+                font-size: 28px;
+            }
+        }
+
+        .cards {
+            gap: 15px;
+        }
+
+        .card {
+            padding: 15px;
+
+            .image {
+                width: 100%;
+                max-width: 150px;
+                height: auto;
+            }
+
+            .cardInfo {
+                padding-top: 10px;
+
+                h3 {
+                    font-size: 14px;
+                }
+
+                p,
+                .date {
+                    font-size: 12px;
+                }
+            }
+        }
+    }
 }

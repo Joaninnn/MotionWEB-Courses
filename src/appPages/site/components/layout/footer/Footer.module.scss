@@ -84,6 +84,8 @@
             }
             .thirstTopBlock {
                 display: flex;
+                width: 100%;
+
                 padding: 0 100px 0 0;
                 flex-direction: column;
                 gap: 10px;
@@ -141,6 +143,110 @@
                     }
                 }
             }
+        }
+    }
+}
+
+.footer {
+    background: black;
+    padding: 25px 0;
+    border-top: white solid 4px;
+
+    .content {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+
+        .topBlockFooter {
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+            flex-wrap: wrap;
+
+            .firstTopBlock,
+            .secondTopBlock,
+            .thirstTopBlock {
+                flex: 1 1 250px;
+                min-width: 250px;
+            }
+
+            .firstTopBlock {
+                max-width: 320px;
+            }
+
+            .secondTopBlock {
+                padding: 0;
+            }
+
+            .thirstTopBlock {
+                padding: 0;
+            }
+        }
+
+        .hr {
+            height: 1px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .bottomBlockFooter {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            text-align: center;
+
+            .bottomSecondBlock {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    }
+}
+
+@media (max-width: 1024px) {
+    .footer {
+        .topBlockFooter {
+            gap: 25px;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .footer {
+        .topBlockFooter {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+
+            .firstTopBlock,
+            .secondTopBlock,
+            .thirstTopBlock {
+                align-items: center;
+            }
+
+            .footerLogo {
+                justify-content: center;
+            }
+        }
+
+        .bottomBlockFooter {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .footer {
+        padding: 20px 10px;
+
+        .footerLogoInfo {
+            font-size: 13px;
+        }
+
+        .topBlockFooter .title {
+            font-size: 16px;
         }
     }
 }

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Rubik:ital,wght@0,300..900;1,300..900&family=Shalimar&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&family=Nunito:wght@200..1000&family=Rubik:wght@300..900&family=Shalimar&display=swap");
 
 * {
     padding: 0;
@@ -7,7 +7,39 @@
     box-sizing: border-box;
 }
 
+html,
+body {
+    width: 100%;
+    overflow-x: hidden;
+}
+
 .container {
+    width: 100%;
+    max-width: 1320px;
     margin: 0 auto;
-    padding: 0 140px;
+    padding: 0 20px;
+}
+
+@media (min-width: 1440px) {
+    .container {
+        max-width: 1440px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .container {
+        padding: 0 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 10px;
+    }
 }

@@ -6,9 +6,7 @@ import {
 import Cookies from "js-cookie";
 
 const baseQuery = fetchBaseQuery({
-    baseUrl: `${
-        process.env.NEXT_PUBLIC_OKUKG_API || "https://www.apibackendokukg.space"
-    }/`,
+    baseUrl: `${process.env.NEXT_PUBLIC_OKUKG_API}/`,
     prepareHeaders: (headers) => {
         const token = Cookies.get("token");
 
@@ -29,6 +27,6 @@ export const api = createApi({
     baseQuery: baseQueryExtended,
     refetchOnFocus: true,
     refetchOnReconnect: true,
-    tagTypes: [],
+    tagTypes: ["course", "login", "student-profile"],
     endpoints: () => ({}),
 });

@@ -1,90 +1,159 @@
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400..900&display=swap");
+
 .Main {
-    background: rgb(0, 0, 0);
-    height: 110vh;
+    background: black;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
 
     .content {
         display: flex;
         flex-direction: column;
         gap: 60px;
-        .hero {
-            display: flex;
-            padding: 100px 0 0 0;
-            align-items: center;
-            flex-direction: column;
-            align-content: center;
-            gap: 20px;
-            justify-content: center;
-            .titleBlock {
-                display: flex;
-                align-items: center;
+        padding-bottom: 100px;
+    }
 
-                flex-direction: column;
-                gap: 3px;
-                .title1 {
-                    color: red;
-                    font-size: 54px;
-                }
-                .title2 {
-                    color: rgb(255, 255, 255);
-                    font-size: 54px;
-                }
+    .hero {
+        display: flex;
+        padding: 100px 20px 0;
+        align-items: center;
+        flex-direction: column;
+        gap: 20px;
+        justify-content: center;
+        text-align: center;
+
+        .titleBlock {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+
+            .title1 {
+                color: red;
+                font-size: 54px;
             }
-            .titleInfo {
-                font-family: "Playfair Display", serif;
-                letter-spacing: 0.02em;
-                font-style: normal;
-                text-align: center;
-                font-optical-sizing: auto;
-                font-size: 20px;
-                width: 50%;
-                font-weight: 400;
+
+            .title2 {
                 color: white;
-                line-height: 2;
+                font-size: 54px;
+            }
+        }
+
+        .titleInfo {
+            font-family: "Playfair Display", serif;
+            letter-spacing: 0.02em;
+            font-size: 20px;
+            max-width: 720px;
+            width: 100%;
+            line-height: 1.8;
+            color: white;
+        }
+
+        .heroButton {
+            background: black;
+            color: white;
+            padding: 18px 44px;
+            box-shadow: 5px 5px 0 red;
+            transition: 0.3s;
+            font-size: 20px;
+            border: white solid 4px;
+            cursor: pointer;
+
+            &:hover {
+                background-color: red;
+                box-shadow: 0 5px 15px rgba(255, 0, 0, 0.5);
+                transform: translateY(-2px);
+            }
+        }
+    }
+
+    .courseInfo {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        padding: 0 20px;
+
+        .infoBlock {
+            border: white solid 4px;
+            padding: 25px;
+            transition: 0.3s;
+            box-shadow: 8px 8px 0 red;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+
+            &:hover {
+                box-shadow: 0 5px 15px rgba(255, 0, 0, 0.5);
+                transform: translateY(-5px);
+            }
+        }
+
+        .infoTitle {
+            font-size: 22px;
+            color: red;
+        }
+
+        .info {
+            color: white;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    }
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .Main {
+        .hero {
+            padding-top: 80px;
+
+            .title1,
+            .title2 {
+                font-size: 46px;
+            }
+
+            .titleInfo {
+                font-size: 18px;
+            }
+        }
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .Main {
+        .hero {
+            padding-top: 60px;
+
+            .title1,
+            .title2 {
+                font-size: 36px;
+            }
+
+            .titleInfo {
+                font-size: 16px;
             }
 
             .heroButton {
-                background: black;
-                color: white;
-                padding: 18px 44px;
-                box-shadow: 5px 5px 0 rgb(255, 0, 0);
-                transition: all 0.3s ease-in-out;
-                font-size: 20px;
-                font-weight: 600;
-                border: rgb(255, 255, 255) solid 4px;
-                &:hover {
-                    background-color: #ff0000;
-                    color: white;
-                    box-shadow: 0 5px 15px rgba(255, 0, 0, 0.5);
-                    transform: translateY(-2px);
-                }
+                padding: 14px 32px;
+                font-size: 18px;
             }
         }
-        .courseInfo {
-            display: flex;
-            flex-direction: row;
-            gap: 30px;
-            .infoBlock {
-                border: white solid 4px;
-                display: flex;
-                padding: 25px;
-                transition: all 0.3s ease-in-out;
+    }
+}
 
-                box-shadow: 8px 8px 0 rgb(255, 0, 0);
-                flex-direction: column;
-                gap: 12px;
-                &:hover {
-                    box-shadow: 0 5px 15px rgba(255, 0, 0, 0.5);
-                    transform: translateY(-5px);
-                }
+/* Small mobile */
+@media (max-width: 480px) {
+    .Main {
+        .hero {
+            padding-top: 40px;
+
+            .title1,
+            .title2 {
+                font-size: 30px;
             }
-            .infoTitle {
-                font-size: 23px;
-                color: red;
-            }
-            .info {
-                color: white;
-                font-size: 14px;
+
+            .titleInfo {
+                font-size: 15px;
             }
         }
     }
