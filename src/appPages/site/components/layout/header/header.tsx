@@ -36,6 +36,7 @@ const Header: React.FC = () => {
         typeof window !== "undefined" && !!Cookies.get("access_token");
 
     // Пользователь аутентифицирован, если есть токен и имя пользователя в Redux
+    // ВАЖНО: проверяем как токен, так и данные в Redux
     const isAuthenticated = hasToken && !!currentUser?.username;
 
     // Логирование для отладки
@@ -43,6 +44,7 @@ const Header: React.FC = () => {
         hasToken,
         currentUser,
         isAuthenticated,
+        username: currentUser?.username || "не загружен",
     });
 
     const handleProfileClick = (): void => {

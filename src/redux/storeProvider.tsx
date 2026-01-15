@@ -3,7 +3,7 @@
 
 import { useMemo } from "react";
 import { Provider } from "react-redux";
-import { makeStoreWithMiddleware } from "./store";
+import { makeStoreWithMiddleware, AppStore } from "./store";
 import { AuthInitializer } from "@/components/AuthInitializer";
 
 export default function StoreProvider({
@@ -11,8 +11,11 @@ export default function StoreProvider({
 }: {
     children: React.ReactNode;
 }) {
+    // Используем useMemo для гарантии единственного экземпляра store
     const store = useMemo(() => {
-        return makeStoreWithMiddleware();
+        const newStore = makeStoreWithMiddleware();
+        console.log("🏪 [STORE_PROVIDER] Store created with initial state");
+        return newStore;
     }, []);
 
     return (
