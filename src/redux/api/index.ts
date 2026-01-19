@@ -51,7 +51,7 @@ const baseQueryWithReauth: BaseQueryFn<
                     body: { refresh: refreshToken },
                 },
                 api,
-                extraOptions
+                extraOptions,
             );
 
             if (refreshResult.data) {
@@ -89,6 +89,6 @@ const baseQueryWithReauth: BaseQueryFn<
 export const api = createApi({
     reducerPath: "api",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["User", "course", "video"],
+    tagTypes: ["User", "course", "video", "mentor"],
     endpoints: () => ({}),
 });

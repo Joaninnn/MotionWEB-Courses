@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import style from "./lessonDetail.module.scss";
 import Image from "next/image";
 import { useGetLessonsQuery } from "@/redux/api/lessons";
@@ -38,8 +38,11 @@ function LessonDetail() {
         skip: !id,
     });
 
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+
     const [search] = useState("");
     const [date] = useState("");
+
     const course = CourseItem.find((item) => item.id === Number(id));
     const courseDetail = CourseItemDetail;
 
@@ -57,9 +60,26 @@ function LessonDetail() {
         router.push(`/lessons/${item.id}`);
     };
 
+    useEffect(() => {
+        const disableKeys = (e: KeyboardEvent) => {
+            if (
+                (e.ctrlKey && ["s", "u"].includes(e.key.toLowerCase())) ||
+                (e.ctrlKey &&
+                    e.shiftKey &&
+                    ["i", "j"].includes(e.key.toLowerCase()))
+            ) {
+                e.preventDefault();
+            }
+        };
+
+        document.addEventListener("keydown", disableKeys);
+        return () => document.removeEventListener("keydown", disableKeys);
+    }, []);
+
     if (!course) {
         return <p>Курс не найден 😕</p>;
     }
+
     return (
         <section className={style.LessonDetail}>
             <div className="container">
@@ -67,15 +87,22 @@ function LessonDetail() {
                     <div className={style.detailContent}>
                         {courseDetail?.video && (
                             <video
+                                ref={videoRef}
                                 className={style.lessonVideo}
                                 src={courseDetail.video}
                                 controls
                                 autoPlay={false}
                                 loop={false}
+                                controlsList="nodownload noplaybackrate"
+                                disablePictureInPicture
+                                onContextMenu={(e) => e.preventDefault()}
+                                onDragStart={(e) => e.preventDefault()}
+                                playsInline
                             >
                                 Ваш браузер не поддерживает видео тег.
                             </video>
                         )}
+
                         <div className={style.lessonInfo}>
                             <h2 className={style.title}>
                                 {courseDetail?.category_lesson.ct_lesson_name}
@@ -88,6 +115,7 @@ function LessonDetail() {
                                     {course?.course_name}
                                 </h2>
                             </div>
+
                             <div className={style.numberBlock}>
                                 <h2 className={style.numberTitle}>
                                     Урок по счету:
@@ -96,13 +124,16 @@ function LessonDetail() {
                                     {courseDetail?.course}
                                 </h2>
                             </div>
+
                             <div className={style.dataBlock}>
                                 <h2 className={style.dataTitle}>Дата:</h2>
                                 <h2 className={style.data}>
                                     {course.created_at}
                                 </h2>
                             </div>
+
                             <div className={style.hr}></div>
+
                             <div className={style.descBlock}>
                                 <h2 className={style.desctitle}>ОПИСАНИЕ</h2>
                                 <p className={style.desc}>
@@ -111,6 +142,7 @@ function LessonDetail() {
                             </div>
                         </div>
                     </div>
+
                     <div className={style.table}>
                         <h2 className={style.title}>СЛЕДУЮЩИЕ УРОКИ</h2>
                         <div className={style.cards}>
@@ -143,7 +175,7 @@ function LessonDetail() {
                                 </p>
                             )}
                         </div>
-                    </div>{" "}
+                    </div>
                 </div>
             </div>
         </section>
