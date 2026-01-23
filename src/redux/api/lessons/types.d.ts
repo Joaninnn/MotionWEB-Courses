@@ -27,7 +27,6 @@ namespace LESSONS {
         course_name: string;
         description: string;
         created_at: string;
-        video_course: VideoItem[];
     };
 
     type GetVideoListResponse = VideoListItem[];

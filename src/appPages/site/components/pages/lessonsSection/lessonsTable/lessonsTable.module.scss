@@ -11,6 +11,7 @@
 .LessonsTable {
     background: black;
     padding: 30px 0;
+    height: 100vh;
 
     .content {
         display: flex;
@@ -21,11 +22,21 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-
-            .cardsTitle {
-                color: red;
-                font-size: 50px;
+            .titleContent {
+                display: flex;
+                align-items: center;
+                flex-direction: row;
+                gap: 30px;
+                .cardsTitle {
+                    color: red;
+                    font-size: 50px;
+                }
+                .cardsTitleCourse {
+                    color: white;
+                    font-size: 30px;
+                }
             }
+            
 
             .filters {
                 display: flex;
@@ -45,7 +56,7 @@
 
                 .input:focus {
                     outline: none;
-                    border-color: #007bff;
+                    border-color: #ffffff;
                 }
 
                 .input[type="date"] {
@@ -63,7 +74,7 @@
 
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             gap: 30px;
 
             .card {
@@ -73,11 +84,19 @@
                 overflow: hidden;
                 cursor: pointer;
                 transition: all 0.3s ease;
+                width: 100%;
+                padding: 15px;
+                color: white;
+                background-color: black;
+                border: 2px solid white;
+                box-shadow: 5px 5px 0 rgb(255, 0, 0);
+                font-size: 16px;
+                appearance: none;
 
                 &:hover {
                     transform: translateY(-5px);
-                    border-color: #007bff;
-                    box-shadow: 0 10px 20px rgba(0, 123, 255, 0.3);
+                    border-color: #ffffff;
+                    box-shadow: 0 10px 20px rgba(255, 255, 255, 0.3);
                 }
 
                 .image {
