@@ -1,12 +1,13 @@
 .empty {
-    width: 100wh;
-    height: 100vh;
+    grid-column: 1 / -1; // Занимает всю ширину грида
     display: flex;
     align-items: center;
     justify-content: center;
-    align-content: center;
+    min-height: 300px;
     color: white;
+    font-size: 18px;
 }
+
 .LessonsTable {
     background: black;
     padding: 30px 0;
@@ -199,37 +200,39 @@
     .LessonsTable {
         padding: 20px 10px;
 
-        .title {
-            gap: 15px;
+        .content {
+            .title {
+                gap: 15px;
 
-            .cardsTitle {
-                font-size: 28px;
-            }
-        }
-
-        .cards {
-            gap: 15px;
-        }
-
-        .card {
-            padding: 15px;
-
-            .image {
-                width: 100%;
-                max-width: 150px;
-                height: auto;
+                .cardsTitle {
+                    font-size: 28px;
+                }
             }
 
-            .cardInfo {
-                padding-top: 10px;
+            .cards {
+                gap: 15px;
+            }
 
-                h3 {
-                    font-size: 14px;
+            .card {
+                padding: 15px;
+
+                .image {
+                    width: 100%;
+                    max-width: 150px;
+                    height: auto;
                 }
 
-                p,
-                .date {
-                    font-size: 12px;
+                .cardInfo {
+                    padding-top: 10px;
+
+                    h3 {
+                        font-size: 14px;
+                    }
+
+                    p,
+                    .date {
+                        font-size: 12px;
+                    }
                 }
             }
         }

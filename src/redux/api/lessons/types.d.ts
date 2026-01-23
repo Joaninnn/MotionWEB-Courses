@@ -6,6 +6,12 @@ namespace LESSONS {
         description: string;
         created_at: string;
     }
+     interface VideoListItem {
+        id: number;
+        course: number;
+        category_lesson: CategoryLesson;
+        lesson_number: number;
+    }
 
     interface VideoItem {
         id: number;
@@ -23,6 +29,8 @@ namespace LESSONS {
         created_at: string;
         video_course: VideoItem[];
     };
+
+    type GetVideoListResponse = VideoListItem[];
 
     type GetLessonsRequest = void;
 
