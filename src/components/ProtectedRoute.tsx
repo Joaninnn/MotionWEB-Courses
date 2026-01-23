@@ -1,9 +1,8 @@
 // src/components/ProtectedRoute.tsx
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useValidateTokenQuery } from "@/redux/api/auth";
 import { useAppSelector } from "@/redux/hooks";
 import Cookies from "js-cookie";
 import style from "./ProtectedRoute.module.scss";
@@ -14,20 +13,34 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     const router = useRouter();
+    const [isClient, setIsClient] = useState(false);
 
     // Получаем пользователя из Redux
     const userFromRedux = useAppSelector((state) => state.user);
 
-    // Проверяем наличие токена
-    const hasToken = !!Cookies.get("access_token");
+    // Проверяем наличие токена только на клиенте
+    const hasToken = isClient ? !!Cookies.get("access_token") : false;
 
-    // Используем validateToken для проверки валидности токена
-    const { isLoading, error, isSuccess } = useValidateTokenQuery(undefined, {
-        skip: !hasToken,
-        refetchOnMountOrArgChange: true, // Перезагружаем данные при каждом монтировании
+    // Устанавливаем флаг клиента при монтировании
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    console.log("🔍 [PROTECTED_ROUTE] State:", {
+        isClient,
+        hasToken,
+        username: userFromRedux?.username,
+        status: userFromRedux?.status,
+        course: userFromRedux?.course,
+        pathname: typeof window !== 'undefined' ? window.location.pathname : 'server',
     });
 
+    // Пользователь аутентифицирован, если есть токен и данные в Redux
+    const isAuthenticated = hasToken && !!userFromRedux?.username;
+
     useEffect(() => {
+        if (!isClient) return; // Не выполняем логику на сервере
+
         // Если нет токена - сразу редиректим
         if (!hasToken) {
             console.log("❌ No token found, redirecting to /login");
@@ -35,34 +48,33 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
             return;
         }
 
-        // Если загрузка завершена и токен невалиден
-        if (!isLoading && error) {
-            console.error("❌ Token validation failed:", error);
-            Cookies.remove("access_token", { path: "/" });
-            Cookies.remove("refresh_token", { path: "/" });
-            router.replace("/login");
-            return;
+        // Если есть токен но нет данных в Redux - возможна проблема с localStorage
+        if (hasToken && !userFromRedux?.username) {
+            console.log("⚠️ Token exists but no user data in Redux - possible localStorage issue");
+            // Можно добавить принудительное восстановление или очистку
         }
 
-        // Если токен валиден - логируем успех
-        if (isSuccess && !isLoading) {
-            console.log("✅ Token valid, user can proceed");
-            if (userFromRedux?.username) {
-                console.log("✅ User data in Redux:", userFromRedux.username);
-            }
+        // Если все в порядке
+        if (isAuthenticated) {
+            console.log("✅ User authenticated:", userFromRedux.username);
         }
-    }, [hasToken, isLoading, error, isSuccess, userFromRedux, router]);
+    }, [isClient, hasToken, userFromRedux, isAuthenticated, router]);
 
-    // Показываем loader пока идет проверка
-    if (!hasToken || isLoading) {
-        return <div className={style.loading}>Загрузка...</div>;
+    // На сервере всегда показываем загрузку
+    if (!isClient) {
+        return <div className={style.loading}>Загрузка</div>;
     }
 
-    // Если токен невалиден - показываем loader
-    if (error) {
-        return <div className={style.loading}>Перенаправление...</div>;
+    // Показываем загрузку если нет токена
+    if (!hasToken) {
+        return <div className={style.loading}>Загрузка</div>;
     }
 
-    // Токен валиден - показываем контент
+    // Если есть токен но нет данных - показываем загрузку
+    if (hasToken && !userFromRedux?.username) {
+        return <div className={style.loading}>Загрузка</div>;
+    }
+
+    // Токен есть и данные есть - показываем контент
     return <>{children}</>;
 }

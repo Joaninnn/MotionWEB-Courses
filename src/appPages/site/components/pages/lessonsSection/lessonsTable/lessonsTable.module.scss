@@ -42,71 +42,102 @@
                     appearance: none;
                 }
 
+                .input:focus {
+                    outline: none;
+                    border-color: #007bff;
+                }
+
                 .input[type="date"] {
                     cursor: pointer;
                     position: relative;
                     color: white;
                     background: black
                         url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zm-7-9c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/></svg>')
-                        no-repeat right 10px center;
-                    background-size: 20px 20px;
-                    padding-right: 40px;
+                        no-repeat;
+                    background-position: right 10px center;
+                    background-size: 20px;
                 }
             }
         }
 
         .cards {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
 
             .card {
+                background: #1a1a1a;
+                border: 2px solid #333;
+                border-radius: 10px;
+                overflow: hidden;
                 cursor: pointer;
-                padding: 20px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: flex-start;
-                transition: all 0.3s ease-in-out;
-                border: 2px solid white;
-                box-shadow: 5px 5px 0 rgb(255, 0, 0);
+                transition: all 0.3s ease;
 
                 &:hover {
-                    color: white;
-                    box-shadow: 0 5px 15px rgba(255, 0, 0, 0.5);
-                    transform: translateY(-4px);
+                    transform: translateY(-5px);
+                    border-color: #007bff;
+                    box-shadow: 0 10px 20px rgba(0, 123, 255, 0.3);
                 }
 
                 .image {
                     width: 100%;
                     height: 200px;
                     object-fit: cover;
-                    margin-bottom: 15px;
-                    display: block;
                 }
 
                 .cardInfo {
-                    display: flex;
-                    align-items: flex-start;
-                    flex-direction: column;
-                    gap: 10px;
-                    border-top: 2px solid white;
-                    padding-top: 15px;
+                    padding: 20px;
 
                     h3 {
                         color: white;
+                        margin: 0 0 10px 0;
                         font-size: 18px;
                     }
 
                     p {
-                        color: gray;
+                        color: #ccc;
+                        margin: 0 0 10px 0;
                         font-size: 14px;
+                        line-height: 1.4;
                     }
 
                     .date {
-                        color: gray;
-                        font-size: 13px;
-                        text-align: center;
+                        color: #888;
+                        font-size: 12px;
+                    }
+                }
+
+                .videoCard {
+                    padding: 20px;
+
+                    .videoHeader {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 15px;
+
+                        h3 {
+                            color: white;
+                            margin: 0;
+                            font-size: 20px;
+                        }
+
+                        .category {
+                            background: #007bff;
+                            color: white;
+                            padding: 4px 12px;
+                            border-radius: 12px;
+                            font-size: 12px;
+                            font-weight: 500;
+                        }
+                    }
+
+                    .videoInfo {
+                        p {
+                            color: #ccc;
+                            margin: 5px 0;
+                            font-size: 14px;
+                        }
                     }
                 }
             }

@@ -60,6 +60,7 @@ const localStorageMiddleware: Middleware<object, RootState> =
 
 // Загружаем состояние пользователя из localStorage
 const loadUserState = (): UserState | undefined => {
+    // Проверяем, что мы в браузере
     if (typeof window !== "undefined") {
         try {
             const serializedState = localStorage.getItem("userState");
@@ -95,12 +96,23 @@ const loadUserState = (): UserState | undefined => {
             );
             localStorage.removeItem("userState"); // Очищаем поврежденные данные
         }
+    } else {
+        console.log("🔍 [STORE] Running on server, localStorage not available");
     }
     return undefined;
 };
 
+// Глобальный экземпляр store для клиента
+let globalStore: AppStore | null = null;
+
 // Обновляем функцию для создания store с middleware и preloadedState
 export const makeStoreWithMiddleware = () => {
+    // Если store уже существует на клиенте, возвращаем его
+    if (globalStore && typeof window !== "undefined") {
+        console.log("🏪 [STORE] Returning existing global store instance");
+        return globalStore;
+    }
+
     const preloadedUserState = loadUserState();
 
     console.log(
@@ -108,7 +120,7 @@ export const makeStoreWithMiddleware = () => {
         preloadedUserState
     );
 
-    return configureStore({
+    const store = configureStore({
         reducer: {
             [api.reducerPath]: api.reducer,
             user: userReducer,
@@ -122,4 +134,12 @@ export const makeStoreWithMiddleware = () => {
                 localStorageMiddleware
             ),
     });
+
+    // Сохраняем глобальный экземпляр на клиенте
+    if (typeof window !== "undefined") {
+        globalStore = store;
+        console.log("🏪 [STORE] Global store instance saved");
+    }
+
+    return store;
 };

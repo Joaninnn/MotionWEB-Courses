@@ -6,6 +6,7 @@ import style from "./lessonDetail.module.scss";
 import Image from "next/image";
 import { useGetLessonsQuery } from "@/redux/api/lessons";
 import { useGetVideosDetailQuery } from "@/redux/api/video";
+import { useAppSelector } from "@/redux/hooks";
 
 interface CourseItem {
     id: number;
@@ -31,17 +32,51 @@ export interface CategoryLesson {
 
 function LessonDetail() {
     const router = useRouter();
+    const currentUser = useAppSelector((state) => state.user);
     const { data: CourseItem = [] } = useGetLessonsQuery();
     const { id } = useParams();
 
-    const { data: CourseItemDetail } = useGetVideosDetailQuery(Number(id), {
+    const { data: CourseItemDetail, isLoading, error } = useGetVideosDetailQuery(Number(id), {
         skip: !id,
     });
+
+    // Проверка доступа - видео должно принадлежать курсу пользователя
+    const hasAccess = CourseItemDetail && CourseItemDetail.course === currentUser?.course;
+
+    console.log("🔍 [LESSON_DETAIL] User course ID:", currentUser?.course);
+    console.log("🔍 [LESSON_DETAIL] Video course ID:", CourseItemDetail?.course);
+    console.log("🔍 [LESSON_DETAIL] Video ID:", id);
+    console.log("🔍 [LESSON_DETAIL] Has access:", hasAccess);
+    console.log("🔍 [LESSON_DETAIL] User status:", currentUser?.status);
 
     const videoRef = useRef<HTMLVideoElement | null>(null);
 
     const [search] = useState("");
     const [date] = useState("");
+
+    // Если нет доступа, показываем сообщение об ошибке
+    if (!isLoading && !error && CourseItemDetail && !hasAccess) {
+        return (
+            <div className={style.container}>
+                <div className={style.accessDenied}>
+                    <h1>Доступ запрещен</h1>
+                    <p>
+                        У вас нет доступа к этому видео. 
+                        <br />
+                        Видео курса ID: {CourseItemDetail.course}
+                        <br />
+                        Ваш курс ID: {currentUser?.course || 'не назначен'}
+                    </p>
+                    <button 
+                        className={style.backButton}
+                        onClick={() => router.back()}
+                    >
+                        Вернуться назад
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     const course = CourseItem.find((item) => item.id === Number(id));
     const courseDetail = CourseItemDetail;

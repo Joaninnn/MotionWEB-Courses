@@ -26,7 +26,20 @@ const api = index.injectEndpoints({
             }),
             providesTags: ["video"],
         }),
+
+        // Видео по курсу пользователя
+        getCourseVideos: build.query<
+            VIDEO.GetVideoListResponse, // тип ответа
+            { course_id: string; category_lesson?: string; lesson_number?: string } // тип параметров
+        >({
+            query: ({ course_id, ...params }) => ({
+                url: `courses/${course_id}/videos/`,
+                method: "GET",
+                params, // фильтры category_lesson и lesson_number
+            }),
+            providesTags: ["video"],
+        }),
     }),
 });
 
-export const { useGetVideosQuery, useGetVideosDetailQuery } = api;
+export const { useGetVideosQuery, useGetVideosDetailQuery, useGetCourseVideosQuery } = api;

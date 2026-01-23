@@ -11,7 +11,13 @@ import { useLogoutMutation } from "@/redux/api/auth";
 import { useAppSelector } from "@/redux/hooks";
 import Cookies from "js-cookie";
 
-const Links = [
+interface LinkItem {
+    name: string;
+    href: string;
+    mentorOnly?: boolean;
+}
+
+const Links: LinkItem[] = [
     {
         name: "Уроки",
         href: "/lessons",
@@ -19,6 +25,11 @@ const Links = [
     {
         name: "Чат",
         href: "/chat",
+    },
+    {
+        name: "Видео",
+        href: "/mentor",
+        mentorOnly: true, // Только для менторов
     },
 ];
 
@@ -45,7 +56,26 @@ const Header: React.FC = () => {
         currentUser,
         isAuthenticated,
         username: currentUser?.username || "не загружен",
+        status: currentUser?.status || "не определен",
+        statusType: typeof currentUser?.status,
+        statusValue: currentUser?.status,
+        timestamp: new Date().toISOString(),
     });
+
+    // Дополнительная проверка состояния localStorage
+    if (typeof window !== "undefined") {
+        const localStorageData = localStorage.getItem("userState");
+        console.log("🔍 [HEADER] localStorage data:", localStorageData ? "exists" : "empty");
+        if (localStorageData) {
+            try {
+                const parsed = JSON.parse(localStorageData);
+                console.log("🔍 [HEADER] localStorage status:", parsed.status);
+                console.log("🔍 [HEADER] localStorage status type:", typeof parsed.status);
+            } catch (e) {
+                console.log("🔍 [HEADER] localStorage parse error:", e);
+            }
+        }
+    }
 
     const handleProfileClick = (): void => {
         if (isAuthenticated) {
@@ -88,7 +118,15 @@ const Header: React.FC = () => {
                     </div>
 
                     <div className={style.navs}>
-                        {Links.map((link) => (
+                        {Links.filter((link) => {
+                            // Если ссылка только для менторов, проверяем статус пользователя
+                            if (link.mentorOnly) {
+                                const isMentor = currentUser?.status === "mentor";
+                                console.log(`🔍 [HEADER] Link "${link.name}" mentorOnly=${link.mentorOnly}, isMentor=${isMentor}, status=${currentUser?.status}`);
+                                return isMentor;
+                            }
+                            return true;
+                        }).map((link) => (
                             <a
                                 key={link.name}
                                 className={style.nav}
@@ -173,7 +211,13 @@ const Header: React.FC = () => {
                             isMenuOpen ? style.active : ""
                         }`}
                     >
-                        {Links.map((link) => (
+                        {Links.filter((link) => {
+                            // Если ссылка только для менторов, проверяем статус пользователя
+                            if (link.mentorOnly) {
+                                return currentUser?.status === "mentor";
+                            }
+                            return true;
+                        }).map((link) => (
                             <a
                                 key={link.name}
                                 className={style.mobileNav}
