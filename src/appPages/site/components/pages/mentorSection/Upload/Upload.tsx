@@ -4,30 +4,145 @@ import React, { useState } from "react";
 import style from "./Upload.module.scss";
 import Image from "next/image";
 import videoIcon from "@/assets/Icons/videoIcon.png";
+import { useCreateVideoMutation, useUpdateVideoMutation, useGetMentorVideoDetailQuery } from "@/redux/api/mentor";
 
-function Upload() {
+interface UploadProps {
+    editingId?: number;
+    onCancel?: () => void;
+}
+
+interface ApiError {
+    status: number;
+    data: {
+        [key: string]: string[] | string;
+        detail?: string;
+        message?: string;
+    };
+}
+
+function Upload({ editingId, onCancel }: UploadProps) {
     const [formData, setFormData] = useState<{
-        lessonName: string;
-        lessonOrder: string;
-        lessonDesc: string;
-        lessonTheme: string;
+        course: string;
+        category_lesson: string;
+        lesson_number: string;
+        description: string;
         videoFile: File | null;
         videoPreview: string | null;
     }>({
-        lessonName: "",
-        lessonOrder: "",
-        lessonDesc: "",
-        lessonTheme: "",
+        course: "",
+        category_lesson: "",
+        lesson_number: "",
+        description: "",
         videoFile: null,
         videoPreview: null,
     });
 
-    const getCurrentDate = () => {
-        const now = new Date();
-        const day = String(now.getDate()).padStart(2, "0");
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const year = now.getFullYear();
-        return `${day}.${month}.${year}`;
+    const [createVideo, { isLoading: isCreating }] = useCreateVideoMutation();
+    const [updateVideo, { isLoading: isUpdating }] = useUpdateVideoMutation();
+    const { data: editingVideo } = useGetMentorVideoDetailQuery(editingId!, {
+        skip: !editingId,
+    });
+
+    React.useEffect(() => {
+        if (editingVideo) {
+            setFormData({
+                course: editingVideo.course.toString(),
+                category_lesson: editingVideo.category_lesson.toString(),
+                lesson_number: editingVideo.lesson_number.toString(),
+                description: editingVideo.description || "",
+                videoFile: null,
+                videoPreview: editingVideo.video,
+            });
+        }
+    }, [editingVideo]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!formData.videoFile && !editingId) {
+            alert("Пожалуйста, выберите видео для загрузки");
+            return;
+        }
+
+        try {
+            console.log("🔍 [UPLOAD] Submitting form:", {
+                editingId,
+                formData: {
+                    course: formData.course,
+                    category_lesson: formData.category_lesson,
+                    lesson_number: formData.lesson_number,
+                    description: formData.description,
+                    hasVideoFile: !!formData.videoFile,
+                    fileName: formData.videoFile?.name,
+                    fileSize: formData.videoFile?.size
+                }
+            });
+
+            if (editingId) {
+                await updateVideo({
+                    id: editingId,
+                    course: parseInt(formData.course),
+                    category_lesson: parseInt(formData.category_lesson),
+                    lesson_number: parseInt(formData.lesson_number) || undefined,
+                    description: formData.description || undefined,
+                }).unwrap();
+                alert("Видео успешно обновлено!");
+                onCancel?.();
+            } else {
+                await createVideo({
+                    course: parseInt(formData.course),
+                    category_lesson: parseInt(formData.category_lesson),
+                    video: formData.videoFile!,
+                    lesson_number: parseInt(formData.lesson_number) || undefined,
+                    description: formData.description || undefined,
+                }).unwrap();
+                alert("Видео успешно загружено!");
+                // Reset form
+                setFormData({
+                    course: "",
+                    category_lesson: "",
+                    lesson_number: "",
+                    description: "",
+                    videoFile: null,
+                    videoPreview: null,
+                });
+            }
+        } catch (error: ApiError) {
+            console.error("Error:", error);
+            console.error("Error details JSON:", JSON.stringify(error, null, 2));
+            console.error("Error status:", error?.status);
+            console.error("Error data:", error?.data);
+            console.error("Form data:", {
+                course: formData.course,
+                category_lesson: formData.category_lesson,
+                lesson_number: formData.lesson_number,
+                description: formData.description,
+                hasVideoFile: !!formData.videoFile,
+                fileName: formData.videoFile?.name,
+                fileSize: formData.videoFile?.size
+            });
+            
+            // Показываем конкретную ошибку от сервера если есть
+            let errorMessage = editingId ? "Ошибка при обновлении видео" : "Ошибка при загрузке видео";
+            
+            if (error?.data) {
+                // Обрабатываем ошибки валидации полей
+                const errorFields = Object.keys(error.data);
+                if (errorFields.length > 0) {
+                    const fieldErrors = errorFields.map((field: string) => {
+                        const messages = error.data[field];
+                        return `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`;
+                    });
+                    errorMessage = `Ошибка валидации:\n${fieldErrors.join('\n')}`;
+                } else if (error.data.detail) {
+                    errorMessage = error.data.detail;
+                } else if (error.data.message) {
+                    errorMessage = error.data.message;
+                }
+            }
+            
+            alert(errorMessage);
+        }
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,8 +183,10 @@ function Upload() {
         <section className={style.Upload}>
             <div className="container">
                 <div className={style.content}>
-                    <h2 className={style.title}>ЗАГРУЗИТЬ ВИДЕО</h2>
-                    <div className={style.preview}>
+                    <h2 className={style.title}>
+                        {editingId ? 'РЕДАКТИРОВАТЬ ВИДЕО' : 'ЗАГРУЗИТЬ ВИДЕО'}
+                    </h2>
+                    <form onSubmit={handleSubmit} className={style.preview}>
                         <h2 className={style.previewTitle}>
                             ПРЕДПРОСМОТР / ПРЕВЬЮ
                         </h2>
@@ -94,17 +211,17 @@ function Upload() {
                             )}
                             <div className={style.info}>
                                 <h2 className={style.lessonName}>
-                                    {formData.lessonName}
+                                    Курс: {formData.course}
                                 </h2>
                                 <span className={style.lessonDesc}>
-                                    {formData.lessonDesc}
+                                    Категория: {formData.category_lesson}
                                 </span>
                                 <div className={style.infoLastBlock}>
                                     <h2 className={style.lessonTheme}>
-                                        {formData.lessonTheme}
+                                        Урок №{formData.lesson_number || 'Не указан'}
                                     </h2>
                                     <h2 className={style.lessonData}>
-                                        {getCurrentDate()}
+                                        {formData.description || 'Нет описания'}
                                     </h2>
                                 </div>
                             </div>
@@ -113,71 +230,91 @@ function Upload() {
                             <div className={style.inputs}>
                                 <div className={style.inputBlock}>
                                     <h2 className={style.inputTitle}>
-                                        Название урока
+                                        Курс
                                     </h2>
                                     <input
-                                        name="lessonName"
-                                        value={formData.lessonName}
+                                        name="course"
+                                        value={formData.course}
                                         onChange={handleInputChange}
-                                        placeholder="react/zustand"
-                                        type="text"
+                                        placeholder="ID курса (например: 1, 2, 3...)"
+                                        type="number"
                                         className={style.input}
+                                        required
                                     />
                                 </div>
                                 <div className={style.inputBlock}>
                                     <h2 className={style.inputTitle}>
-                                        Урок по порядку
+                                        Категория урока
                                     </h2>
                                     <input
-                                        name="lessonOrder"
-                                        value={formData.lessonOrder}
+                                        name="category_lesson"
+                                        value={formData.category_lesson}
                                         onChange={handleInputChange}
-                                        placeholder="1й или 2й урок по порядку"
-                                        type="text"
+                                        placeholder="ID категории урока (например: 1, 2, 3...)"
+                                        type="number"
                                         className={style.input}
-                                    />
-                                </div>
-                                <div className={style.inputBlock}>
-                                    <h2 className={style.inputTitle}>Видео</h2>
-                                    <input
-                                        name="videoFile"
-                                        onChange={handleFileChange}
-                                        placeholder="видео"
-                                        type="file"
-                                        accept="video/*"
-                                        className={style.input}
+                                        required
                                     />
                                 </div>
                                 <div className={style.inputBlock}>
                                     <h2 className={style.inputTitle}>
-                                        Тема видео
+                                        Номер урока
                                     </h2>
                                     <input
-                                        name="lessonTheme"
-                                        value={formData.lessonTheme}
+                                        name="lesson_number"
+                                        value={formData.lesson_number}
                                         onChange={handleInputChange}
-                                        placeholder="тема урока"
-                                        type="text"
+                                        placeholder="Номер урока (необязательно)"
+                                        type="number"
                                         className={style.input}
                                     />
                                 </div>
+                                {!editingId && (
+                                    <div className={style.inputBlock}>
+                                        <h2 className={style.inputTitle}>Видео</h2>
+                                        <input
+                                            name="videoFile"
+                                            onChange={handleFileChange}
+                                            placeholder="видео"
+                                            type="file"
+                                            accept="video/*"
+                                            className={style.input}
+                                            required
+                                        />
+                                    </div>
+                                )}
                             </div>
                             <div className={style.descInput}>
                                 <h2 className={style.inputTitle}>Описание</h2>
                                 <input
-                                    name="lessonDesc"
-                                    value={formData.lessonDesc}
+                                    name="description"
+                                    value={formData.description}
                                     onChange={handleInputChange}
                                     placeholder="описание урока"
                                     type="text"
                                     className={style.input}
                                 />
                             </div>
-                            <button className={style.load}>
-                                ЗАГРУЗИТЬ ВИДЕО
-                            </button>
+                            <div className={style.buttonGroup}>
+                                {onCancel && (
+                                    <button 
+                                        type="button" 
+                                        onClick={onCancel}
+                                        className={style.cancel}
+                                    >
+                                        ОТМЕНА
+                                    </button>
+                                )}
+                                <button 
+                                    type="submit"
+                                    className={style.load}
+                                    disabled={isCreating || isUpdating}
+                                >
+                                    {isCreating || isUpdating ? 'ЗАГРУЗКА...' : editingId ? 'ОБНОВИТЬ ВИДЕО' : 'ЗАГРУЗИТЬ ВИДЕО'}
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </section>

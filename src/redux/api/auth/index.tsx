@@ -274,6 +274,15 @@ export const authApi = api.injectEndpoints({
                     }
                     
                     console.log("✅ [AUTH_API] Пользователь сохранен в Redux");
+                    
+                    // Проверяем что данные сохранились в sessionStorage
+                    if (typeof window !== 'undefined') {
+                        setTimeout(() => {
+                            console.log("🔍 [AUTH_API] Проверка sessionStorage после логина:");
+                            console.log("   userState:", sessionStorage.getItem("userState"));
+                            console.log("   access_token:", !!Cookies.get("access_token"));
+                        }, 100);
+                    }
                 } catch (error) {
                     console.log("❌ [AUTH_API] Ошибка при логине:", error);
                 }
@@ -312,10 +321,10 @@ export const authApi = api.injectEndpoints({
                     Cookies.remove("access_token", { path: "/" });
                     Cookies.remove("refresh_token", { path: "/" });
                     
-                    // Очищаем localStorage
+                    // Очищаем sessionStorage
                     if (typeof window !== 'undefined') {
-                        localStorage.removeItem('userState');
-                        console.log("🧹 [AUTH_API] localStorage очищен");
+                        sessionStorage.removeItem('userState');
+                        console.log("🧹 [AUTH_API] sessionStorage очищен");
                     }
 
                     console.log("✅ [AUTH_API] Данные очищены");

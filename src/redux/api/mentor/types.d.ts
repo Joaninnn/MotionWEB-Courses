@@ -1,11 +1,9 @@
-// src/redux/api/lessons/types.ts
+
+
 namespace MENTOR {
-    interface MentorItem {
+    interface CategoryLesson {
         id: number;
-        course_image: string;
-        course_name: string;
-        description: string;
-        created_at: string;
+        ct_lesson_name: string;
     }
 
     interface VideoItem {
@@ -17,21 +15,6 @@ namespace MENTOR {
         description: string;
     }
 
-    interface LessonDetailResponse {
-        id: number;
-        course_image: string;
-        course_name: string;
-        description: string;
-        created_at: string;
-        video_course: VideoItem[];
-    }
-
-    type GetLessonsResponse = LessonItem[];
-    type GetLessonDetailResponse = LessonDetailResponse;
-
-    type GetLessonsRequest = void;
-    type GetLessonDetailRequest = number;
-
     // Типы для создания/обновления видео
     interface CreateVideoRequest {
         course: number;
@@ -42,10 +25,15 @@ namespace MENTOR {
     }
 
     interface UpdateVideoRequest {
+        id: number;
         course?: number;
         category_lesson?: number;
         lesson_number?: number;
         description?: string;
+    }
+
+    interface DeleteVideoRequest {
+        id: number;
     }
 
     interface VideoResponse {
@@ -56,4 +44,10 @@ namespace MENTOR {
         lesson_number: number;
         description: string;
     }
+
+    // Response types
+    type GetVideosResponse = VideoItem[];
+    type GetVideoDetailResponse = VideoResponse;
+    type CreateVideoResponse = VideoResponse;
+    type UpdateVideoResponse = VideoResponse;
 }

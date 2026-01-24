@@ -29,6 +29,7 @@ const localStorageMiddleware: Middleware<object, RootState> =
         if (typeof action === "object" && action !== null && "type" in action) {
             const typedAction = action as { type: string };
             if (typedAction.type?.startsWith("user/")) {
+                console.log("🔍 [MIDDLEWARE] Action detected:", typedAction.type);
                 const userState = store.getState().user;
                 if (typeof window !== "undefined") {
                     try {
@@ -37,17 +38,26 @@ const localStorageMiddleware: Middleware<object, RootState> =
                             ...userState,
                             _timestamp: Date.now(),
                         };
-                        localStorage.setItem(
+                        // Временное решение для отладки - используем sessionStorage
+                        const storage = typeof window !== 'undefined' ? window.sessionStorage : localStorage;
+                        storage.setItem(
                             "userState",
                             JSON.stringify(dataToSave)
                         );
                         console.log(
-                            "💾 [STORE] User state saved to localStorage:",
+                            "💾 [MIDDLEWARE] User state saved to sessionStorage:",
                             userState
                         );
+                        
+                        // Немедленно проверяем что данные сохранились
+                        const savedData = storage.getItem("userState");
+                        console.log("🔍 [MIDDLEWARE] Verification - saved data:", savedData ? "SUCCESS" : "FAILED");
+                        if (savedData) {
+                            console.log("🔍 [MIDDLEWARE] Saved content:", JSON.parse(savedData));
+                        }
                     } catch (error) {
                         console.error(
-                            "❌ [STORE] Failed to save to localStorage:",
+                            "❌ [MIDDLEWARE] Failed to save to localStorage:",
                             error
                         );
                     }
@@ -58,12 +68,14 @@ const localStorageMiddleware: Middleware<object, RootState> =
         return result;
     };
 
-// Загружаем состояние пользователя из localStorage
+// Загружаем состояние пользователя из localStorage/sessionStorage
 const loadUserState = (): UserState | undefined => {
     // Проверяем, что мы в браузере
     if (typeof window !== "undefined") {
         try {
-            const serializedState = localStorage.getItem("userState");
+            // Временное решение для отладки - используем sessionStorage
+            const storage = window.sessionStorage;
+            const serializedState = storage.getItem("userState");
             if (serializedState) {
                 const parsed = JSON.parse(serializedState);
 
@@ -74,9 +86,9 @@ const loadUserState = (): UserState | undefined => {
 
                 if (isExpired) {
                     console.log(
-                        "⚠️ [STORE] User state expired, clearing localStorage"
+                        "⚠️ [STORE] User state expired, clearing sessionStorage"
                     );
-                    localStorage.removeItem("userState");
+                    storage.removeItem("userState");
                     return undefined;
                 }
 
@@ -84,20 +96,21 @@ const loadUserState = (): UserState | undefined => {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { _timestamp, ...userState } = parsed;
                 console.log(
-                    "📂 [STORE] User state loaded from localStorage:",
+                    "📂 [STORE] User state loaded from sessionStorage:",
                     userState
                 );
                 return userState as UserState;
             }
         } catch (error) {
             console.error(
-                "❌ [STORE] Failed to load from localStorage:",
+                "❌ [STORE] Failed to load from sessionStorage:",
                 error
             );
-            localStorage.removeItem("userState"); // Очищаем поврежденные данные
+            // Временное решение для отладки - используем sessionStorage
+            window.sessionStorage.removeItem("userState"); // Очищаем поврежденные данные
         }
     } else {
-        console.log("🔍 [STORE] Running on server, localStorage not available");
+        console.log("🔍 [STORE] Running on server, sessionStorage not available");
     }
     return undefined;
 };
@@ -134,6 +147,8 @@ export const makeStoreWithMiddleware = () => {
                 localStorageMiddleware
             ),
     });
+
+    console.log("🔍 [STORE] Middleware added:", store.getState().user);
 
     // Сохраняем глобальный экземпляр на клиенте
     if (typeof window !== "undefined") {

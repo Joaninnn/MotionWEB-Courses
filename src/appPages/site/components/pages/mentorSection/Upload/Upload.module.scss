@@ -126,6 +126,27 @@
                         box-shadow: 5px 5px 0 rgb(255, 0, 0);
                     }
                 }
+                .buttonGroup {
+                    display: flex;
+                    gap: 15px;
+                    .cancel {
+                        border: white 1px solid;
+                        background: black;
+                        color: white;
+                        transition: all 0.3s ease-in-out;
+                        border: 2px solid white;
+                        padding: 10px;
+                        font-size: 25px;
+                        font-weight: 600;
+                        box-shadow: 5px 5px 0 rgb(255, 0, 0);
+                        &:hover {
+                            background-color: #333;
+                            color: white;
+                            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.5);
+                            transform: translateY(-2px);
+                        }
+                    }
+                }
                 .load {
                     border: white 1px solid;
                     background: red;
