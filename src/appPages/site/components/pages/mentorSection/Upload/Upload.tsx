@@ -227,14 +227,7 @@ function Upload({ editingId, onCancel }: UploadProps) {
                 showToast('success', 'Видео успешно загружено!');
                 
                 // Reset form
-                setFormData({
-                    course: "",
-                    category_lesson: "",
-                    lesson_number: "",
-                    description: "",
-                    videoFile: null,
-                    videoPreview: null,
-                });
+                resetForm();
             }
         } catch (error: unknown) {
             const apiError = error as ApiError;
