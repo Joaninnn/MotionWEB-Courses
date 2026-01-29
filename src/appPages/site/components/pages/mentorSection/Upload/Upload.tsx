@@ -14,9 +14,9 @@ interface UploadProps {
 interface ApiError {
     status: number;
     data: {
-        [key: string]: string[] | string;
-        detail?: string;
-        message?: string;
+        [key: string]: string[] | string | undefined;
+        detail?: string | string[];
+        message?: string | string[];
     };
 }
 
@@ -79,7 +79,14 @@ function Upload({ editingId, onCancel }: UploadProps) {
             });
 
             if (editingId) {
-                const updateData: any = {
+                const updateData: {
+                    id: number;
+                    course: number;
+                    category_lesson: number;
+                    lesson_number?: number;
+                    description?: string;
+                    video?: File;
+                } = {
                     id: editingId,
                     course: parseInt(formData.course),
                     category_lesson: parseInt(formData.category_lesson),
@@ -114,11 +121,12 @@ function Upload({ editingId, onCancel }: UploadProps) {
                     videoPreview: null,
                 });
             }
-        } catch (error: ApiError) {
-            console.error("Error:", error);
-            console.error("Error details JSON:", JSON.stringify(error, null, 2));
-            console.error("Error status:", error?.status);
-            console.error("Error data:", error?.data);
+        } catch (error: unknown) {
+            const apiError = error as ApiError;
+            console.error("Error:", apiError);
+            console.error("Error details JSON:", JSON.stringify(apiError, null, 2));
+            console.error("Error status:", apiError?.status);
+            console.error("Error data:", apiError?.data);
             console.error("Form data:", {
                 course: formData.course,
                 category_lesson: formData.category_lesson,
@@ -132,19 +140,19 @@ function Upload({ editingId, onCancel }: UploadProps) {
             // Показываем конкретную ошибку от сервера если есть
             let errorMessage = editingId ? "Ошибка при обновлении видео" : "Ошибка при загрузке видео";
             
-            if (error?.data) {
+            if (apiError?.data) {
                 // Обрабатываем ошибки валидации полей
-                const errorFields = Object.keys(error.data);
+                const errorFields = Object.keys(apiError.data);
                 if (errorFields.length > 0) {
                     const fieldErrors = errorFields.map((field: string) => {
-                        const messages = error.data[field];
+                        const messages = apiError.data[field];
                         return `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`;
                     });
                     errorMessage = `Ошибка валидации:\n${fieldErrors.join('\n')}`;
-                } else if (error.data.detail) {
-                    errorMessage = error.data.detail;
-                } else if (error.data.message) {
-                    errorMessage = error.data.message;
+                } else if (apiError.data.detail) {
+                    errorMessage = Array.isArray(apiError.data.detail) ? apiError.data.detail.join(', ') : apiError.data.detail;
+                } else if (apiError.data.message) {
+                    errorMessage = Array.isArray(apiError.data.message) ? apiError.data.message.join(', ') : apiError.data.message;
                 }
             }
             

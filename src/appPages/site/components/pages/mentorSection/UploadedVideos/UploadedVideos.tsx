@@ -15,25 +15,49 @@ interface UploadedVideosProps {
     setEditingId?: (id: number | null) => void;
 }
 
+interface CategoryLesson {
+    id: number;
+    ct_lesson_name: string;
+}
+
+interface VideoResponse {
+    id: number;
+    course: number;
+    category_lesson: CategoryLesson | number;
+    video: string;
+    lesson_number: number;
+    description?: string;
+}
+
+interface MentorVideoResponse {
+    id?: number;
+    teaching_courses?: Array<{
+        video_course?: VideoResponse[];
+    }>;
+}
+
 function UploadedVideos({ editingId: externalEditingId, setEditingId: externalSetEditingId }: UploadedVideosProps) {
     const currentUser = useAppSelector((state) => state.user);
     const [search, setSearch] = useState("");
 
     // Получаем видео ментора через новый эндпоинт
-    const { data: videos = [], isLoading, error } = useGetMentorVideosQuery(
+    const mentorVideosQuery = useGetMentorVideosQuery(
         undefined,
         {
             skip: !currentUser,
         }
     );
+    
+    const videos = (mentorVideosQuery.data as MentorVideoResponse[]) || [];
+    const { isLoading, error } = mentorVideosQuery;
 
     const [deleteVideo, { isLoading: isDeleting }] = useDeleteVideoMutation();
 
     // Извлекаем видео из вложенной структуры
-    const extractedVideos = videos.reduce((acc, mentorVideo) => {
+    const extractedVideos = videos.reduce((acc: VideoResponse[], mentorVideo: MentorVideoResponse) => {
         if (mentorVideo?.teaching_courses) {
-            mentorVideo.teaching_courses.forEach(course => {
-                if (course?.video_course) {
+            mentorVideo.teaching_courses.forEach((course: { video_course?: VideoResponse[] }) => {
+                if (course?.video_course && Array.isArray(course.video_course)) {
                     acc.push(...course.video_course);
                 }
             });
@@ -83,10 +107,10 @@ function UploadedVideos({ editingId: externalEditingId, setEditingId: externalSe
             : item.category_lesson;
             
         const matchesSearch = 
-            (item.course?.toString() || "").includes(searchLower) ||
-            (categoryName || "").toLowerCase().includes(searchLower) ||
-            (item.lesson_number?.toString() || "").includes(searchLower) ||
-            (item.description || "").toLowerCase().includes(searchLower);
+            (item.course?.toString().toLowerCase() || "").includes(searchLower) ||
+            (categoryName?.toString().toLowerCase() || "").includes(searchLower) ||
+            (item.lesson_number?.toString().toLowerCase() || "").includes(searchLower) ||
+            (item.description?.toString().toLowerCase() || "").includes(searchLower);
 
         return matchesSearch;
     });
