@@ -7,24 +7,34 @@
         "build": "next build",
         "start": "next start",
         "lint": "eslint",
-        "analyze": "cross-env ANALYZE=true next build --webpack",
-        "analyze:server": "cross-env ANALYZE=true next build --webpack"
+        "analyze": "cross-env ANALYZE=true next build",
+        "analyze:server": "cross-env ANALYZE=true next build"
     },
     "dependencies": {
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.1",
+        "@mui/icons-material": "^7.3.5",
+        "@mui/material": "^7.3.5",
         "@reduxjs/toolkit": "^2.3.0",
         "axios": "^1.7.7",
         "framer-motion": "^11.13.4",
         "js-cookie": "^3.0.5",
         "next": "16.1.6",
         "react": "19.2.4",
+        "react-debounce-input": "^3.3.0",
         "react-dom": "19.2.4",
         "react-hook-form": "^7.53.2",
+        "react-icons": "^5.4.0",
         "react-is": "^18.3.1",
         "react-redux": "^9.1.2",
         "react-scroll": "^1.9.0",
+        "react-slick": "^0.30.2",
         "react-swipeable": "^7.0.2",
         "redux-persist": "^6.0.0",
-        "sass": "^1.81.0"
+        "sass": "^1.81.0",
+        "slick-carousel": "^1.8.1",
+        "swiper": "^11.1.15",
+        "zustand": "^5.0.1"
     },
     "devDependencies": {
         "@next/bundle-analyzer": "^16.1.6",

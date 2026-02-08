@@ -41,10 +41,21 @@ interface ToastMessage {
     message: string;
 }
 
+interface DeleteModal {
+    isOpen: boolean;
+    videoId: number | null;
+    videoTitle: string;
+}
+
 function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosProps) {
     const currentUser = useAppSelector((state) => state.user);
     const [search, setSearch] = useState("");
     const [toast, setToast] = useState<ToastMessage | null>(null);
+    const [deleteModal, setDeleteModal] = useState<DeleteModal>({
+        isOpen: false,
+        videoId: null,
+        videoTitle: ""
+    });
 
     const mentorVideosQuery = useGetMentorVideosQuery(
         undefined,
@@ -104,23 +115,37 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
         });
     };
 
-    const handleDelete = async (id: number) => {
-        if (window.confirm("Вы уверены, что хотите удалить это видео?")) {
-            try {
-                console.log("🗑️ [UPLOADED_VIDEOS] Deleting video:", id);
-                await deleteVideo(id).unwrap();
-                showToast('success', 'Видео успешно удалено!');
-            } catch (error: unknown) {
-                console.error("❌ [UPLOADED_VIDEOS] Delete error:", error);
-                
-                const errorObj = error as { status?: number };
-                if (errorObj?.status === 403) {
-                    showToast('error', 'У вас нет прав на удаление этого видео');
-                } else {
-                    showToast('error', 'Ошибка при удалении видео');
-                }
+    const handleDelete = async (id: number, videoTitle: string) => {
+        setDeleteModal({
+            isOpen: true,
+            videoId: id,
+            videoTitle: videoTitle
+        });
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteModal.videoId) return;
+        
+        try {
+            console.log("🗑️ [UPLOADED_VIDEOS] Deleting video:", deleteModal.videoId);
+            await deleteVideo(deleteModal.videoId).unwrap();
+            showToast('success', 'Видео успешно удалено!');
+            setDeleteModal({ isOpen: false, videoId: null, videoTitle: "" });
+        } catch (error: unknown) {
+            console.error("❌ [UPLOADED_VIDEOS] Delete error:", error);
+            
+            const errorObj = error as { status?: number };
+            if (errorObj?.status === 403) {
+                showToast('error', 'У вас нет прав на удаление этого видео');
+            } else {
+                showToast('error', 'Ошибка при удалении видео');
             }
+            setDeleteModal({ isOpen: false, videoId: null, videoTitle: "" });
         }
+    };
+
+    const cancelDelete = () => {
+        setDeleteModal({ isOpen: false, videoId: null, videoTitle: "" });
     };
 
     const filteredData = (Array.isArray(extractedVideos) ? extractedVideos : []).filter((item) => {
@@ -150,6 +175,40 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
                     <button onClick={() => setToast(null)} className={style.closeToast}>×</button>
                 </div>
             )}
+            
+            {/* Модальное окно подтверждения удаления */}
+            {deleteModal.isOpen && (
+                <div className={style.modalOverlay}>
+                    <div className={style.deleteModal}>
+                        <div className={style.modalContent}>
+                            <h3 className={style.modalTitle}>Подтверждение удаления</h3>
+                            <p className={style.modalMessage}>
+                                Вы уверены, что хотите удалить видео?
+                            </p>
+                            <div className={style.modalVideoInfo}>
+                                <span>{deleteModal.videoTitle}</span>
+                            </div>
+                            <div className={style.modalButtons}>
+                                <button 
+                                    className={style.modalCancel}
+                                    onClick={cancelDelete}
+                                    disabled={isDeleting}
+                                >
+                                    Отмена
+                                </button>
+                                <button 
+                                    className={style.modalDelete}
+                                    onClick={confirmDelete}
+                                    disabled={isDeleting}
+                                >
+                                    {isDeleting ? 'Удаление...' : 'Удалить'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             <div className="container">
                 <div className={style.content}>
                     <h2 className={style.title}>
@@ -218,7 +277,7 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
                                             </button>
                                             <button 
                                                 className={style.delete}
-                                                onClick={() => item.id && handleDelete(item.id)}
+                                                onClick={() => item.id && handleDelete(item.id, `Курс: ${item.course}, Урок №${item.lesson_number}`)}
                                                 disabled={isDeleting}
                                             >
                                                 {isDeleting ? 'Удаление...' : 'Удалить'}
