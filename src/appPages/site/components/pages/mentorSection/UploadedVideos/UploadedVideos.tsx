@@ -45,6 +45,7 @@ interface DeleteModal {
     isOpen: boolean;
     videoId: number | null;
     videoTitle: string;
+    videoInfo: VideoResponse | null;
 }
 
 function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosProps) {
@@ -54,7 +55,8 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
     const [deleteModal, setDeleteModal] = useState<DeleteModal>({
         isOpen: false,
         videoId: null,
-        videoTitle: ""
+        videoTitle: "",
+        videoInfo: null
     });
 
     const mentorVideosQuery = useGetMentorVideosQuery(
@@ -119,7 +121,8 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
         setDeleteModal({
             isOpen: true,
             videoId: id,
-            videoTitle: videoTitle
+            videoTitle: videoTitle,
+            videoInfo: null
         });
     };
 
@@ -130,7 +133,7 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
             console.log("🗑️ [UPLOADED_VIDEOS] Deleting video:", deleteModal.videoId);
             await deleteVideo(deleteModal.videoId).unwrap();
             showToast('success', 'Видео успешно удалено!');
-            setDeleteModal({ isOpen: false, videoId: null, videoTitle: "" });
+            setDeleteModal({ isOpen: false, videoId: null, videoTitle: "", videoInfo: null });
         } catch (error: unknown) {
             console.error("❌ [UPLOADED_VIDEOS] Delete error:", error);
             
@@ -140,12 +143,12 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
             } else {
                 showToast('error', 'Ошибка при удалении видео');
             }
-            setDeleteModal({ isOpen: false, videoId: null, videoTitle: "" });
+            setDeleteModal({ isOpen: false, videoId: null, videoTitle: "", videoInfo: null });
         }
     };
 
     const cancelDelete = () => {
-        setDeleteModal({ isOpen: false, videoId: null, videoTitle: "" });
+        setDeleteModal({ isOpen: false, videoId: null, videoTitle: "", videoInfo: null });
     };
 
     const filteredData = (Array.isArray(extractedVideos) ? extractedVideos : []).filter((item) => {
