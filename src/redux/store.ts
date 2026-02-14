@@ -1,17 +1,21 @@
 // src/redux/store.ts
 import { configureStore, Middleware, MiddlewareAPI } from "@reduxjs/toolkit";
 import { api } from "./api";
+import { chatApi } from "./api/chat";
 import userReducer, { UserState } from "./slices/userSlice";
+import chatReducer from "./slices/chatSlice";
 
 // Создаём функцию для создания store (нужно определить раньше для типов)
 export const makeStore = () => {
     return configureStore({
         reducer: {
             [api.reducerPath]: api.reducer,
+            [chatApi.reducerPath]: chatApi.reducer,
             user: userReducer,
+            chat: chatReducer,
         },
         middleware: (getDefaultMiddleware) =>
-            getDefaultMiddleware().concat(api.middleware),
+            getDefaultMiddleware().concat(api.middleware, chatApi.middleware),
     });
 };
 
@@ -136,7 +140,9 @@ export const makeStoreWithMiddleware = () => {
     const store = configureStore({
         reducer: {
             [api.reducerPath]: api.reducer,
+            [chatApi.reducerPath]: chatApi.reducer,
             user: userReducer,
+            chat: chatReducer,
         },
         preloadedState: preloadedUserState
             ? { user: preloadedUserState }
@@ -144,6 +150,7 @@ export const makeStoreWithMiddleware = () => {
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware().concat(
                 api.middleware,
+                chatApi.middleware,
                 localStorageMiddleware
             ),
     });

@@ -1,0 +1,366 @@
+// src/components/Chat/MessageInput.module.scss
+.messageInput {
+  background: black;
+  padding: 16px;
+  border-top: 2px solid white;
+
+  .inputForm {
+    .inputContainer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #111;
+      border: 2px solid white;
+      box-shadow: 3px 3px 0 red;
+      padding: 8px;
+      border-radius: 4px;
+
+      .fileInput {
+        display: none;
+      }
+
+      .attachButton {
+        background: #222;
+        border: 2px solid white;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 18px;
+        transition: all 0.2s;
+        box-shadow: 2px 2px 0 rgba(255, 255, 255, 0.3);
+
+        &:hover {
+          background: #333;
+          transform: translate(-1px, -1px);
+          box-shadow: 3px 3px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        &:active {
+          transform: translate(0, 0);
+          box-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3);
+        }
+      }
+
+      .textInput {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 14px;
+        font-family: inherit;
+        resize: none;
+        outline: none;
+        min-height: 40px;
+        max-height: 120px;
+        line-height: 1.4;
+
+        &::placeholder {
+          color: #888;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+
+      .sendButton {
+        background: #dc3545;
+        border: 2px solid white;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.2s;
+        box-shadow: 2px 2px 0 rgba(220, 53, 69, 0.3);
+
+        &:hover:not(.disabled) {
+          background: #c82333;
+          transform: translate(-1px, -1px);
+          box-shadow: 3px 3px 0 rgba(220, 53, 69, 0.5);
+        }
+
+        &:active:not(.disabled) {
+          transform: translate(0, 0);
+          box-shadow: 1px 1px 0 rgba(220, 53, 69, 0.3);
+        }
+
+        &.disabled {
+          background: #444;
+          color: #888;
+          cursor: not-allowed;
+          opacity: 0.5;
+        }
+      }
+    }
+  }
+
+  .filePreview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #111;
+    border: 2px solid white;
+    box-shadow: 3px 3px 0 red;
+    margin-bottom: 12px;
+    border-radius: 4px;
+
+    .imagePreview {
+      position: relative;
+
+      .sharedImage {
+        max-width: 200px;
+        max-height: 150px;
+        border: 2px solid white;
+        box-shadow: 2px 2px 0 red;
+        cursor: pointer;
+        transition: transform 0.2s;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+
+      .removeFile {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: red;
+        color: white;
+        border: 2px solid white;
+        box-shadow: 2px 2px 0 rgb(139, 0, 0);
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          background-color: #ff0000;
+          transform: scale(1.1);
+        }
+      }
+    }
+
+    .fileInfo {
+      flex: 1;
+
+      .fileName {
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 4px 0;
+      }
+
+      .fileSize {
+        color: #888;
+        font-size: 12px;
+      }
+    }
+
+    .removeFile {
+      background: #ff4444;
+      color: white;
+      border: 2px solid white;
+      box-shadow: 2px 2px 0 rgb(139, 0, 0);
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background-color: #ff0000;
+        transform: translate(-2px, -2px);
+      }
+    }
+  }
+
+  .inputContainer {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    background: black;
+    border: 2px solid white;
+    box-shadow: 3px 3px 0 red;
+    padding: 12px;
+    border-radius: 4px;
+
+    .inputWrapper {
+      flex: 1;
+      position: relative;
+
+      .messageTextarea {
+        width: 100%;
+        min-height: 44px;
+        max-height: 120px;
+        padding: 10px 50px 10px 12px;
+        border: none;
+        background: transparent;
+        color: white;
+        font-size: 16px;
+        font-family: inherit;
+        resize: none;
+        outline: none;
+        line-height: 1.4;
+
+        &::placeholder {
+          color: #666;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      .attachButton {
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        background: transparent;
+        border: none;
+        color: #888;
+        cursor: pointer;
+        padding: 4px;
+        transition: color 0.2s;
+
+        &:hover {
+          color: white;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .sendButton {
+      background: red;
+      color: white;
+      border: 2px solid white;
+      box-shadow: 3px 3px 0 rgb(139, 0, 0);
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 80px;
+
+      &:hover:not(:disabled) {
+        background-color: #ff0000;
+        box-shadow: 5px 5px 0 rgba(139, 0, 0, 0.8);
+        transform: translate(-2px, -2px);
+      }
+
+      &:active:not(:disabled) {
+        box-shadow: 1px 1px 0 rgb(139, 0, 0);
+        transform: translate(1px, 1px);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      svg {
+        margin-left: 6px;
+      }
+    }
+  }
+
+  .typingIndicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 4px;
+    margin-top: 8px;
+
+    .typingDots {
+      display: flex;
+      gap: 4px;
+
+      span {
+        width: 6px;
+        height: 6px;
+        background: #888;
+        border-radius: 50%;
+        animation: typing 1.4s infinite ease-in-out;
+
+        &:nth-child(1) { animation-delay: 0s; }
+        &:nth-child(2) { animation-delay: 0.2s; }
+        &:nth-child(3) { animation-delay: 0.4s; }
+      }
+    }
+
+    .typingText {
+      color: #ccc;
+      font-size: 14px;
+      font-style: italic;
+    }
+  }
+}
+
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  30% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .messageInput {
+    padding: 12px;
+
+    .filePreview {
+      padding: 8px;
+      margin-bottom: 8px;
+
+      .imagePreview .sharedImage {
+        max-width: 150px;
+        max-height: 100px;
+      }
+    }
+
+    .inputContainer {
+      padding: 8px;
+      gap: 8px;
+
+      .inputWrapper .messageTextarea {
+        font-size: 16px;
+        padding: 8px 40px 8px 10px;
+        min-height: 40px;
+      }
+
+      .sendButton {
+        padding: 8px 12px;
+        font-size: 14px;
+        min-width: 60px;
+      }
+    }
+  }
+}

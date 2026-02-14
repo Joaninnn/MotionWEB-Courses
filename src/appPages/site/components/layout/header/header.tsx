@@ -173,6 +173,9 @@ const Header: React.FC = () => {
                                                 {currentUser.email ||
                                                     "Email не указан"}
                                             </p>
+                                            <p className={style.profileStatus}>
+                                                {currentUser?.status === "mentor" ? "Ментор" : "Студент"}
+                                            </p>
                                         </div>
                                         <button
                                             onClick={handleLogout}
