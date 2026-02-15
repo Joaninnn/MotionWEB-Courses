@@ -14,6 +14,7 @@ export interface ILoginResponse {
         lastName: string | null;
         phoneNumber: string | null;
         course: number | null;
+        chat_group_id: number | null; // ID группы в FastAPI чате
         role: string | null;
         id: number | null;
     };

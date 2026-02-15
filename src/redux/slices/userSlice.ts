@@ -8,6 +8,7 @@ export interface UserState {
     lastName: string | null;
     phoneNumber: string | null;
     course: number | null;
+    chat_group_id: number | null; // ID группы в FastAPI чате
     role: string | null;
     id: number | null;
     status: string | null; // Mentor или Student
@@ -20,6 +21,7 @@ const initialState: UserState = {
     lastName: null,
     phoneNumber: null,
     course: null,
+    chat_group_id: null,
     role: null,
     id: null,
     status: null,
@@ -38,6 +40,7 @@ const userSlice = createSlice({
                 lastName: string | null;
                 phoneNumber: string | null;
                 course: number | null;
+                chat_group_id: number | null;
                 role: string | null;
                 id: number | null;
                 status: string | null;
@@ -50,6 +53,7 @@ const userSlice = createSlice({
             state.lastName = action.payload.lastName;
             state.phoneNumber = action.payload.phoneNumber;
             state.course = action.payload.course;
+            state.chat_group_id = action.payload.chat_group_id;
             state.role = action.payload.role;
             state.id = action.payload.id;
             state.status = action.payload.status;

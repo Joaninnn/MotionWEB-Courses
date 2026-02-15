@@ -6,7 +6,8 @@ import { RootState } from '@/redux/store';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import WebSocketDebugger from '@/components/WebSocketDebugger'; // ДОБАВЛЕНО
-import { useGetGroupDetailFullQuery } from '@/redux/api/chat';
+import { useGetGroupDetailFullQuery } from "@/redux/api/chat";
+import { GroupMember } from "@/redux/api/chat/types";
 import styles from './ChatWindow.module.scss';
 
 interface ChatWindowProps {
@@ -19,7 +20,31 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   const { typingUsers, wsConnected } = useSelector((state: RootState) => state.chat);
   const user = useSelector((state: RootState) => state.user);
   const [showMembers, setShowMembers] = useState(false);
-  const [showDebugger, setShowDebugger] = useState(false); // ДОБАВЛЕНО - покажет дебаггер
+  const [showDebugger, setShowDebugger] = useState(false);
+
+  // Функция для определения роли участника
+  const getMemberRole = (member: GroupMember) => {
+    console.log('🔍 [ROLE] Участник:', member);
+    console.log('🔍 [ROLE] Текущий пользователь:', user);
+    
+    // Если роль участника - ментор, показываем как ментора
+    if (member.role === 'mentor') {
+      console.log('✅ [ROLE] Ментор → Ментор');
+      return 'Ментор';
+    }
+    
+    // Все остальные - студенты
+    console.log('❌ [ROLE] Остальные → Студент');
+    return 'Студент';
+  };
+  // Функция для форматирования названия чата
+  const formatChatTitle = (title: string) => {
+    // Если название начинается с 'course:', заменяем на 'группа:'
+    if (title.startsWith('course:')) {
+      return title.replace('course:', 'группа:');
+    }
+    return title;
+  };
   const chatWindowRef = useRef<HTMLDivElement>(null);
 
   const { data: groupDetail } = useGetGroupDetailFullQuery(groupId, {
@@ -85,7 +110,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
           )}
           
           <div className={styles.chatInfo}>
-            <h3 className={styles.chatTitle}>{title}</h3>
+            <h3 className={styles.chatTitle}>{formatChatTitle(title)}</h3>
             <div className={styles.chatStatus}>
               <span className={`${styles.connectionIndicator} ${wsConnected ? styles.connected : styles.disconnected}`}>
                 {wsConnected ? '●' : '●'}
@@ -172,13 +197,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
                 <div className={styles.memberInfo}>
                   <span className={styles.memberName}>{m.username}</span>
                   <span className={styles.memberRole}>
-                    {m.role === 'owner'
-                      ? ' Владелец'
-                      : m.role === 'admin'
-                      ? ' Админ'
-                      : m.user_id === user?.id && user.status === 'mentor'
-                      ? ' Ментор'
-                      : ' Студент'}
+                    {getMemberRole(m)}
                   </span>
                 </div>
               </div>

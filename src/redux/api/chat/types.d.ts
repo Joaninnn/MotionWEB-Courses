@@ -11,7 +11,7 @@ export interface Group {
 
 export interface GroupMember {
   user_id: number;
-  role: 'owner' | 'admin' | 'member' | 'unknown';
+  role: 'owner' | 'admin' | 'member' | 'unknown' | 'mentor' | 'student';
   username: string;
 }
 
@@ -53,6 +53,7 @@ export interface ChatItem {
   members_count: number;
   last_message: Message | null;
   unread_count: number;
+  course: number | null; // ID курса, к которому относится чат
 }
 
 export interface CreateGroupRequest {
