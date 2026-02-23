@@ -21,7 +21,6 @@
         "js-cookie": "^3.0.5",
         "next": "16.1.6",
         "react": "19.2.4",
-        "react-debounce-input": "^3.3.0",
         "react-dom": "19.2.4",
         "react-hook-form": "^7.53.2",
         "react-icons": "^5.4.0",
