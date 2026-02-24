@@ -1,6 +1,6 @@
 // src/components/Chat/MessageList.tsx
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../../../redux/store';
 import { useGetMessagesQuery, useGetGroupDetailFullQuery, useEditMessageMutation, useDeleteMessageMutation } from '../../../../../redux/api/chat';
@@ -59,34 +59,44 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
     }
   }, [messagesData, groupId, dispatch]);
 
-  // Auto scroll to bottom on new messages
+  // Auto scroll to bottom on new messages, but only if user is at bottom
   const currentMessages = messages[groupId];
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  
   useEffect(() => {
-    scrollToBottom();
-  }, [currentMessages]);
+    if (isAtBottom) {
+      scrollToBottom();
+    }
+  }, [currentMessages, isAtBottom]);
 
-  // Mark messages as read when they are visible
-  useEffect(() => {
-    const handleScroll = () => {
-      if (containerRef.current) {
-        const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-        
-        if (isNearBottom && messages[groupId]?.length > 0) {
-          const lastMessage = messages[groupId][messages[groupId].length - 1];
-          if (lastMessage) {
-            // Mark as read logic would go here
-          }
+  // Track scroll position
+  const handleScroll = useCallback(() => {
+    if (containerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+      const threshold = 100; // 100px from bottom
+      const newIsAtBottom = scrollHeight - scrollTop - clientHeight < threshold;
+      
+      if (newIsAtBottom !== isAtBottom) {
+        setIsAtBottom(newIsAtBottom);
+      }
+      
+      // Mark messages as read logic
+      if (newIsAtBottom && messages[groupId]?.length > 0) {
+        const lastMessage = messages[groupId][messages[groupId].length - 1];
+        if (lastMessage) {
+          // Mark as read logic would go here
         }
       }
-    };
+    }
+  }, [messages, groupId, isAtBottom]);
 
+  useEffect(() => {
     const container = containerRef.current;
     if (container) {
       container.addEventListener('scroll', handleScroll);
       return () => container.removeEventListener('scroll', handleScroll);
     }
-  }, [messages, groupId, dispatch]);
+  }, [handleScroll]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

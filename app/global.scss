@@ -11,8 +11,17 @@ html,
 body {
     width: 100%;
     overflow-x: hidden;
+    overflow-y: auto;
     background: #000;
     color: #fff;
+    scroll-behavior: auto; // Отключаем плавный скролл
+}
+
+// Класс для блокировки скролла
+.scroll-locked {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
 }
 
 .container {

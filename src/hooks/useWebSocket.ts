@@ -49,7 +49,12 @@ export const useWebSocket = (groupId: number) => {
         }
         connectedOnce.current = true;
         console.log('✅ WebSocket успешно подключен');
-        wsManager.sendMessage({ action: 'set_active_chat', group_id: groupId });
+        // Отправляем сообщение только после полного подключения
+        setTimeout(() => {
+          if (!cancelled && wsManager.isConnected()) {
+            wsManager.sendMessage({ action: 'set_active_chat', group_id: groupId });
+          }
+        }, 100);
         dispatch(setWsConnected(true));
         dispatch(setWsConnectionState('connected'));
       })
@@ -92,10 +97,6 @@ export const useWebSocket = (groupId: number) => {
   
   const sendMessage = useCallback(async (text: string, fileUrl?: string, fileType?: string) => {
     try {
-      if (!wsManager.isConnected()) {
-        throw new Error('WebSocket не подключен');
-      }
-
       const payload: Record<string, unknown> = {
         group_id: groupId,
         text,
@@ -104,10 +105,12 @@ export const useWebSocket = (groupId: number) => {
       if (fileUrl) payload.file_url = fileUrl;
       if (fileType) payload.file_type = fileType;
 
+      // Всегда пытаемся отправить через wsManager - он сам решит, использовать WebSocket или HTTP
       wsManager.sendMessage(payload);
     } catch (error) {
       console.error('❌ Ошибка отправки сообщения:', error);
-      throw error;
+      // Не выбрасываем ошибку дальше, чтобы не прерывать UI
+      console.log('⚠️ Попытка отправки не удалась, но приложение продолжает работать');
     }
   }, [groupId]);
 

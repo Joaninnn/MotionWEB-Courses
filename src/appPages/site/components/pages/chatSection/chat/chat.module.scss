@@ -1,14 +1,14 @@
 .chat {
-  height: 100vh;
   background: black;
   display: flex;
   flex-direction: column;
   width: 100%;
+  min-height: 100vh;
 }
 
 .content {
   display: flex;
-  height: 100%;
+  min-height: 100vh;
   background: black;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
@@ -74,7 +74,7 @@
 // Mobile layout
 @media (max-width: 768px) {
   .chat {
-    height: 100vh;
+    min-height: 100vh;
   }
   
   .content {

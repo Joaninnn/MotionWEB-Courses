@@ -1,10 +1,12 @@
 // src/components/Chat/MessageList.module.scss
 .messageList {
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   background: black;
+  padding: 16px;
+  scroll-behavior: smooth;
 
   .loading {
     display: flex;

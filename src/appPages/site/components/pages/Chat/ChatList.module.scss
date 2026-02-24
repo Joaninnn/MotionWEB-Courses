@@ -1,7 +1,7 @@
 // src/components/Chat/ChatList.module.scss
 .chatList {
   background: black;
-  height: 100vh;
+  min-height: 100vh; // Изменено с height на min-height
   display: flex;
   flex-direction: column;
   border-right: 2px solid white;
@@ -229,17 +229,8 @@
   }
 
   .unreadCount {
-    background: red;
-    color: white;
-    border: 2px solid white;
-    box-shadow: 2px 2px 0 rgb(139, 0, 0);
-    font-size: 12px;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 12px;
-    min-width: 20px;
-    text-align: center;
-    margin-left: 8px;
+    // Убираем уведомления о непрочитанных сообщениях
+    display: none;
   }
 }
 

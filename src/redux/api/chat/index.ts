@@ -14,14 +14,15 @@ import {
 const chatBaseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_CHAT_API,
   prepareHeaders: (headers) => {
-    const chatToken = Cookies.get('chat_token');
-    const accessToken = Cookies.get('access_token');
+    const token = Cookies.get('access_token');
     
-    // Приоритет у chat_token, fallback на access_token
-    const token = chatToken || accessToken;
+    console.log("🔍 [CHAT_API] Access token:", token ? 'exists' : 'missing');
+    console.log("🔍 [CHAT_API] Token length:", token?.length || 0);
+    console.log("🔍 [CHAT_API] Token preview:", token?.substring(0, 20) + '...');
     
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
+      console.log("🔍 [CHAT_API] Authorization header set");
     }
     return headers;
   },

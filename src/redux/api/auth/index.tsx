@@ -243,37 +243,6 @@ export const authApi = api.injectEndpoints({
 
                     const token = Cookies.get("access_token");
                     if (token) {
-                        // Получаем токен для чата
-                        try {
-                            console.log("🔄 [AUTH_API] Получаем токен для чата...");
-                            const chatTokenResponse = await fetch(
-                                `${process.env.NEXT_PUBLIC_MOTIONCOURSE_API}/api/chat/token`,
-                                {
-                                    method: "POST",
-                                    headers: {
-                                        Authorization: `Bearer ${token}`,
-                                        "Content-Type": "application/json",
-                                    },
-                                }
-                            );
-
-                            if (chatTokenResponse.ok) {
-                                const chatTokenData: ChatTokenResponse = await chatTokenResponse.json();
-                                console.log("✅ [AUTH_API] Токен чата получен:", chatTokenData.token);
-                                
-                                // Сохраняем токен чата в cookies
-                                Cookies.set("chat_token", chatTokenData.token, {
-                                    expires: 1 / 24, // 1 час
-                                    path: "/",
-                                    sameSite: "lax",
-                                });
-                            } else {
-                                console.log("⚠️ [AUTH_API] Не удалось получить токен чата:", chatTokenResponse.status);
-                            }
-                        } catch (error) {
-                            console.log("❌ [AUTH_API] Ошибка получения токена чата:", error);
-                        }
-
                         const resp = await fetch(
                             `${process.env.NEXT_PUBLIC_MOTIONCOURSE_API}/profile/`,
                             {

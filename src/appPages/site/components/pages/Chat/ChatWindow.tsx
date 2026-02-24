@@ -2,12 +2,14 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import { RootState } from '../../../../../redux/store';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import WebSocketDebugger from '@/components/WebSocketDebugger'; // ДОБАВЛЕНО
-import { useGetGroupDetailFullQuery } from "@/redux/api/chat";
-import { GroupMember } from "@/redux/api/chat/types";
+import WebSocketDebugger from '../../../../../components/WebSocketDebugger'; // ДОБАВЛЕНО
+import { useGetGroupDetailFullQuery, useGetOrCreateDialogMutation } from '../../../../../redux/api/chat';
+import { GroupMember } from '../../../../../redux/api/chat/types';
+import { getUserNameById, getUserRoleById, getDisplayRole } from '../../../../../constants/userNames';
+import { useRouter } from 'next/navigation';
 import styles from './ChatWindow.module.scss';
 
 interface ChatWindowProps {
@@ -21,6 +23,80 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   const user = useSelector((state: RootState) => state.user);
   const [showMembers, setShowMembers] = useState(false);
   const [showDebugger, setShowDebugger] = useState(false);
+  const router = useRouter();
+  const [createDialog] = useGetOrCreateDialogMutation();
+
+  // Функция для определения никнейма собеседника в личном чате
+  const getChatPartnerName = () => {
+    // Проверяем, является ли это личным чатом по названию или флагу
+    const isPrivateChat = title.startsWith('dialog_') || groupDetail?.is_private;
+    
+    if (isPrivateChat) {
+      // Из названия dialog_X_Y можно определить ID собеседника
+      const parts = title.split('_');
+      if (parts.length === 3) {
+        const userId1 = parseInt(parts[1]);
+        const userId2 = parseInt(parts[2]);
+        const currentUserId = user.id;
+        
+        // Определяем ID собеседника
+        const partnerId = userId1 === currentUserId ? userId2 : userId1;
+        
+        // Используем общий кэш имен
+        return getUserNameById(partnerId);
+      }
+    }
+    
+    // Для групповых чатов или если не смогли определить, форматируем название
+    return formatChatTitle(title);
+  };
+
+  // Функция для определения роли собеседника в личном чате
+  const getChatPartnerRole = () => {
+    // Проверяем, является ли это личным чатом по названию или флагу
+    const isPrivateChat = title.startsWith('dialog_') || groupDetail?.is_private;
+    
+    if (isPrivateChat) {
+      // Из названия dialog_X_Y можно определить ID собеседника
+      const parts = title.split('_');
+      if (parts.length === 3) {
+        const userId1 = parseInt(parts[1]);
+        const userId2 = parseInt(parts[2]);
+        const currentUserId = user.id;
+        
+        // Определяем ID собеседника
+        const partnerId = userId1 === currentUserId ? userId2 : userId1;
+        
+        // Используем общий кэш ролей
+        const role = getUserRoleById(partnerId);
+        return getDisplayRole(role);
+      }
+    }
+    
+    // Для групповых чатов не показываем роль
+    return null;
+  };
+
+  // Функция для обработки клика на участника (создание личного чата)
+  const handleMemberClick = async (member: GroupMember) => {
+    // Не создаем диалог с самим собой
+    if (member.user_id === user.id) {
+      console.log('Нельзя создать диалог с самим собой');
+      return;
+    }
+
+    try {
+      console.log('🔄 Создание диалога с пользователем:', member.user_id);
+      const result = await createDialog(member.user_id).unwrap();
+      console.log('✅ Диалог создан:', result);
+      
+      // Здесь можно добавить логику для перехода в созданный диалог
+      // Например, обновить список чатов и выбрать новый диалог
+      
+    } catch (error) {
+      console.error('❌ Ошибка создания диалога:', error);
+    }
+  };
 
   // Функция для определения роли участника
   const getMemberRole = (member: GroupMember) => {
@@ -53,11 +129,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
 
   // Фиксируем скролл вверху при переключении групп
   useEffect(() => {
+    // НЕ скроллим автоматически при переключении групп
+    // Пользователь должен сам контролировать скролл
     if (chatWindowRef.current) {
-      chatWindowRef.current.scrollTop = 0;
+      // Сохраняем текущую позицию скролла
+      const currentScrollTop = chatWindowRef.current.scrollTop;
+      // Не меняем позицию скролла
     }
-    // Также прокручиваем всю страницу вверху
-    window.scrollTo(0, 0);
   }, [groupId]);
 
   const getTypingText = () => {
@@ -110,7 +188,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
           )}
           
           <div className={styles.chatInfo}>
-            <h3 className={styles.chatTitle}>{formatChatTitle(title)}</h3>
+            <h3 className={styles.chatTitle}>{getChatPartnerName()}</h3>
+            {getChatPartnerRole() && (
+              <div className={styles.chatPartnerRole}>
+                {getChatPartnerRole()}
+              </div>
+            )}
             <div className={styles.chatStatus}>
               <span className={`${styles.connectionIndicator} ${wsConnected ? styles.connected : styles.disconnected}`}>
                 {wsConnected ? '●' : '●'}
@@ -133,21 +216,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </button>
-          
-          <button className={styles.headerButton} title="Поиск">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
-          </button>
-          
-          <button className={styles.headerButton} title="Настройки чата">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="1"></circle>
-              <circle cx="12" cy="5" r="1"></circle>
-              <circle cx="12" cy="19" r="1"></circle>
             </svg>
           </button>
         </div>
@@ -188,7 +256,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
           </div>
           <div className={styles.membersList}>
             {groupDetail?.members?.map((m) => (
-              <div key={m.user_id} className={styles.member}>
+              <div 
+                key={m.user_id} 
+                className={`${styles.member} ${m.user_id !== user.id ? styles.clickable : ''}`}
+                onClick={() => m.user_id !== user.id && handleMemberClick(m)}
+                title={m.user_id !== user.id ? "Начать личный чат" : "Это вы"}
+              >
                 <div className={styles.memberAvatar}>
                   <div className={styles.avatarPlaceholder}>
                     {(m.username || 'U').charAt(0).toUpperCase()}
@@ -200,6 +273,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
                     {getMemberRole(m)}
                   </span>
                 </div>
+                {m.user_id !== user.id && (
+                  <div className={styles.privateChatIndicator}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                  </div>
+                )}
               </div>
             ))}
           </div>

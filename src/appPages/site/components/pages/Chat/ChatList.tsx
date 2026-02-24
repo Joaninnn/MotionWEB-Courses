@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useGetMyChatsQuery } from '../../../../../redux/api/chat';
 import { setActiveGroup } from '../../../../../redux/slices/chatSlice';
 import { RootState } from '../../../../../redux/store';
+import { ChatItem } from '../../../../../redux/api/chat/types';
+import { getUserNameById } from '../../../../../constants/userNames';
 import styles from './ChatList.module.scss';
 
 interface ChatListProps {
@@ -18,7 +20,49 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
   const { data: chats = [], isLoading, error } = useGetMyChatsQuery();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Функция для форматирования названия чата
+  // Функция для получения имени собеседника для личного чата
+  const getChatDisplayName = (chat: ChatItem) => {
+    // Если это личный чат (dialog_), пытаемся извлечь имя собеседника
+    if (chat.title.startsWith('dialog_') && chat.is_private) {
+      // Из названия dialog_X_Y можно определить ID собеседника
+      const parts = chat.title.split('_');
+      if (parts.length === 3) {
+        const userId1 = parseInt(parts[1]);
+        const userId2 = parseInt(parts[2]);
+        const currentUserId = user.id;
+        
+        // Определяем ID собеседника
+        const partnerId = userId1 === currentUserId ? userId2 : userId1;
+        
+        // Ищем имя собеседника в других чатах, где он может быть участником
+        const partnerName = findPartnerNameInChats(partnerId);
+        if (partnerName) {
+          return partnerName;
+        }
+        
+        // Используем общий кэш имен
+        return getUserNameById(partnerId);
+      }
+    }
+    
+    // Для групповых чатов или если не смогли определить, используем форматирование
+    return formatChatTitle(chat.title);
+  };
+
+  // Функция для поиска имени собеседника в групповых чатах
+  const findPartnerNameInChats = (partnerId: number): string | null => {
+    // Ищем в групповых чатах, где может быть информация о пользователях
+    // Это упрощенная версия - в реальности нужно получать данные о участниках
+    for (const chat of chats) {
+      if (!chat.is_private) {
+        // Можно добавить логику для получения имен из групповых чатов
+        // Но пока используем простую логику
+        continue;
+      }
+    }
+    
+    return null;
+  };
   const formatChatTitle = (title: string) => {
     // Если название начинается с 'course:', заменяем на 'группа:'
     if (title.startsWith('course:')) {
@@ -43,11 +87,8 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
     if (scrollContainer) {
-      // Восстанавливаем позицию скролла из localStorage
-      const savedScrollTop = localStorage.getItem('chatListScrollTop');
-      if (savedScrollTop) {
-        scrollContainer.scrollTop = parseInt(savedScrollTop, 10);
-      }
+      // НЕ восстанавливаем позицию скролла при загрузке чатов
+      // Пользователь должен сам контролировать скролл
     }
   }, [filteredChats]);
 
@@ -154,7 +195,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
               >
                 <div className={styles.chatAvatar}>
                   <div className={styles.avatarPlaceholder}>
-                    {formatChatTitle(chat.title).charAt(0).toUpperCase()}
+                    {getChatDisplayName(chat).charAt(0).toUpperCase()}
                   </div>
                   {chat.is_private && (
                     <div className={styles.privateIndicator}>🔒</div>
@@ -163,7 +204,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
                 
                 <div className={styles.chatInfo}>
                   <div className={styles.chatHeader}>
-                    <h4 className={styles.chatTitle}>{formatChatTitle(chat.title)}</h4>
+                    <h4 className={styles.chatTitle}>{getChatDisplayName(chat)}</h4>
                     <span className={styles.chatTime}>
                       {chat.last_message ? formatTime(chat.last_message.created_date) : ''}
                     </span>

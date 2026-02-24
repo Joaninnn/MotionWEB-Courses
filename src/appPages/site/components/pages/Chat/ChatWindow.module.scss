@@ -1,7 +1,7 @@
 // src/components/Chat/ChatWindow.module.scss
 .chatWindow {
   background: black;
-  height: 100vh;
+  min-height: 100vh; // Изменено с height на min-height
   display: flex;
   flex-direction: column;
   position: relative;
@@ -55,6 +55,12 @@
         font-size: 20px;
         font-weight: 600;
         margin: 0;
+      }
+
+      .chatPartnerRole {
+        color: #888;
+        font-size: 14px;
+        font-weight: 500;
       }
 
       .chatStatus {
@@ -208,6 +214,15 @@
       padding: 10px;
       border-bottom: 1px solid #333;
 
+      &.clickable {
+        cursor: pointer;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: #222;
+        }
+      }
+
       .memberAvatar {
         .avatarPlaceholder {
           width: 36px;
@@ -241,6 +256,17 @@
           color: #888;
           font-size: 12px;
           font-weight: 400;
+        }
+      }
+
+      .privateChatIndicator {
+        color: #888;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+
+        .clickable:hover & {
+          opacity: 1;
+          color: white;
         }
       }
     }
