@@ -3,6 +3,7 @@ import { api } from "../index";
 import type { ILoginRequest, ILoginResponse } from "./types";
 import { setUser, clearUser } from "../../slices/userSlice";
 import Cookies from "js-cookie";
+import type { RootState } from "../../store";
 
 // Тип для ответа от /profile/ эндпоинта
 interface ProfileResponse {
@@ -93,11 +94,11 @@ export const authApi = api.injectEndpoints({
                     const { data } = await queryFulfilled;
                     
                     // Получаем текущие данные пользователя из Redux
-                    const currentState = getState() as unknown;
-                    const currentUser = (currentState as { user: { username?: string; status?: string; email?: string } }).user;
+                    const currentState = getState() as RootState;
+                    const currentUser = currentState.user;
 
                     // Автоматически обновляем профиль пользователя в Redux
-                    if (data.user && currentUser?.username) {
+                    if (data.user && currentUser.username !== null) {
                         console.log(
                             "💾 [VALIDATE_TOKEN] Обновляем профиль пользователя:",
                             data.user
