@@ -12,9 +12,14 @@ import {
 } from './types';
 
 const chatBaseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_CHAT_API || 'http://13.53.212.64/',
+  baseUrl: process.env.NEXT_PUBLIC_CHAT_API,
   prepareHeaders: (headers) => {
-    const token = Cookies.get('access_token');
+    const chatToken = Cookies.get('chat_token');
+    const accessToken = Cookies.get('access_token');
+    
+    // Приоритет у chat_token, fallback на access_token
+    const token = chatToken || accessToken;
+    
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
