@@ -177,12 +177,14 @@ export const authApi = api.injectEndpoints({
                             expires: 1 / 24,
                             path: "/",
                             sameSite: "lax",
+                            domain: window.location.hostname.includes('vercel.app') ? undefined : undefined,
                         });
 
                         Cookies.set("refresh_token", data.refresh, {
                             expires: 7,
                             path: "/",
                             sameSite: "lax",
+                            domain: window.location.hostname.includes('vercel.app') ? undefined : undefined,
                         });
 
                         console.log("✅ [AUTH_API] Токены сохранены");

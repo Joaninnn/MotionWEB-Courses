@@ -21,6 +21,10 @@ const baseQuery = fetchBaseQuery({
         if (token) {
             headers.set("Authorization", `Bearer ${token}`);
         }
+        // CORS headers
+        headers.set("Content-Type", "application/json");
+        headers.set("Accept", "application/json");
+        console.log("🔍 [API] Headers:", Object.fromEntries(headers.entries()));
         return headers;
     },
 });
@@ -38,7 +42,7 @@ const baseQueryWithReauth: BaseQueryFn<
 
     const url = typeof args === "string" ? args : args.url;
     const isLoginRequest = url.includes("/login");
-    const isRefreshRequest = url.includes("/token/refresh");
+    const isRefreshRequest = url.includes("/api/token/refresh");
 
     // Если получили 401 ошибку И это НЕ логин И НЕ refresh
     if (result.error && result.error.status === 401 && !isLoginRequest && !isRefreshRequest) {
@@ -86,6 +90,17 @@ const baseQueryWithReauth: BaseQueryFn<
                 window.location.href = "/login";
             }
         }
+    }
+
+    // Детальное логирование ошибок
+    if (result.error) {
+        console.log("❌ [API] Ошибка запроса:", {
+            url: typeof args === "string" ? args : args.url,
+            method: typeof args === "string" ? "GET" : args.method || "GET",
+            status: result.error.status,
+            error: result.error,
+            isFetchError: result.error.status === "FETCH_ERROR"
+        });
     }
 
     return result;
