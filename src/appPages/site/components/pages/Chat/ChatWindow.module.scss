@@ -1,10 +1,12 @@
 // src/components/Chat/ChatWindow.module.scss
 .chatWindow {
   background: black;
-  min-height: 100vh; // Изменено с height на min-height
+  height: calc(100vh - 120px); // Фиксированная высота с учетом хедера и футера
+  max-height: calc(100vh - 120px); // Ограничиваем максимальную высоту
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden; // Предотвращаем выход контента за границы
 
   .chatHeader {
     display: flex;
@@ -123,6 +125,7 @@
     flex-direction: column;
     overflow: hidden;
     position: relative;
+    min-height: 0; // Важно для правильной работы flex с прокруткой
   }
 
   .typingIndicator {

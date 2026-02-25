@@ -3,12 +3,12 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 100vh;
+  height: calc(100vh - 120px);
 }
 
 .content {
   display: flex;
-  min-height: 100vh;
+  height: 100%;
   background: black;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
@@ -74,7 +74,7 @@
 // Mobile layout
 @media (max-width: 768px) {
   .chat {
-    min-height: 100vh;
+    height: calc(100vh - 80px); // Меньше отступ для мобильных
   }
   
   .content {

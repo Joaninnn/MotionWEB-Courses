@@ -1,10 +1,11 @@
 // src/components/Chat/ChatList.module.scss
 .chatList {
   background: black;
-  min-height: 100vh; // Изменено с height на min-height
+  height: calc(100vh - 120px); // Учитываем хедер и футер
   display: flex;
   flex-direction: column;
   border-right: 2px solid white;
+  overflow: hidden; // Предотвращаем выход контента за границы
 
   .header {
     padding: 20px;
@@ -23,6 +24,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0; // Предотвращаем сжатие заголовка
 
     h2 {
       color: red;
@@ -60,6 +62,23 @@
     flex: 1;
     overflow-y: auto;
     padding: 10px;
+    // Добавляем стили для скроллбара
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 4px;
+      
+      &:hover {
+        background: #555;
+      }
+    }
   }
 
   .loading {

@@ -53,16 +53,14 @@ class WebSocketManager {
         }
 
         const wsUrl = this.wsUrlCandidates[this.wsUrlIndex];
-        console.log(`🔌 Подключение к WebSocket (вариант ${this.wsUrlIndex + 1}/${this.wsUrlCandidates.length}):`, wsUrl);
-        console.log('📊 Group ID:', groupId);
-        console.log('🔑 Token (первые 20 символов):', token.substring(0, 20) + '...');
+        console.log(`🔌 Подключение к WebSocket (${this.wsUrlIndex + 1}/${this.wsUrlCandidates.length})`);
 
         try {
           this.ws = new WebSocket(wsUrl);
 
           const connectionTimeout = setTimeout(() => {
             if (this.ws?.readyState === WebSocket.CONNECTING) {
-              console.log('⏰ Таймаут подключения, закрываем соединение');
+              console.log('⏰ Таймаут подключения к WebSocket');
               this.ws.close();
             }
           }, 5000); // 5 секунд на подключение
@@ -79,51 +77,41 @@ class WebSocketManager {
             this.cleanupConnectingPromise();
           };
 
-          this.ws.onerror = (error) => {
-            console.error('❌ ОШИБКА WebSocket:', error);
-            console.error('📡 ReadyState при ошибке:', this.ws?.readyState);
-            console.error('🔗 URL:', wsUrl);
+          this.ws.onerror = () => {
+            // Уменьшаем количество логов для ошибок
+            console.warn('⚠️ WebSocket соединение недоступно, используем HTTP fallback');
             
             // Если это ошибка соединения (не удалось подключиться), пробуем следующий URL
             if (this.ws?.readyState === WebSocket.CONNECTING) {
-              console.log('🔄 Ошибка при подключении, пробуем следующий URL...');
               this.wsUrlIndex++;
               if (this.wsUrlIndex < this.wsUrlCandidates.length) {
-                setTimeout(() => tryConnect(), 500); // Уменьшили задержку до 500ms
+                setTimeout(() => tryConnect(), 500);
                 return;
               }
             }
+            
             // Не reject здесь: причина придёт в onclose.
           };
 
           this.ws.onclose = (event) => {
-            console.log('🔌 WebSocket ЗАКРЫТ');
-            console.log('📊 Close Code:', event.code);
-            console.log('📝 Close Reason:', event.reason);
-            console.log('🔍 Was Clean:', event.wasClean);
-
-            const closeCodes: Record<number, string> = {
-              1000: 'Normal Closure',
-              1001: 'Going Away',
-              1006: 'Abnormal Closure',
-              1008: 'Policy Violation',
-              1011: 'Internal Error',
-            };
-
-            console.log('ℹ️ Описание:', closeCodes[event.code] || 'Неизвестный код');
+            // Уменьшаем количество логов для закрытия соединения
+            if (event.code !== 1000) { // Не логаем нормальное закрытие
+              console.log('� WebSocket соединение закрыто, переключаемся на HTTP');
+            }
+            
             this.stopPing();
 
             // Если соединение не успело открыться — пробуем следующий URL.
             if (this.connectingPromise) {
               if (this.wsUrlIndex < this.wsUrlCandidates.length - 1) {
                 this.wsUrlIndex++;
-                setTimeout(() => tryConnect(), 300); // Быстрое переключение
+                setTimeout(() => tryConnect(), 300);
               } else {
                 // Все URL испробованы, переключаемся на HTTP polling
-                console.log('❌ Все WebSocket URL недоступны, переключаемся на HTTP polling');
+                console.log('🔄 Используем HTTP API для обмена сообщениями');
                 this.isWebSocketAvailable = false;
                 this.startPolling();
-                this.resolveConnecting?.(); // Резолвим промис, чтобы приложение продолжило работу
+                this.resolveConnecting?.();
                 this.cleanupConnectingPromise();
               }
             }

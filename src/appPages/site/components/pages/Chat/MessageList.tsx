@@ -61,7 +61,21 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
 
   // Auto scroll to bottom on new messages, but only if user is at bottom
   const currentMessages = messages[groupId];
-  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [isAtBottom, setIsAtBottom] = useState(false); // Изменено на false по умолчанию
+  const [hasInitialized, setHasInitialized] = useState(false); // Флаг для первой загрузки
+  
+  // Скролл вниз только при первой загрузке чата
+  useEffect(() => {
+    if (currentMessages && currentMessages.length > 0 && !hasInitialized) {
+      scrollToBottom();
+      setTimeout(() => setHasInitialized(true), 0); // Асинхронное обновление состояния
+    }
+  }, [currentMessages, hasInitialized]);
+  
+  // Сбрасываем флаг при смене чата
+  useEffect(() => {
+    setTimeout(() => setHasInitialized(false), 0); // Асинхронное обновление состояния
+  }, [groupId]);
   
   useEffect(() => {
     if (isAtBottom) {

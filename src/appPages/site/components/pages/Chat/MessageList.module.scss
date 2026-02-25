@@ -7,6 +7,8 @@
   background: black;
   padding: 16px;
   scroll-behavior: smooth;
+  height: 100%; // Занимаем полную высоту родителя
+  min-height: 0; // Важно для правильной работы flex с прокруткой
 
   .loading {
     display: flex;
