@@ -1,7 +1,7 @@
 export const WEBSOCKET_CONFIG = {
-  // ВАЖНО: без порта 8000!
-  baseUrl: 'ws://13.53.212.64',
-  httpUrl: 'http://13.53.212.64:8000',
+  // Используем переменные окружения из .env
+  baseUrl: process.env.NEXT_PUBLIC_WS_URL || 'wss://chat.apibackendokukg.space',
+  httpUrl: process.env.NEXT_PUBLIC_CHAT_API || 'https://chat.apibackendokukg.space',
   pingInterval: 30000,
   reconnectInterval: 3000,
   maxReconnectAttempts: 5

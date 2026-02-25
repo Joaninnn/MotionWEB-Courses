@@ -206,18 +206,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
         </div>
         
         <div className={styles.headerRight}>
-          <button 
-            className={styles.headerButton}
-            onClick={() => setShowMembers(!showMembers)}
-            title="Участники"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </button>
+          {/* Показываем кнопку участников только для групповых чатов */}
+          {!title.startsWith('dialog_') && !groupDetail?.is_private && (
+            <button 
+              className={styles.headerButton}
+              onClick={() => setShowMembers(!showMembers)}
+              title="Участники"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 // src/services/websocket.ts
+import { useNotifications } from '@/hooks/useNotifications';
 class WebSocketManager {
   private ws: WebSocket | null = null;
   private reconnectAttempts = 0;
@@ -218,7 +219,7 @@ class WebSocketManager {
   private async sendMessageViaHTTP(message: unknown): Promise<void> {
     try {
       console.log('📤 Отправка сообщения через HTTP API');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_CHAT_API}/messages/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_CHAT_API}/groups/${this.groupId}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

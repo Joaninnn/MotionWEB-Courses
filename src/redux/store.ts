@@ -4,6 +4,7 @@ import { api } from "./api";
 import { chatApi } from "./api/chat";
 import userReducer, { UserState } from "./slices/userSlice";
 import chatReducer from "./slices/chatSlice";
+import notificationsReducer, { addNotification, markAsRead, markAllAsRead } from "./slices/notificationsSlice";
 
 // Создаём функцию для создания store (нужно определить раньше для типов)
 export const makeStore = () => {

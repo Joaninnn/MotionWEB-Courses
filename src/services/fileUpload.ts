@@ -12,7 +12,7 @@ export class FileUploadService {
   private baseUrl: string;
 
   constructor() {
-    const raw = process.env.NEXT_PUBLIC_CHAT_API || 'http://13.53.212.64';
+    const raw = process.env.NEXT_PUBLIC_CHAT_API;
     this.baseUrl = raw.endsWith('/') ? raw : `${raw}/`;
   }
 
