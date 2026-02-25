@@ -173,7 +173,6 @@ class WebSocketManager {
         }
       }, 3000);
     } else {
-      console.error('❌ Исчерпаны все попытки переподключения');
       // Переключаемся на HTTP polling после всех неудачных попыток
       if (!this.isWebSocketAvailable) {
         this.startPolling();
@@ -219,7 +218,7 @@ class WebSocketManager {
   private async sendMessageViaHTTP(message: unknown): Promise<void> {
     try {
       console.log('📤 Отправка сообщения через HTTP API');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_CHAT_API}/api/messages/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_CHAT_API}/messages/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -254,11 +253,10 @@ class WebSocketManager {
     this.groupId = null;
     this.token = null;
 
-    // Если connect ещё не завершился — закрываем promise явно.
-    if (this.ws?.readyState === WebSocket.CONNECTING) {
-      this.rejectConnecting?.(new Error('WebSocket connection cancelled by client'));
-      this.cleanupConnectingPromise();
-    }
+    // Просто очищаем переменные без ошибок
+    this.connectingPromise = null;
+    this.resolveConnecting = null;
+    this.rejectConnecting = null;
     
     if (this.ws) {
       this.ws.close(1000, 'Закрыто клиентом');
@@ -274,7 +272,7 @@ class WebSocketManager {
     this.pollingInterval = setInterval(async () => {
       if (this.groupId && this.token) {
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_CHAT_API}/api/messages/?group_id=${this.groupId}`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_CHAT_API}/groups/${this.groupId}/messages`, {
             headers: {
               'Authorization': `Bearer ${this.token}`,
             },

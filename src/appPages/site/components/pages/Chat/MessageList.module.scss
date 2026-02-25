@@ -9,6 +9,37 @@
   scroll-behavior: smooth;
   height: 100%; // Занимаем полную высоту родителя
   min-height: 0; // Важно для правильной работы flex с прокруткой
+  
+  // Темные стили скроллбара
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #1a1a1a;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+    
+    &:hover {
+      background: #555;
+    }
+  }
+  
+  &::-webkit-scrollbar-thumb:horizontal {
+    background: #333;
+    border-radius: 4px;
+    
+    &:hover {
+      background: #555;
+    }
+  }
+  
+  &::-webkit-scrollbar-corner {
+    background: #1a1a1a;
+  }
 
   .loading {
     display: flex;
