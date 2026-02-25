@@ -47,10 +47,18 @@ body {
     .container {
         padding: 0 14px;
     }
+    
+    .chat-container {
+        padding: 0;
+    }
 }
 
 @media (max-width: 480px) {
     .container {
         padding: 0 10px;
+    }
+    
+    .chat-container {
+        padding: 0;
     }
 }

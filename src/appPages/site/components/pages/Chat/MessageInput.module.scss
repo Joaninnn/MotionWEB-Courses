@@ -334,7 +334,11 @@
 /* Mobile */
 @media (max-width: 768px) {
   .messageInput {
-    padding: 12px;
+    padding: 12px 0; // Убираем боковые отступы на мобильных
+    
+    .inputContainer {
+      margin: 0 15px; // Добавляем отступы для контейнера ввода
+    }
 
     .filePreview {
       padding: 8px;

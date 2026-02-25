@@ -71,7 +71,7 @@ export interface EditMessageRequest {
 // WebSocket message types
 export interface WebSocketMessage {
   type: 'message' | 'typing' | 'user_joined' | 'user_left' | 'message_edited' | 'message_deleted';
-  data: any;
+  data: unknown;
   group_id: number;
   user_id: number;
   timestamp: string;

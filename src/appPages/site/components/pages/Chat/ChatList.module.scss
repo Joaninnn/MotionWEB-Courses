@@ -1,7 +1,7 @@
 // src/components/Chat/ChatList.module.scss
 .chatList {
   background: black;
-  height: calc(100vh - 120px); // Учитываем хедер и футер
+  min-height: calc(100vh - 120px); // Учитываем хедер и футер
   display: flex;
   flex-direction: column;
   border-right: 2px solid white;
@@ -261,8 +261,13 @@
 /* Mobile */
 @media (max-width: 768px) {
   .chatList {
+    border-left: none; // Убираем только левую границу
+    border-right: none; // Убираем только правую границу
+    border-bottom: 2px solid white; // Добавляем нижнюю границу если нужно
+    
     .chatListHeader {
       padding: 15px;
+      border-bottom: 2px solid white; // Явно указываем нижнюю границу
 
       h2 {
         font-size: 20px;

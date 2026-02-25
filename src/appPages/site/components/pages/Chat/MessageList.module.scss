@@ -300,13 +300,14 @@
 @media (max-width: 768px) {
   .messageList {
     .messagesContainer {
-      padding: 12px;
+      padding: 12px 0; // Убираем боковые отступы на мобильных
       gap: 12px;
     }
 
     .message {
       gap: 8px;
       margin-bottom: 8px;
+      padding: 0 15px; // Добавляем боковые отступы для сообщений
 
       .messageContent {
         max-width: 85%;

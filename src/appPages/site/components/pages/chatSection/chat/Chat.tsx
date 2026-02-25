@@ -53,7 +53,7 @@ function Chat() {
 
   return (
     <div className={styles.chat}>
-      <div className="container">
+      <div className="container chat-container">
         <div className={styles.content}>
           <div className={`${styles.groups} ${selectedChat ? styles.mobileHidden : ''}`}>
             <ChatList 

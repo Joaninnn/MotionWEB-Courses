@@ -17,7 +17,7 @@ const NotificationsPanel: React.FC = () => {
   
   useEffect(() => {
     if (activeGroupId && isOpen) {
-      setIsOpen(false);
+      setTimeout(() => setIsOpen(false), 0);
     }
   }, [activeGroupId, isOpen]);
 
@@ -87,7 +87,7 @@ const NotificationsPanel: React.FC = () => {
                 <span>Нет уведомлений</span>
               </div>
             ) : (
-              notifications.map((notification) => (
+              notifications.map((notification: Notification) => (
                 <div
                   key={notification.id}
                   className={`${styles.notification} ${!notification.read ? styles.unread : ''}`}

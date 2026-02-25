@@ -189,18 +189,20 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
           
           <div className={styles.chatInfo}>
             <h3 className={styles.chatTitle}>{getChatPartnerName()}</h3>
-            {getChatPartnerRole() && (
-              <div className={styles.chatPartnerRole}>
-                {getChatPartnerRole()}
+            <div className={styles.userInfoRow}>
+              {getChatPartnerRole() && (
+                <span className={styles.chatPartnerRole}>
+                  {getChatPartnerRole()}
+                </span>
+              )}
+              <div className={styles.chatStatus}>
+                <span className={`${styles.connectionIndicator} ${wsConnected ? styles.connected : styles.disconnected}`}>
+                  {wsConnected ? '●' : '●'}
+                </span>
+                <span className={styles.statusText}>
+                  {wsConnected ? 'Подключено' : 'Подключение...'}
+                </span>
               </div>
-            )}
-            <div className={styles.chatStatus}>
-              <span className={`${styles.connectionIndicator} ${wsConnected ? styles.connected : styles.disconnected}`}>
-                {wsConnected ? '●' : '●'}
-              </span>
-              <span className={styles.statusText}>
-                {wsConnected ? 'Подключено' : 'Подключение...'}
-              </span>
             </div>
           </div>
         </div>

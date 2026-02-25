@@ -213,6 +213,7 @@
             overflow: hidden;
             opacity: 0;
             transition: all 0.3s ease-in-out;
+            z-index: 1000; // Добавляем z-index чтобы меню было поверх других элементов
 
             &.active {
                 max-height: 500px;

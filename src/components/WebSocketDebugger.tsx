@@ -53,8 +53,9 @@ const WebSocketDebugger: React.FC<WebSocketDebuggerProps> = ({ groupId }) => {
         message_type: 'text'
       });
       addLog('📤 Сообщение отправлено');
-    } catch (err: any) {
-      addLog(`❌ Ошибка отправки: ${err.message}`);
+    } catch (err: unknown) {
+      const error = err as Error;
+      addLog(`❌ Ошибка отправки: ${error.message}`);
     }
   };
   

@@ -1,7 +1,7 @@
 // src/components/Chat/ChatWindow.module.scss
 .chatWindow {
   background: black;
-  height: calc(100vh - 120px); // Фиксированная высота с учетом хедера и футера
+  min-height: calc(100vh - 120px); // Меняем на min-height для гибкости
   max-height: calc(100vh - 120px); // Ограничиваем максимальную высоту
   display: flex;
   flex-direction: column;
@@ -59,10 +59,16 @@
         margin: 0;
       }
 
-      .chatPartnerRole {
-        color: #888;
-        font-size: 14px;
-        font-weight: 500;
+      .userInfoRow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        
+        .chatPartnerRole {
+          color: #888;
+          font-size: 12px; // Уменьшенный шрифт для роли
+          font-weight: 400;
+        }
       }
 
       .chatStatus {
@@ -290,11 +296,26 @@
 /* Mobile */
 @media (max-width: 768px) {
   .chatWindow {
+    min-height: calc(100vh - 80px); // Меньше высота для мобильных
+    max-height: calc(100vh - 80px);
+    
     .chatHeader {
       padding: 15px;
 
       .chatInfo .chatTitle {
         font-size: 18px;
+      }
+      
+      .userInfoRow {
+        .chatPartnerRole {
+          font-size: 11px; // Еще меньше для мобильных
+        }
+        
+        .chatStatus {
+          .statusText {
+            font-size: 11px;
+          }
+        }
       }
 
       .headerButton {

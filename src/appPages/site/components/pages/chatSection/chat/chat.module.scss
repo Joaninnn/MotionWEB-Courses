@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: calc(100vh - 120px);
+  min-height: calc(100vh - 120px);
 }
 
 .content {
@@ -74,7 +74,7 @@
 // Mobile layout
 @media (max-width: 768px) {
   .chat {
-    height: calc(100vh - 80px); // Меньше отступ для мобильных
+    min-height: calc(100vh - 80px); // Меньше отступ для мобильных
   }
   
   .content {
@@ -84,12 +84,14 @@
   
   .groups {
     position: absolute;
-    top: 0;
+    top: 80px; // Отступ сверху для хедера
     left: 0;
     width: 100%;
-    height: 100%;
-    z-index: 10;
+    height: calc(100% - 80px); // Уменьшаем высоту с учетом хедера
+    z-index: 5; // Уменьшаем z-index чтобы бургер-меню было поверх
     transform: translateX(-100%);
+    border-left: none; // Убираем только левую границу
+    border-right: none; // Убираем только правую границу
     
     &:not(.mobileHidden) {
       transform: translateX(0);

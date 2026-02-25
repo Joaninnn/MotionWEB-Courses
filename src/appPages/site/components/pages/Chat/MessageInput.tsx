@@ -35,7 +35,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ groupId }) => {
       alert('Загрузка файлов временно отключена. Функция будет доступна после исправления на стороне бэкенда.');
       return;
       
-      setSelectedFile(file);
+      setSelectedFile(file || null);
     }
   };
 

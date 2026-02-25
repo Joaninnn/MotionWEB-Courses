@@ -26,12 +26,16 @@ const notificationsSlice = createSlice({
   name: 'notifications',
   initialState,
   reducers: {
-    addNotification: (state, action: PayloadAction<Omit<Notification, 'id' | 'timestamp'>>) => {
+    addNotification: (state, action: PayloadAction<Omit<Notification, 'id' | 'timestamp' | 'read'>>) => {
       const notification: Notification = {
         id: Date.now().toString(),
+        type: action.payload.type,
+        title: action.payload.title,
+        message: action.payload.message,
         timestamp: Date.now(),
         read: false,
-        ...action.payload,
+        groupId: action.payload.groupId,
+        senderId: action.payload.senderId,
       };
       
       state.notifications.unshift(notification);

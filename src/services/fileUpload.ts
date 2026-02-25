@@ -13,6 +13,9 @@ export class FileUploadService {
 
   constructor() {
     const raw = process.env.NEXT_PUBLIC_CHAT_API;
+    if (!raw) {
+      throw new Error('NEXT_PUBLIC_CHAT_API environment variable is not set');
+    }
     this.baseUrl = raw.endsWith('/') ? raw : `${raw}/`;
   }
 

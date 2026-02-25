@@ -12,6 +12,7 @@ interface ProfileResponse {
     last_name: string;
     phone_number: string | null;
     course: number | null;
+    chat_group_id: number | null; // Добавляем chat_group_id
     role: string;
 }
 
@@ -136,6 +137,7 @@ export const authApi = api.injectEndpoints({
                                 lastName: data.user.lastName,
                                 phoneNumber: data.user.phoneNumber,
                                 course: data.user.course,
+                                chat_group_id: currentUser.chat_group_id, // Сохраняем существующий chat_group_id
                                 role: data.user.role,
                                 id: data.user.id,
                                 // /profile.role — источник правды (mentor/student)
@@ -235,6 +237,7 @@ export const authApi = api.injectEndpoints({
                             lastName: data.user.lastName, // Уже может быть null
                             phoneNumber: data.user.phoneNumber, // Уже может быть null
                             course: data.user.course, // Уже может быть null
+                            chat_group_id: data.user.chat_group_id || null, // Добавляем chat_group_id
                             role: data.user.role, // Уже может быть null
                             id: data.user.id, // Уже может быть null
                             status: finalStatus,
@@ -279,6 +282,7 @@ export const authApi = api.injectEndpoints({
                                         lastName: data.user.lastName,
                                         phoneNumber: profile?.phone_number ?? null,
                                         course: profile?.course ?? null,
+                                        chat_group_id: profile?.chat_group_id ?? null, // Добавляем chat_group_id
                                         role: profile?.role ?? null,
                                         id: profile?.id ?? null,
                                         status: statusFromProfile,
