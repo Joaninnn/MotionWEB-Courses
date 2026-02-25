@@ -199,6 +199,17 @@ class WebSocketManager {
     console.log('📤 Попытка отправить сообщение');
     console.log('📡 Текущий ReadyState:', readyState);
     console.log('📦 Данные для отправки:', message);
+    console.log('🏷️ Текущая группа WebSocket:', this.groupId);
+    
+    // Проверяем, что группа в сообщении совпадает с текущей группой WebSocket
+    if (message && typeof message === 'object' && message !== null && 'group_id' in message) {
+      const messageGroupId = (message as { group_id?: number }).group_id;
+      if (messageGroupId !== undefined && messageGroupId !== this.groupId) {
+        console.warn(`⚠️ Несовпадение ID групп: message.group_id=${messageGroupId}, ws.groupId=${this.groupId}`);
+        console.log('🔄 Пропускаем отправку сообщения для неверной группы');
+        return;
+      }
+    }
     
     if (readyState === WebSocket.OPEN) {
       try {
@@ -209,8 +220,14 @@ class WebSocketManager {
         // Пробуем отправить через HTTP при ошибке WebSocket
         this.sendMessageViaHTTP(message);
       }
+    } else if (readyState === WebSocket.CONNECTING) {
+      // Если WebSocket подключается, ждем немного и пробуем снова
+      console.log('⏳ WebSocket подключается, ждем...');
+      setTimeout(() => {
+        this.sendMessage(message);
+      }, 1000);
     } else {
-      // Если WebSocket недоступен, всегда отправляем через HTTP API
+      // Если WebSocket недоступен, отправляем через HTTP API
       console.log('🔄 WebSocket недоступен, используем HTTP API');
       this.sendMessageViaHTTP(message);
     }
@@ -231,13 +248,14 @@ class WebSocketManager {
       if (response.ok) {
         console.log('✅ Сообщение успешно отправлено через HTTP');
       } else {
-        console.error(`❌ HTTP ошибка: ${response.status} ${response.statusText}`);
-        throw new Error(`HTTP ошибка: ${response.status}`);
+        console.warn(`⚠️ HTTP fallback недоступен: ${response.status} ${response.statusText}`);
+        // Не выбрасываем ошибку, чтобы не прерывать UI
+        console.log('🔄 Пробуем WebSocket или ждем соединения...');
       }
     } catch (error) {
-      console.error('❌ Ошибка отправки через HTTP:', error);
+      console.warn('⚠️ HTTP fallback временно недоступен:', error);
       // Не выбрасываем ошибку, чтобы не прерывать UI
-      console.log('⚠️ Сообщение не отправлено, но работа приложения продолжается');
+      console.log('⚠️ Сообщение будет отправлено через WebSocket когда соединение будет установлено');
     }
   }
   

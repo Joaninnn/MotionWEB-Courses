@@ -23,7 +23,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   const user = useSelector((state: RootState) => state.user);
   const [showMembers, setShowMembers] = useState(false);
   const [showDebugger, setShowDebugger] = useState(false);
-  const router = useRouter();
   const [createDialog] = useGetOrCreateDialogMutation();
 
   // Функция для определения никнейма собеседника в личном чате
@@ -129,13 +128,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
 
   // Фиксируем скролл вверху при переключении групп
   useEffect(() => {
-    // НЕ скроллим автоматически при переключении групп
+    // НЕ скроллируем автоматически при переключении групп
     // Пользователь должен сам контролировать скролл
-    if (chatWindowRef.current) {
-      // Сохраняем текущую позицию скролла
-      const currentScrollTop = chatWindowRef.current.scrollTop;
-      // Не меняем позицию скролла
-    }
   }, [groupId]);
 
   const getTypingText = () => {

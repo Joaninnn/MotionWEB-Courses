@@ -33,9 +33,6 @@ export interface ChatState {
   wsConnected: boolean;
   wsConnectionState: 'disconnected' | 'connecting' | 'connected' | 'closing' | 'closed' | 'unknown';
   
-  // Unread counts
-  unreadCounts: Record<number, number>;
-  
   // UI state
   messageInput: string;
   isTyping: boolean;
@@ -54,7 +51,6 @@ const initialState: ChatState = {
   typingUsers: {},
   wsConnected: false,
   wsConnectionState: 'disconnected',
-  unreadCounts: {},
   messageInput: '',
   isTyping: false,
   uploadingFile: false,
@@ -103,11 +99,6 @@ const chatSlice = createSlice({
       const chatIndex = state.chats.findIndex(chat => chat.group_id === groupId);
       if (chatIndex !== -1) {
         state.chats[chatIndex].last_message = message;
-        // Increment unread count if this is not the active chat
-        if (state.activeGroupId !== groupId) {
-          state.chats[chatIndex].unread_count += 1;
-          state.unreadCounts[groupId] = (state.unreadCounts[groupId] || 0) + 1;
-        }
       }
     },
     
@@ -137,26 +128,12 @@ const chatSlice = createSlice({
     setChats: (state, action: PayloadAction<ChatItem[]>) => {
       state.chats = action.payload;
       state.chatsLoading = false;
-      
-      // Update unread counts
-      action.payload.forEach(chat => {
-        state.unreadCounts[chat.group_id] = chat.unread_count;
-      });
     },
     
     setChatsLoading: (state, action: PayloadAction<boolean>) => {
       state.chatsLoading = action.payload;
     },
     
-    updateChatUnreadCount: (state, action: PayloadAction<{ groupId: number; unreadCount: number }>) => {
-      const { groupId, unreadCount } = action.payload;
-      state.unreadCounts[groupId] = unreadCount;
-      
-      const chatIndex = state.chats.findIndex(chat => chat.group_id === groupId);
-      if (chatIndex !== -1) {
-        state.chats[chatIndex].unread_count = unreadCount;
-      }
-    },
     
     // Group members
     setGroupMembers: (state, action: PayloadAction<{ groupId: number; members: GroupMember[] }>) => {
@@ -335,7 +312,6 @@ export const {
   setLoadingMessages,
   setChats,
   setChatsLoading,
-  updateChatUnreadCount,
   setGroupMembers,
   setTypingUser,
   removeTypingUser,
