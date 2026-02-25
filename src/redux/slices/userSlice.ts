@@ -1,6 +1,14 @@
 // src/redux/slices/userSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+// Определяем константы для статусов пользователя
+export const USER_STATUS = {
+    MENTOR: 'mentor',
+    STUDENT: 'student'
+} as const;
+
+type UserStatus = typeof USER_STATUS[keyof typeof USER_STATUS];
+
 export interface UserState {
     username: string | null;
     email: string | null;
@@ -11,8 +19,11 @@ export interface UserState {
     chat_group_id: number | null; // ID группы в FastAPI чате
     role: string | null;
     id: number | null;
-    status: string | null; // Mentor или Student
+    status: UserStatus | null; // Mentor или Student
 }
+
+// Создаем тип для payload действия setUser
+type SetUserPayload = Omit<UserState, 'username'> & { username: string };
 
 const initialState: UserState = {
     username: null,
@@ -33,42 +44,36 @@ const userSlice = createSlice({
     reducers: {
         setUser: (
             state,
-            action: PayloadAction<{
-                username: string; 
-                email: string | null;
-                firstName: string | null;
-                lastName: string | null;
-                phoneNumber: string | null;
-                course: number | null;
-                chat_group_id: number | null;
-                role: string | null;
-                id: number | null;
-                status: string | null;
-            }>
+            action: PayloadAction<SetUserPayload>
         ) => {
-            console.log("✅ [USER_SLICE] setUser called with:", action.payload);
-            state.username = action.payload.username;
-            state.email = action.payload.email;
-            state.firstName = action.payload.firstName;
-            state.lastName = action.payload.lastName;
-            state.phoneNumber = action.payload.phoneNumber;
-            state.course = action.payload.course;
-            state.chat_group_id = action.payload.chat_group_id;
-            state.role = action.payload.role;
-            state.id = action.payload.id;
-            state.status = action.payload.status;
+            // Убираем console.log в production для SEO и производительности
+            if (process.env.NODE_ENV === 'development') {
+                console.log("✅ [USER_SLICE] setUser called with:", action.payload);
+            }
+            
+            // Деструктуризация для лучшей читаемости
+            const { username, email, firstName, lastName, phoneNumber, course, chat_group_id, role, id, status } = action.payload;
+            
+            // Присваиваем значения
+            state.username = username;
+            state.email = email;
+            state.firstName = firstName;
+            state.lastName = lastName;
+            state.phoneNumber = phoneNumber;
+            state.course = course;
+            state.chat_group_id = chat_group_id;
+            state.role = role;
+            state.id = id;
+            state.status = status;
         },
         clearUser: (state) => {
-            console.log("🧹 [USER_SLICE] clearUser called");
-            state.username = null;
-            state.email = null;
-            state.firstName = null;
-            state.lastName = null;
-            state.phoneNumber = null;
-            state.course = null;
-            state.role = null;
-            state.id = null;
-            state.status = null;
+            // Убираем console.log в production для SEO и производительности
+            if (process.env.NODE_ENV === 'development') {
+                console.log("🧹 [USER_SLICE] clearUser called");
+            }
+            
+            // Эффективный сброс всех полей используя Object.assign
+            Object.assign(state, initialState);
         },
     },
 });

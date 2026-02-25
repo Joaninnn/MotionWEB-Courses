@@ -209,9 +209,12 @@
     .LessonsTable {
         .content {
             .title {
+                gap: 15px;
+
                 .titleContent {
                     align-items: flex-start;
                     flex-direction: column;
+                    gap: 10px; // Уменьшаем отступ между заголовками
                     .cardsTitle {
                         font-size: 36px;
                     }
@@ -263,10 +266,13 @@
 
         .content {
             .title {
-                gap: 15px;
+                gap: 10px; // Уменьшаем общий отступ
 
-                .cardsTitle {
-                    font-size: 28px;
+                .titleContent {
+                    gap: 5px; // Еще меньше отступ между заголовками
+                    .cardsTitle {
+                        font-size: 28px;
+                    }
                 }
             }
 

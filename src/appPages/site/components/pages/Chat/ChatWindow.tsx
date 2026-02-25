@@ -9,7 +9,6 @@ import WebSocketDebugger from '../../../../../components/WebSocketDebugger'; // 
 import { useGetGroupDetailFullQuery, useGetOrCreateDialogMutation } from '../../../../../redux/api/chat';
 import { GroupMember } from '../../../../../redux/api/chat/types';
 import { getUserNameById, getUserRoleById, getDisplayRole } from '../../../../../constants/userNames';
-import { useRouter } from 'next/navigation';
 import styles from './ChatWindow.module.scss';
 
 interface ChatWindowProps {

@@ -2,6 +2,29 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ChatItem, Message, GroupMember, WebSocketMessage } from '../api/chat/types';
 
+// Определяем константы для типов соединения
+export const CONNECTION_STATES = {
+  DISCONNECTED: 'disconnected',
+  CONNECTING: 'connecting',
+  CONNECTED: 'connected',
+  CLOSING: 'closing',
+  CLOSED: 'closed',
+  UNKNOWN: 'unknown'
+} as const;
+
+type ConnectionState = typeof CONNECTION_STATES[keyof typeof CONNECTION_STATES];
+
+// Определяем константы для событий WebSocket
+export const WS_EVENTS = {
+  CONNECTED: 'connected',
+  MESSAGE: 'message',
+  READ_RECEIPT: 'read_receipt',
+  ERROR: 'error',
+  MESSAGE_EDITED: 'message_edited',
+  MESSAGE_DELETED: 'message_deleted',
+  TYPING: 'typing'
+} as const;
+
 export interface TypingUser {
   user_id: number;
   username: string;
@@ -9,6 +32,7 @@ export interface TypingUser {
   timeout?: NodeJS.Timeout;
 }
 
+// Создаем более строгие типы для интерфейсов
 export interface ChatState {
   // Current active chat
   activeGroupId: number | null;
@@ -31,13 +55,25 @@ export interface ChatState {
   
   // Connection status
   wsConnected: boolean;
-  wsConnectionState: 'disconnected' | 'connecting' | 'connected' | 'closing' | 'closed' | 'unknown';
+  wsConnectionState: ConnectionState;
   
   // UI state
   messageInput: string;
   isTyping: boolean;
   uploadingFile: boolean;
 }
+
+// Типы для payload действий
+type SetActiveGroupPayload = { groupId: number; title: string };
+type SetMessagesPayload = { groupId: number; messages: Message[]; hasMore: boolean };
+type AddMessagesPayload = { groupId: number; messages: Message[] };
+type AddMessagePayload = { groupId: number; message: Message };
+type UpdateMessagePayload = { groupId: number; messageId: number; text: string; editedAt: string };
+type DeleteMessagePayload = { groupId: number; messageId: number };
+type SetLoadingMessagesPayload = { groupId: number; loading: boolean };
+type SetGroupMembersPayload = { groupId: number; members: GroupMember[] };
+type SetTypingUserPayload = { groupId: number; user: TypingUser };
+type RemoveTypingUserPayload = { groupId: number; userId: number };
 
 const initialState: ChatState = {
   activeGroupId: null,
@@ -50,7 +86,7 @@ const initialState: ChatState = {
   groupMembers: {},
   typingUsers: {},
   wsConnected: false,
-  wsConnectionState: 'disconnected',
+  wsConnectionState: CONNECTION_STATES.DISCONNECTED,
   messageInput: '',
   isTyping: false,
   uploadingFile: false,
@@ -61,7 +97,7 @@ const chatSlice = createSlice({
   initialState,
   reducers: {
     // Active chat management
-    setActiveGroup: (state, action: PayloadAction<{ groupId: number; title: string }>) => {
+    setActiveGroup: (state, action: PayloadAction<SetActiveGroupPayload>) => {
       const { groupId, title } = action.payload;
       state.activeGroupId = groupId;
       state.activeGroupTitle = title;
@@ -73,14 +109,14 @@ const chatSlice = createSlice({
     },
     
     // Messages
-    setMessages: (state, action: PayloadAction<{ groupId: number; messages: Message[]; hasMore: boolean }>) => {
+    setMessages: (state, action: PayloadAction<SetMessagesPayload>) => {
       const { groupId, messages, hasMore } = action.payload;
       state.messages[groupId] = messages;
       state.hasMoreMessages[groupId] = hasMore;
       state.loadingMessages[groupId] = false;
     },
     
-    addMessages: (state, action: PayloadAction<{ groupId: number; messages: Message[] }>) => {
+    addMessages: (state, action: PayloadAction<AddMessagesPayload>) => {
       const { groupId, messages } = action.payload;
       if (!state.messages[groupId]) {
         state.messages[groupId] = [];
@@ -88,7 +124,7 @@ const chatSlice = createSlice({
       state.messages[groupId].unshift(...messages);
     },
     
-    addMessage: (state, action: PayloadAction<{ groupId: number; message: Message }>) => {
+    addMessage: (state, action: PayloadAction<AddMessagePayload>) => {
       const { groupId, message } = action.payload;
       if (!state.messages[groupId]) {
         state.messages[groupId] = [];
@@ -102,7 +138,7 @@ const chatSlice = createSlice({
       }
     },
     
-    updateMessage: (state, action: PayloadAction<{ groupId: number; messageId: number; text: string; editedAt: string }>) => {
+    updateMessage: (state, action: PayloadAction<UpdateMessagePayload>) => {
       const { groupId, messageId, text, editedAt } = action.payload;
       const message = state.messages[groupId]?.find(m => m.id === messageId);
       if (message) {
@@ -111,7 +147,7 @@ const chatSlice = createSlice({
       }
     },
     
-    deleteMessage: (state, action: PayloadAction<{ groupId: number; messageId: number }>) => {
+    deleteMessage: (state, action: PayloadAction<DeleteMessagePayload>) => {
       const { groupId, messageId } = action.payload;
       const message = state.messages[groupId]?.find(m => m.id === messageId);
       if (message) {
@@ -120,7 +156,7 @@ const chatSlice = createSlice({
       }
     },
     
-    setLoadingMessages: (state, action: PayloadAction<{ groupId: number; loading: boolean }>) => {
+    setLoadingMessages: (state, action: PayloadAction<SetLoadingMessagesPayload>) => {
       state.loadingMessages[action.payload.groupId] = action.payload.loading;
     },
     
@@ -136,12 +172,12 @@ const chatSlice = createSlice({
     
     
     // Group members
-    setGroupMembers: (state, action: PayloadAction<{ groupId: number; members: GroupMember[] }>) => {
+    setGroupMembers: (state, action: PayloadAction<SetGroupMembersPayload>) => {
       state.groupMembers[action.payload.groupId] = action.payload.members;
     },
     
     // Typing indicators
-    setTypingUser: (state, action: PayloadAction<{ groupId: number; user: TypingUser }>) => {
+    setTypingUser: (state, action: PayloadAction<SetTypingUserPayload>) => {
       const { groupId, user } = action.payload;
       if (!state.typingUsers[groupId]) {
         state.typingUsers[groupId] = [];
@@ -166,7 +202,7 @@ const chatSlice = createSlice({
       }
     },
     
-    removeTypingUser: (state, action: PayloadAction<{ groupId: number; userId: number }>) => {
+    removeTypingUser: (state, action: PayloadAction<RemoveTypingUserPayload>) => {
       const { groupId, userId } = action.payload;
       if (state.typingUsers[groupId]) {
         state.typingUsers[groupId] = state.typingUsers[groupId].filter(
@@ -180,7 +216,7 @@ const chatSlice = createSlice({
       state.wsConnected = action.payload;
     },
     
-    setWsConnectionState: (state, action: PayloadAction<ChatState['wsConnectionState']>) => {
+    setWsConnectionState: (state, action: PayloadAction<ConnectionState>) => {
       state.wsConnectionState = action.payload;
     },
     
@@ -206,12 +242,12 @@ const chatSlice = createSlice({
         const backendPayload = payload as { event: string; [key: string]: unknown };
 
         switch (backendPayload.event) {
-          case 'connected':
+          case WS_EVENTS.CONNECTED:
             state.wsConnected = true;
-            state.wsConnectionState = 'connected';
+            state.wsConnectionState = CONNECTION_STATES.CONNECTED;
             break;
 
-          case 'message': {
+          case WS_EVENTS.MESSAGE: {
             const msg = (backendPayload as { message?: Message }).message;
             if (!msg || typeof msg.group_id !== 'number') break;
 
@@ -228,13 +264,13 @@ const chatSlice = createSlice({
             break;
           }
 
-          case 'read_receipt':
+          case WS_EVENTS.READ_RECEIPT:
             // Optional: update unread counts/read state if needed
             break;
 
-          case 'error':
+          case WS_EVENTS.ERROR:
             state.wsConnected = false;
-            state.wsConnectionState = 'disconnected';
+            state.wsConnectionState = CONNECTION_STATES.DISCONNECTED;
             break;
         }
 
@@ -244,7 +280,7 @@ const chatSlice = createSlice({
       // Legacy format (kept for compatibility): { type: 'message', group_id, data }
       const message = payload as WebSocketMessage;
       switch (message.type) {
-        case 'message':
+        case WS_EVENTS.MESSAGE:
           if (message.data && message.group_id) {
             if (!state.messages[message.group_id]) {
               state.messages[message.group_id] = [];
@@ -258,7 +294,7 @@ const chatSlice = createSlice({
           }
           break;
 
-        case 'message_edited':
+        case WS_EVENTS.MESSAGE_EDITED:
           if (message.data && message.group_id) {
             const editedMessage = message.data as Message;
             const msg = state.messages[message.group_id]?.find(m => m.id === editedMessage.id);
@@ -269,7 +305,7 @@ const chatSlice = createSlice({
           }
           break;
 
-        case 'message_deleted':
+        case WS_EVENTS.MESSAGE_DELETED:
           if (message.data && message.group_id) {
             const deletedMessage = message.data as Message;
             const msg = state.messages[message.group_id]?.find(m => m.id === deletedMessage.id);
@@ -280,7 +316,7 @@ const chatSlice = createSlice({
           }
           break;
 
-        case 'typing':
+        case WS_EVENTS.TYPING:
           if (message.data && message.group_id) {
             const typingData = message.data as TypingUser;
             if (!state.typingUsers[message.group_id]) {

@@ -90,6 +90,24 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            transition: all 0.3s ease-in-out;
+
+            &.disabled {
+                cursor: not-allowed;
+                opacity: 0.5;
+                
+                .profile {
+                    opacity: 0.5;
+                }
+                
+                .username {
+                    opacity: 0.5;
+                }
+            }
+
+            &:hover:not(.disabled) {
+                transform: translateY(-2px);
+            }
 
             .profile {
                 width: 40px;
@@ -200,24 +218,24 @@
 
         .mobileMenu {
             display: none;
-            position: absolute;
-            top: 100%;
+            position: fixed; // Оставляем fixed для правильного позиционирования
+            top: 80px; // Отступ сверху равный высоте хедера
             left: 0;
             right: 0;
-            background-color: #000000;
+            bottom: 0; // Растягиваем до низа экрана
+            background-color: rgba(0, 0, 0, 0.98); // Полупрозрачный черный фон
             flex-direction: column;
-            padding: 20px;
+            padding: 20px; // Убираем отступ сверху, так как уже есть отступ от top
             gap: 15px;
-            border-bottom: white solid 2px;
-            max-height: 0;
-            overflow: hidden;
+            overflow-y: auto; // Добавляем скролл если контент не помещается
             opacity: 0;
+            visibility: hidden; // Добавляем visibility для лучшей анимации
             transition: all 0.3s ease-in-out;
-            z-index: 1000; // Добавляем z-index чтобы меню было поверх других элементов
+            z-index: 9999; // Очень высокий z-index для перекрытия контента
 
             &.active {
-                max-height: 500px;
                 opacity: 1;
+                visibility: visible;
             }
 
             .mobileNav {
@@ -329,6 +347,18 @@
 
             .mobileMenu {
                 display: flex;
+            }
+
+            // Оверлей для мобильного меню
+            .menuOverlay {
+                position: fixed;
+                top: 80px; // Тоже начинаем под хедером
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 9998;
+                cursor: pointer;
             }
         }
     }

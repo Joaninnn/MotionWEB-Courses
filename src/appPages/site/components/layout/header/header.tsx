@@ -2,7 +2,7 @@
 "use client";
 
 import style from "./Header.module.scss";
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import ProfileIcon from "@/assets/Icons/profile.jpg";
@@ -39,6 +39,42 @@ const Header: React.FC = () => {
     const [logout] = useLogoutMutation();
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
     const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false);
+
+    // Блокировка скролла при открытом меню
+    useEffect(() => {
+        if (typeof window === 'undefined') return; // Проверка на серверный рендеринг
+        
+        if (isMenuOpen) {
+            // Закрываем профильное меню при открытии бургер-меню
+            setShowProfileMenu(false);
+            
+            // Блокируем скролл
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+            document.body.style.top = `-${window.scrollY}px`;
+        } else {
+            // Восстанавливаем скролл
+            const scrollY = document.body.style.top;
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+            document.body.style.top = '';
+            
+            if (scrollY) {
+                window.scrollTo(0, parseInt(scrollY || '0', 10) * -1);
+            }
+        }
+
+        // Cleanup при размонтировании
+        return () => {
+            if (typeof window === 'undefined') return;
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+            document.body.style.top = '';
+        };
+    }, [isMenuOpen]);
 
     // Получаем пользователя из Redux (данные уже загружены через AuthInitializer)
     const currentUser = useAppSelector((state) => state.user);
@@ -79,6 +115,11 @@ const Header: React.FC = () => {
     }
 
     const handleProfileClick = (): void => {
+        // Если бургер-меню открыто, не открываем профиль
+        if (isMenuOpen) {
+            return;
+        }
+        
         if (isAuthenticated) {
             setShowProfileMenu(!showProfileMenu);
         } else {
@@ -142,7 +183,8 @@ const Header: React.FC = () => {
                         <div className={style.profileWrapper}>
                             <button
                                 onClick={handleProfileClick}
-                                className={style.buttonBlock}
+                                className={`${style.buttonBlock} ${isMenuOpen ? style.disabled : ''}`}
+                                disabled={isMenuOpen}
                             >
                                 <Image
                                     className={style.profile}
@@ -209,6 +251,14 @@ const Header: React.FC = () => {
                             ></span>
                         </button>
                     </div>
+
+                    {/* Оверлей для закрытия меню по клику на фон */}
+                    {isMenuOpen && (
+                        <div 
+                            className={style.menuOverlay}
+                            onClick={() => setIsMenuOpen(false)}
+                        />
+                    )}
 
                     <nav
                         className={`${style.mobileMenu} ${
