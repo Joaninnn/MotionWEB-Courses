@@ -35,10 +35,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
         const partnerId = userId1 === currentUserId ? userId2 : userId1;
         
         // Ищем имя собеседника в других чатах, где он может быть участником
-        const partnerName = findPartnerNameInChats(partnerId);
-        if (partnerName) {
-          return partnerName;
-        }
+        // const partnerName = findPartnerNameInChats();
+        // if (partnerName) {
+        //   return partnerName;
+        // }
         
         // Используем общий кэш имен
         return getUserNameById(partnerId);
@@ -49,21 +49,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
     return formatChatTitle(chat.title);
   };
 
-  // Функция для поиска имени собеседника в групповых чатах
-  const findPartnerNameInChats = (partnerId: number): string | null => {
-    // Ищем в групповых чатах, где может быть информация о пользователях
-    // Это упрощенная версия - в реальности нужно получать данные о участниках
-    for (const chat of chats) {
-      if (!chat.is_private) {
-        // Можно добавить логику для получения имен из групповых чатов
-        // Но пока используем простую логику
-        continue;
-      }
-    }
-    
-    return null;
-  };
-  const formatChatTitle = (title: string) => {
+    const formatChatTitle = (title: string) => {
     // Если название начинается с 'course:', заменяем на 'группа:'
     if (title.startsWith('course:')) {
       return title.replace('course:', 'группа:');

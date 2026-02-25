@@ -7,8 +7,6 @@ import {
   MessagesResponse,
   ChatItem,
   CreateGroupRequest,
-  AddMembersRequest,
-  EditMessageRequest,
 } from './types';
 
 const chatBaseQuery = fetchBaseQuery({

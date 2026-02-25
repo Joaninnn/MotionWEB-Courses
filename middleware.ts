@@ -1,8 +1,7 @@
 // middleware.ts
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-export function middleware(_req: NextRequest) {
+export function middleware() {
     // Теперь просто пропускаем все запросы
     // Защита происходит на уровне ProtectedRoute компонента
     // который проверяет авторизацию через API запрос

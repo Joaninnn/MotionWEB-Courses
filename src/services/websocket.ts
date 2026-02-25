@@ -1,5 +1,4 @@
 // src/services/websocket.ts
-import { useNotifications } from '@/hooks/useNotifications';
 class WebSocketManager {
   private ws: WebSocket | null = null;
   private reconnectAttempts = 0;

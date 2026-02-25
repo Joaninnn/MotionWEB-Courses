@@ -1,6 +1,7 @@
 // src/components/Chat/MessageList.tsx
 'use client';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import Image from 'next/image';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../../../redux/store';
 import { useGetMessagesQuery, useGetGroupDetailFullQuery, useEditMessageMutation, useDeleteMessageMutation } from '../../../../../redux/api/chat';
@@ -294,16 +295,17 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
                 {message.file_url && (
                   <div className={styles.messageFile}>
                     {message.file_type?.startsWith('image/') ? (
-                      <img 
+                      <Image 
                         src={message.file_url} 
                         alt="Shared image"
-                        className={styles.sharedImage}
-                        onClick={() => window.open(message.file_url, '_blank')}
+                        width={200}
+                        height={200}
+                        style={{ objectFit: 'cover' }}
                       />
                     ) : (
                       <a 
                         href={message.file_url} 
-                        target="_blank" 
+                        target="_blank"
                         rel="noopener noreferrer"
                         className={styles.fileLink}
                       >
