@@ -69,6 +69,26 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
     return chat.group_id === user.chat_group_id;
   });
 
+  // Сортируем чаты по времени последнего сообщения (самые свежие наверху)
+  const sortedChats = [...filteredChats].sort((a, b) => {
+    // Если у обоих чатов есть последние сообщения, сортируем по времени
+    if (a.last_message && b.last_message) {
+      return new Date(b.last_message.created_date).getTime() - new Date(a.last_message.created_date).getTime();
+    }
+    
+    // Если только у одного чата есть последнее сообщение, он идет наверх
+    if (a.last_message && !b.last_message) {
+      return -1;
+    }
+    
+    if (!a.last_message && b.last_message) {
+      return 1;
+    }
+    
+    // Если у обоих нет последних сообщений, сортируем по group_id (для стабильности)
+    return b.group_id - a.group_id;
+  });
+
   // Сохраняем позицию скролла при переключении чатов
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
@@ -76,24 +96,25 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
       // НЕ восстанавливаем позицию скролла при загрузке чатов
       // Пользователь должен сам контролировать скролл
     }
-  }, [filteredChats]);
+  }, [sortedChats]);
 
   // Логирование для проверки автоматического создания групп
   useEffect(() => {
     console.log(' Все чаты с эндпоинта /chats/my:', chats);
     console.log(' Отфильтрованные чаты:', filteredChats);
+    console.log(' Отсортированные чаты:', sortedChats);
     console.log(' Chat group ID пользователя:', user.chat_group_id);
     console.log(' Курс пользователя:', user.course);
-    console.log(' Количество чатов:', filteredChats.length);
+    console.log(' Количество чатов:', sortedChats.length);
     console.log(' Загрузка:', isLoading);
     console.log(' Ошибка:', error);
     
-    if (filteredChats.length > 0) {
-      console.log(' Группы автоматически созданы! Пример чата:', filteredChats[0]);
+    if (sortedChats.length > 0) {
+      console.log(' Группы автоматически созданы! Пример чата:', sortedChats[0]);
     } else if (!isLoading && !error) {
       console.log(' Группы не найдены. Возможно, они не создаются автоматически.');
     }
-  }, [filteredChats, chats, isLoading, error, user.chat_group_id, user.course]);
+  }, [sortedChats, filteredChats, chats, isLoading, error, user.chat_group_id, user.course]);
 
   const handleSelectChat = (groupId: number, title: string) => {
     // Сохраняем текущую позицию скролла
@@ -109,20 +130,47 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
   const formatTime = (dateString: string) => {
     const date = new Date(dateString + 'Z');
     const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
     
-    if (diffInHours < 24) {
-      return date.toLocaleTimeString('ru-RU', { 
-        timeZone: 'Asia/Bishkek',
-        hour: '2-digit', 
-        minute: '2-digit' 
-      });
-    } else {
+    // Если сообщение отправлено сегодня
+    if (diffInDays === 0) {
+      if (diffInMinutes < 1) {
+        return 'только что';
+      } else if (diffInMinutes < 60) {
+        return `${diffInMinutes} мин назад`;
+      } else if (diffInHours < 12) {
+        return `${diffInHours} ч назад`;
+      } else {
+        return date.toLocaleTimeString('ru-RU', { 
+          timeZone: 'Asia/Bishkek',
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+      }
+    }
+    
+    // Если сообщение отправлено вчера
+    if (diffInDays === 1) {
+      return 'вчера';
+    }
+    
+    // Если сообщение отправлено в течение недели
+    if (diffInDays < 7) {
       return date.toLocaleDateString('ru-RU', { 
-        month: 'short', 
-        day: 'numeric' 
+        timeZone: 'Asia/Bishkek',
+        weekday: 'short' 
       });
     }
+    
+    // Для более старых сообщений
+    return date.toLocaleDateString('ru-RU', { 
+      timeZone: 'Asia/Bishkek',
+      month: 'short', 
+      day: 'numeric' 
+    });
   };
 
   if (isLoading) {
@@ -165,7 +213,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
       <div className={styles.chatListContent} ref={scrollContainerRef}>
         {isLoading ? (
           <div className={styles.loading}>Загрузка чатов...</div>
-        ) : filteredChats.length === 0 ? (
+        ) : sortedChats.length === 0 ? (
           <div className={styles.emptyState}>
             <div className={styles.emptyIcon}>💬</div>
             <p>Чатов еще нет</p>
@@ -173,7 +221,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
           </div>
         ) : (
           <div className={styles.chatItems}>
-            {filteredChats.map((chat) => (
+            {sortedChats.map((chat) => (
               <div
                 key={chat.group_id}
                 className={`${styles.chatItem} ${activeGroupId === chat.group_id ? styles.active : ''}`}
@@ -198,12 +246,21 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
                   
                   <div className={styles.chatPreview}>
                     <p className={styles.lastMessage}>
-                      {chat.last_message && !chat.last_message.is_deleted
-                        ? chat.last_message.text
-                        : chat.last_message?.is_deleted
-                        ? 'Сообщение удалено'
-                        : 'Сообщений еще нет'
-                      }
+                      {chat.last_message && !chat.last_message.is_deleted ? (
+                        <>
+                          {chat.last_message.file_url || chat.last_message.attachments?.length ? (
+                            <>
+                              📷 {chat.last_message.text ? chat.last_message.text : 'Фото'}
+                            </>
+                          ) : (
+                            chat.last_message.text || 'Сообщений еще нет'
+                          )}
+                        </>
+                      ) : chat.last_message?.is_deleted ? (
+                        'Сообщение удалено'
+                      ) : (
+                        'Сообщений еще нет'
+                      )}
                     </p>
                   </div>
                 </div>
