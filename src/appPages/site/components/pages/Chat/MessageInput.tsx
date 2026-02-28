@@ -215,7 +215,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ groupId }) => {
             onClick={() => fileInputRef.current?.click()}
             title="Прикрепить изображение"
           >
-            📷
+          🧷
           </button>
           
           <VoiceRecorder 
