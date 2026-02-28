@@ -5,9 +5,6 @@ import Image from 'next/image';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useGetMessagesQuery, useGetGroupDetailFullQuery, useEditMessageMutation, useDeleteMessageMutation } from '@/redux/api/chat';
-import { formatTime } from '@/utils/formatTime';
-import { useEditMessage } from '@/hooks/useEditMessage';
-import { useDeleteMessage } from '@/hooks/useDeleteMessage';
 import ImageModal from '@/components/ImageModal/ImageModal';
 import styles from './MessageList.module.scss';
 import { Message } from '../../../../../redux/api/chat/types';
@@ -316,9 +313,9 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
                         height={200}
                         style={{ objectFit: 'cover' }}
                         onClick={() => setModalImage({ 
-                          url: message.file_url.startsWith('http') 
+                          url: message.file_url && message.file_url.startsWith('http') 
                             ? message.file_url 
-                            : `${process.env.NEXT_PUBLIC_CHAT_API || 'https://chat.apibackendokukg.space'}${message.file_url}`, 
+                            : `${process.env.NEXT_PUBLIC_CHAT_API || 'https://chat.apibackendokukg.space'}${message.file_url || ''}`, 
                           alt: 'Shared image' 
                         })}
                         className={styles.clickableImage}

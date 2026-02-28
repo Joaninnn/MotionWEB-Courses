@@ -34,6 +34,10 @@ export interface Attachment {
   file_type: string;
   file_name?: string;
   file_size?: number;
+  url?: string;
+  type?: string;
+  mime?: string;
+  name?: string;
 }
 
 export interface GroupDetail {

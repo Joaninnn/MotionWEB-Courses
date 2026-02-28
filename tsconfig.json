@@ -36,7 +36,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "middleware.ts"
+    "middleware.ts",
+    "src/assets/.d.ts"
   ],
   "exclude": [
     "node_modules"
