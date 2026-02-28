@@ -1,0 +1,77 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 32px;
+  cursor: pointer;
+  padding: 8px;
+  transition: transform 0.2s;
+  z-index: 1001;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.modalImage {
+  object-fit: contain !important;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .modalOverlay {
+    padding: 10px;
+  }
+
+  .modalContent {
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+
+  .closeButton {
+    top: -35px;
+    font-size: 28px;
+  }
+}

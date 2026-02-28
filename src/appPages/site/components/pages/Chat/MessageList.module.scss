@@ -60,6 +60,38 @@
     }
   }
 
+  .emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: white;
+    text-align: center;
+
+    .emptyIcon {
+      margin-bottom: 16px;
+      opacity: 0.5;
+
+      svg {
+        width: 64px;
+        height: 64px;
+      }
+    }
+
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+  }
+
   .error {
     display: flex;
     flex-direction: column;
@@ -284,6 +316,56 @@
 
           &:hover {
             transform: scale(1.05);
+          }
+        }
+      }
+
+      .messageFile {
+        margin-top: 8px;
+        
+        .clickableImage {
+          max-width: 200px;
+          max-height: 150px;
+          border: 2px solid white;
+          box-shadow: 2px 2px 0 red;
+          cursor: pointer;
+          transition: transform 0.2s;
+          border-radius: 4px;
+
+          &:hover {
+            transform: scale(1.05);
+          }
+        }
+        
+        img {
+          max-width: 200px;
+          max-height: 150px;
+          border: 2px solid white;
+          box-shadow: 2px 2px 0 red;
+          cursor: pointer;
+          transition: transform 0.2s;
+          border-radius: 4px;
+
+          &:hover {
+            transform: scale(1.05);
+          }
+        }
+
+        .fileLink {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
+          background: #222;
+          border: 1px solid #444;
+          border-radius: 4px;
+          color: white;
+          text-decoration: none;
+          transition: all 0.2s;
+
+          &:hover {
+            background: #333;
+            border-color: white;
           }
         }
       }

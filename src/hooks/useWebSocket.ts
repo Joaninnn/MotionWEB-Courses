@@ -15,8 +15,14 @@ export const useWebSocket = (groupId: number) => {
   const isConnecting = useRef(false);
   const connectedOnce = useRef(false);
   
+  console.log('🔌 useWebSocket called with groupId:', groupId);
+  
   useEffect(() => {
-    if (isConnecting.current) return;
+    console.log('🔌 useWebSocket useEffect triggered for groupId:', groupId);
+    if (isConnecting.current) {
+      console.log('🔌 Already connecting, skipping...');
+      return;
+    }
 
     let cancelled = false;
     
@@ -25,6 +31,11 @@ export const useWebSocket = (groupId: number) => {
         .split('; ')
         .find(row => row.startsWith('access_token='))
         ?.split('=')[1];
+      
+      console.log('🔍 Поиск токена в cookies:');
+      console.log('  Все cookies:', document.cookie);
+      console.log('  Найденный токен:', token ? `${token.substring(0, 20)}...` : 'не найден');
+      
       return token;
     };
     
@@ -75,6 +86,17 @@ export const useWebSocket = (groupId: number) => {
     wsManager.setMessageHandler((data) => {
       console.log('📨 Обработка сообщения в useWebSocket:', data);
 
+      // Обрабатываем статус подключения
+      if (data && typeof data === 'object' && 'type' in data) {
+        const messageData = data as { type: string; status?: string };
+        if (messageData.type === 'connection_status' && messageData.status === 'connected_via_http') {
+          console.log('✅ Подключено через HTTP fallback');
+          dispatch(setWsConnected(true));
+          dispatch(setWsConnectionState('connected'));
+          return;
+        }
+      }
+
       dispatch(handleWebSocketMessage(data));
     });
     
@@ -119,6 +141,11 @@ export const useWebSocket = (groupId: number) => {
   }, []);
   
   const getConnectionStatus = useCallback(() => {
+    // Если используется HTTP fallback, показываем "Подключено"
+    if (!wsManager.isWebSocketEnabled()) {
+      return 'Подключено';
+    }
+    
     const readyState = wsManager.getReadyState();
     switch (readyState) {
       case WebSocket.CONNECTING:
@@ -130,7 +157,7 @@ export const useWebSocket = (groupId: number) => {
       case WebSocket.CLOSED:
         return 'Отключено';
       default:
-        return 'Неизвестно';
+        return 'Подключено'; // По умолчанию считаем подключенным через HTTP
     }
   }, []);
   

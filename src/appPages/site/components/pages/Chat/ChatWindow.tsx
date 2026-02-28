@@ -9,6 +9,7 @@ import WebSocketDebugger from '../../../../../components/WebSocketDebugger'; // 
 import { useGetGroupDetailFullQuery, useGetOrCreateDialogMutation } from '../../../../../redux/api/chat';
 import { GroupMember } from '../../../../../redux/api/chat/types';
 import { getUserNameById, getUserRoleById, getDisplayRole } from '../../../../../constants/userNames';
+import { useWebSocket } from '../../../../../hooks/useWebSocket';
 import styles from './ChatWindow.module.scss';
 
 interface ChatWindowProps {
@@ -23,6 +24,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   const [showMembers, setShowMembers] = useState(false);
   const [showDebugger, setShowDebugger] = useState(false);
   const [createDialog] = useGetOrCreateDialogMutation();
+
+  // Инициализируем WebSocket подключение
+  const { sendMessage, getConnectionStatus } = useWebSocket(groupId);
+  
+  console.log('🔗 ChatWindow render:', { groupId, title, wsConnected });
 
   // Функция для определения никнейма собеседника в личном чате
   const getChatPartnerName = () => {
@@ -193,7 +199,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
                   {wsConnected ? '●' : '●'}
                 </span>
                 <span className={styles.statusText}>
-                  {wsConnected ? 'Подключено' : 'Подключение...'}
+                  {getConnectionStatus()}
                 </span>
               </div>
             </div>

@@ -1,10 +1,8 @@
 // src/components/Chat/MessageInput.tsx
 'use client'
 import React, { useState, useRef, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../../../redux/store';
-import { useWebSocket } from '../../../../../hooks/useWebSocket';
-import { fileUploadService } from '../../../../../services/fileUpload';
+import Image from 'next/image';
+import { useSendMessageMutation } from '../../../../../redux/api/chat';
 import styles from './MessageInput.module.scss';
 
 interface MessageInputProps {
@@ -12,13 +10,12 @@ interface MessageInputProps {
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({ groupId }) => {
-  const { sendMessage } = useWebSocket(groupId);
+  const [sendMessageMutation, { isLoading: isSending }] = useSendMessageMutation();
   const [message, setMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const { uploadingFile } = useSelector((state: RootState) => state.chat);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -31,35 +28,40 @@ const MessageInput: React.FC<MessageInputProps> = ({ groupId }) => {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Временно отключаем загрузку файлов
-      alert('Загрузка файлов временно отключена. Функция будет доступна после исправления на стороне бэкенда.');
-      return;
+      // Проверяем, что это изображение
+      if (!file.type.startsWith('image/')) {
+        alert('Можно загружать только изображения');
+        return;
+      }
       
-      setSelectedFile(file || null);
+      setSelectedFile(file);
+      
+      // Создаем превью изображения
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent | React.KeyboardEvent) => {
     e.preventDefault();
     
-    if ((!message.trim() && !selectedFile) || uploadingFile) {
+    if ((!message.trim() && !selectedFile) || isSending) {
       return;
     }
 
     try {
-      let fileUrl: string | undefined;
-      let fileType: string | undefined;
-
-      if (selectedFile) {
-        const result = await fileUploadService.uploadFile(selectedFile);
-        fileUrl = result.url;
-        fileType = selectedFile.type;
-      }
-
-      await sendMessage(message.trim(), fileUrl, fileType);
+      await sendMessageMutation({
+        groupId,
+        text: message.trim() || undefined,
+        file: selectedFile || undefined,
+      }).unwrap();
       
       setMessage('');
       setSelectedFile(null);
+      setPreviewUrl(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -70,6 +72,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ groupId }) => {
       }
     } catch (error) {
       console.error('Failed to send message:', error);
+      alert('Ошибка при отправке сообщения');
     }
   };
 
@@ -82,12 +85,39 @@ const MessageInput: React.FC<MessageInputProps> = ({ groupId }) => {
 
   return (
     <div className={styles.messageInput}>
+      {previewUrl && (
+        <div className={styles.imagePreview}>
+          <Image 
+            src={previewUrl} 
+            alt="Preview" 
+            width={200}
+            height={150}
+            className={styles.previewImage}
+            style={{ objectFit: 'cover' }}
+          />
+          <button
+            type="button"
+            className={styles.removeImage}
+            onClick={() => {
+              setSelectedFile(null);
+              setPreviewUrl(null);
+              if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+              }
+            }}
+            title="Удалить изображение"
+          >
+            ×
+          </button>
+        </div>
+      )}
+      
       <form onSubmit={handleSubmit} className={styles.inputForm}>
         <div className={styles.inputContainer}>
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx"
+            accept="image/*"
             onChange={handleFileSelect}
             className={styles.fileInput}
           />
@@ -96,9 +126,9 @@ const MessageInput: React.FC<MessageInputProps> = ({ groupId }) => {
             type="button"
             className={styles.attachButton}
             onClick={() => fileInputRef.current?.click()}
-            title="Прикрепить файл"
+            title="Прикрепить изображение"
           >
-            📎
+            �
           </button>
           
           <textarea
@@ -109,16 +139,16 @@ const MessageInput: React.FC<MessageInputProps> = ({ groupId }) => {
             placeholder="Введите сообщение..."
             className={styles.textInput}
             rows={1}
-            disabled={uploadingFile}
+            disabled={isSending}
           />
           
           <button
             type="submit"
-            className={`${styles.sendButton} ${(!message.trim() && !selectedFile) || uploadingFile ? styles.disabled : ''}`}
-            disabled={(!message.trim() && !selectedFile) || uploadingFile}
-            title={uploadingFile ? 'Отправка...' : 'Отправить сообщение'}
+            className={`${styles.sendButton} ${(!message.trim() && !selectedFile) || isSending ? styles.disabled : ''}`}
+            disabled={(!message.trim() && !selectedFile) || isSending}
+            title={isSending ? 'Отправка...' : 'Отправить сообщение'}
           >
-            {uploadingFile ? '⏳' : '➤'}
+            {isSending ? '⏳' : '➤'}
           </button>
         </div>
       </form>

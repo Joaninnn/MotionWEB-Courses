@@ -1,10 +1,14 @@
 // src/components/Chat/MessageList.tsx
-'use client';
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+'use client'
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../../../../redux/store';
-import { useGetMessagesQuery, useGetGroupDetailFullQuery, useEditMessageMutation, useDeleteMessageMutation } from '../../../../../redux/api/chat';
+import { RootState } from '@/redux/store';
+import { useGetMessagesQuery, useGetGroupDetailFullQuery, useEditMessageMutation, useDeleteMessageMutation } from '@/redux/api/chat';
+import { formatTime } from '@/utils/formatTime';
+import { useEditMessage } from '@/hooks/useEditMessage';
+import { useDeleteMessage } from '@/hooks/useDeleteMessage';
+import ImageModal from '@/components/ImageModal/ImageModal';
 import styles from './MessageList.module.scss';
 import { Message } from '../../../../../redux/api/chat/types';
 
@@ -22,6 +26,7 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
   const [editingText, setEditingText] = useState('');
   const [showMenuId, setShowMenuId] = useState<number | null>(null);
+  const [modalImage, setModalImage] = useState<{ url: string; alt: string } | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,6 +53,13 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
 
   // Set messages from API response
   useEffect(() => {
+    console.log('📨 Messages data received:', {
+      messagesData,
+      items: messagesData?.items,
+      itemsLength: messagesData?.items?.length,
+      groupId
+    });
+    
     if (messagesData) {
       dispatch({
         type: 'chat/setMessages',
@@ -292,26 +304,56 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
             ) : (
               <>
                 <p className={styles.messageText}>{message.text}</p>
-                {message.file_url && (
+                {(message.file_url || message.attachments) && (
                   <div className={styles.messageFile}>
-                    {message.file_type?.startsWith('image/') ? (
+                    {message.file_url && message.file_type?.startsWith('image/') && (
                       <Image 
-                        src={message.file_url} 
+                        src={message.file_url.startsWith('http') 
+                          ? message.file_url 
+                          : `${process.env.NEXT_PUBLIC_CHAT_API || 'https://chat.apibackendokukg.space'}${message.file_url}`} 
                         alt="Shared image"
                         width={200}
                         height={200}
                         style={{ objectFit: 'cover' }}
+                        onClick={() => setModalImage({ 
+                          url: message.file_url.startsWith('http') 
+                            ? message.file_url 
+                            : `${process.env.NEXT_PUBLIC_CHAT_API || 'https://chat.apibackendokukg.space'}${message.file_url}`, 
+                          alt: 'Shared image' 
+                        })}
+                        className={styles.clickableImage}
                       />
-                    ) : (
-                      <a 
-                        href={message.file_url} 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.fileLink}
-                      >
-                        📎 Открыть файл
-                      </a>
                     )}
+                    {message.attachments?.map((attachment) => {
+                      const imageUrl = attachment.url || attachment.file_url;
+                      const fullImageUrl = imageUrl?.startsWith('http') 
+                        ? imageUrl 
+                        : `${process.env.NEXT_PUBLIC_CHAT_API || 'https://chat.apibackendokukg.space'}${imageUrl}`;
+                      const isImage = attachment.type?.startsWith('image/') || attachment.file_type?.startsWith('image/') || attachment.mime?.startsWith('image/');
+                      
+                      return isImage ? (
+                        <Image 
+                          key={attachment.id}
+                          src={fullImageUrl} 
+                          alt="Shared image"
+                          width={200}
+                          height={200}
+                          style={{ objectFit: 'cover' }}
+                          onClick={() => setModalImage({ url: fullImageUrl, alt: 'Shared image' })}
+                          className={styles.clickableImage}
+                        />
+                      ) : (
+                        <a 
+                          key={attachment.id}
+                          href={fullImageUrl} 
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.fileLink}
+                        >
+                          📎 {attachment.file_name || attachment.name || 'Открыть файл'}
+                        </a>
+                      );
+                    })}
                   </div>
                 )}
                 {isEdited && (
@@ -358,8 +400,34 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
   const groupMessages = messages[groupId] || [];
   const groupedMessages = groupMessagesByDate(groupMessages);
 
+  console.log('📨 MessageList debug:', {
+    groupId,
+    allMessages: messages,
+    groupMessages,
+    groupedMessages,
+    messagesData
+  });
+
   return (
     <div className={styles.messageList} ref={containerRef}>
+      {isLoading && (
+        <div className={styles.loading}>
+          Загрузка сообщений...
+        </div>
+      )}
+      
+      {!isLoading && (!groupMessages || groupMessages.length === 0) && (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+          <h3>Нет сообщений</h3>
+          <p>Начните диалог первым!</p>
+        </div>
+      )}
+      
       {Object.entries(groupedMessages).map(([date, dateMessages]) => (
         <React.Fragment key={date}>
           {renderDateSeparator(date)}
@@ -368,6 +436,14 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
       ))}
       
       <div ref={messagesEndRef} />
+      
+      {modalImage && (
+        <ImageModal
+          imageUrl={modalImage.url}
+          alt={modalImage.alt}
+          onClose={() => setModalImage(null)}
+        />
+      )}
     </div>
   );
 };

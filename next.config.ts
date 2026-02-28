@@ -14,6 +14,12 @@ const nextConfig = {
                 port: "",
                 pathname: "/media/**",
             } as const,
+            {
+                protocol: "https",
+                hostname: "chat.apibackendokukg.space",
+                port: "",
+                pathname: "/media/**",
+            } as const,
         ],
         minimumCacheTTL: 60 * 60 * 24 * 30, // 30 дней
         deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],

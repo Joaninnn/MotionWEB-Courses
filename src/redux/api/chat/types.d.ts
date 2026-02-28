@@ -25,6 +25,15 @@ export interface Message {
   edited_at: string | null;
   file_url?: string;
   file_type?: string;
+  attachments?: Attachment[];
+}
+
+export interface Attachment {
+  id: number;
+  file_url: string;
+  file_type: string;
+  file_name?: string;
+  file_size?: number;
 }
 
 export interface GroupDetail {

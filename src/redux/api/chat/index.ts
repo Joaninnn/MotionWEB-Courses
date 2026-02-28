@@ -82,6 +82,27 @@ export const chatApi = createApi({
       providesTags: ['Message'],
     }),
     
+    sendMessage: builder.mutation<string, { groupId: number; text?: string; file?: File }>({
+      query: ({ groupId, text, file }) => {
+        const formData = new FormData();
+        
+        if (text) {
+          formData.append('text', text);
+        }
+        
+        if (file) {
+          formData.append('file', file);
+        }
+        
+        return {
+          url: `/groups/${groupId}/messages`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      invalidatesTags: ['Message'],
+    }),
+    
     editMessage: builder.mutation<string, { messageId: number; text: string }>({
       query: ({ messageId, text }) => ({
         url: `/messages/${messageId}`,
@@ -138,6 +159,7 @@ export const {
   useAddGroupMembersMutation,
   useRemoveGroupMemberMutation,
   useGetMessagesQuery,
+  useSendMessageMutation,
   useEditMessageMutation,
   useDeleteMessageMutation,
   useGetMyChatsQuery,

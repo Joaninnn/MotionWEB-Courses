@@ -4,6 +4,47 @@
   padding: 16px;
   border-top: 2px solid white;
 
+  .imagePreview {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 12px;
+    border: 2px solid white;
+    box-shadow: 3px 3px 0 red;
+    border-radius: 4px;
+    overflow: hidden;
+
+    .previewImage {
+      max-width: 200px;
+      max-height: 150px;
+      display: block;
+    }
+
+    .removeImage {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: red;
+      color: white;
+      border: 2px solid white;
+      box-shadow: 2px 2px 0 rgb(139, 0, 0);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 16px;
+      font-weight: bold;
+
+      &:hover {
+        background-color: #ff0000;
+        transform: scale(1.1);
+      }
+    }
+  }
+
   .inputForm {
     .inputContainer {
       display: flex;

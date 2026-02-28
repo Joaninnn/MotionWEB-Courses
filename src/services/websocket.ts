@@ -26,10 +26,20 @@ class WebSocketManager {
     this.token = token;
     this.shouldReconnect = true;
 
+    // Формируем WebSocket URL с fallback
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 
+                  process.env.NEXT_PUBLIC_CHAT_API?.replace('http', 'ws') || 
+                  'ws://13.53.67.23:8000';
+    
     this.wsUrlCandidates = [
-      `${process.env.NEXT_PUBLIC_WS_URL}/ws/messages?token=${token}&group_id=${groupId}`,
+      `${wsUrl}/ws/messages?token=${token}&group_id=${groupId}`,
     ];
     this.wsUrlIndex = 0;
+
+    console.log('🔗 WebSocket URL:', this.wsUrlCandidates[0]);
+    console.log('🌍 Environment variables:');
+    console.log('  NEXT_PUBLIC_WS_URL:', process.env.NEXT_PUBLIC_WS_URL);
+    console.log('  NEXT_PUBLIC_CHAT_API:', process.env.NEXT_PUBLIC_CHAT_API);
 
     // Закрываем существующее соединение, если оно есть
     if (this.ws && this.ws.readyState !== WebSocket.CLOSED) {
@@ -60,10 +70,10 @@ class WebSocketManager {
 
           const connectionTimeout = setTimeout(() => {
             if (this.ws?.readyState === WebSocket.CONNECTING) {
-              console.log('⏰ Таймаут подключения к WebSocket');
+              console.log('⏰ Таймаут подключения к WebSocket (3 секунды)');
               this.ws.close();
             }
-          }, 5000); // 5 секунд на подключение
+          }, 3000); // Уменьшили до 3 секунд
 
           this.ws.onopen = () => {
             clearTimeout(connectionTimeout);
@@ -113,6 +123,14 @@ class WebSocketManager {
                 this.startPolling();
                 this.resolveConnecting?.();
                 this.cleanupConnectingPromise();
+                // Уведомляем об успешном подключении через HTTP fallback
+                if (this.messageHandler) {
+                  this.messageHandler({
+                    type: 'connection_status',
+                    status: 'connected_via_http',
+                    message: 'Подключено через HTTP API'
+                  });
+                }
               }
             }
 
@@ -235,21 +253,75 @@ class WebSocketManager {
   private async sendMessageViaHTTP(message: unknown): Promise<void> {
     try {
       console.log('📤 Отправка сообщения через HTTP API');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_CHAT_API}/groups/${this.groupId}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token}`,
-        },
-        body: JSON.stringify(message),
-      });
+      console.log('📦 Данные для отправки:', message);
       
-      if (response.ok) {
-        console.log('✅ Сообщение успешно отправлено через HTTP');
+      // Проверяем, есть ли в сообщении файл
+      const messageObj = message as { text?: string; file?: File; file_url?: string; attachments?: unknown[] };
+      
+      // Если есть attachments, отправляем как есть
+      if (messageObj.attachments && messageObj.attachments.length > 0) {
+        console.log('📁 Отправка сообщения с attachments');
+        
+        const response = await fetch(`${process.env.NEXT_PUBLIC_CHAT_API}/groups/${this.groupId}/messages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.token}`,
+          },
+          body: JSON.stringify(message),
+        });
+        
+        if (response.ok) {
+          console.log('✅ Сообщение с attachments успешно отправлено через HTTP');
+        } else {
+          console.warn(`⚠️ Ошибка отправки: ${response.status} ${response.statusText}`);
+        }
+        return;
+      }
+      
+      // Если есть файл, нужно использовать FormData
+      if (messageObj.file_url || messageObj.file) {
+        console.log('📁 Сообщение содержит файл, используем FormData');
+        
+        const formData = new FormData();
+        
+        if (messageObj.text) {
+          formData.append('text', messageObj.text);
+        }
+        
+        if (messageObj.file) {
+          formData.append('file', messageObj.file);
+        }
+        
+        const response = await fetch(`${process.env.NEXT_PUBLIC_CHAT_API}/groups/${this.groupId}/messages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.token}`,
+          },
+          body: formData,
+        });
+        
+        if (response.ok) {
+          console.log('✅ Сообщение с файлом успешно отправлено через HTTP');
+        } else {
+          console.warn(`⚠️ Ошибка отправки файла: ${response.status} ${response.statusText}`);
+        }
       } else {
-        console.warn(`⚠️ HTTP fallback недоступен: ${response.status} ${response.statusText}`);
-        // Не выбрасываем ошибку, чтобы не прерывать UI
-        console.log('🔄 Пробуем WebSocket или ждем соединения...');
+        // Для текстовых сообщений используем JSON
+        console.log('📝 Отправка текстового сообщения');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_CHAT_API}/groups/${this.groupId}/messages`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.token}`,
+          },
+          body: JSON.stringify(message),
+        });
+        
+        if (response.ok) {
+          console.log('✅ Текстовое сообщение успешно отправлено через HTTP');
+        } else {
+          console.warn(`⚠️ Ошибка отправки текста: ${response.status} ${response.statusText}`);
+        }
       }
     } catch (error) {
       console.warn('⚠️ HTTP fallback временно недоступен:', error);
@@ -321,7 +393,11 @@ class WebSocketManager {
   }
   
   isConnected(): boolean {
-    return this.ws?.readyState === WebSocket.OPEN;
+    return this.ws?.readyState === WebSocket.OPEN || !this.isWebSocketAvailable;
+  }
+  
+  isWebSocketEnabled(): boolean {
+    return this.isWebSocketAvailable;
   }
 }
 
