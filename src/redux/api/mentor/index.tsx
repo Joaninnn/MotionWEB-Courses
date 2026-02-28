@@ -66,6 +66,24 @@ const api = index.injectEndpoints({
             }),
             invalidatesTags: ["mentor", "video"],
         }),
+
+        // Получить список курсов
+        getCourseList: build.query<{ id: number; course_name: string }[], void>({
+            query: () => ({
+                url: `/course_list/`,
+                method: "GET",
+            }),
+            providesTags: ["course"],
+        }),
+
+        // Получить список категорий уроков
+        getCategoryLessonList: build.query<{ id: number; ct_lesson_name: string }[], void>({
+            query: () => ({
+                url: `/cactegory_lesson_list/`,
+                method: "GET",
+            }),
+            providesTags: ["course"],
+        }),
     }),
 });
 
@@ -75,4 +93,6 @@ export const {
     useCreateVideoMutation,
     useUpdateVideoMutation,
     useDeleteVideoMutation,
+    useGetCourseListQuery,
+    useGetCategoryLessonListQuery,
 } = api;

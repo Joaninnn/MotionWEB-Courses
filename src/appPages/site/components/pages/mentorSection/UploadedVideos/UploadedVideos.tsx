@@ -6,7 +6,8 @@ import defaultIcon from "@/assets/Icons/videoIcon.png";
 import Image from "next/image";
 import { 
     useGetMentorVideosQuery,
-    useDeleteVideoMutation 
+    useDeleteVideoMutation,
+    useGetCourseListQuery 
 } from "@/redux/api/mentor";
 import { useAppSelector } from "@/redux/hooks";
 
@@ -58,6 +59,9 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
         videoTitle: "",
         videoInfo: null
     });
+
+    // Получаем список курсов для отображения названий
+    const { data: courses = [] } = useGetCourseListQuery();
 
     const mentorVideosQuery = useGetMentorVideosQuery(
         undefined,
@@ -158,9 +162,11 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
         const categoryName = typeof item.category_lesson === 'object' 
             ? item.category_lesson?.ct_lesson_name 
             : item.category_lesson;
+        
+        const courseName = item.course ? courses.find(c => c.id === item.course)?.course_name || `ID: ${item.course}` : 'Не указан';
             
         const matchesSearch = 
-            (item.course?.toString().toLowerCase() || "").includes(searchLower) ||
+            (courseName?.toString().toLowerCase() || "").includes(searchLower) ||
             (categoryName?.toString().toLowerCase() || "").includes(searchLower) ||
             (item.lesson_number?.toString().toLowerCase() || "").includes(searchLower) ||
             (item.description?.toString().toLowerCase() || "").includes(searchLower);
@@ -242,6 +248,8 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
                                 const categoryName = typeof item.category_lesson === 'object'
                                     ? item.category_lesson?.ct_lesson_name
                                     : item.category_lesson;
+                                
+                                const courseName = item.course ? courses.find(c => c.id === item.course)?.course_name || `ID: ${item.course}` : 'Не указан';
 
                                 return (
                                     <div key={item.id || `video-${index}`} className={style.card}>
@@ -257,7 +265,7 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
                                             </div>
                                             <div className={style.cardInfo}>
                                                 <h2 className={style.lessonName}>
-                                                    Курс: {item.course || 'Не указан'}
+                                                    Курс: {courseName}
                                                 </h2>
                                                 <span className={style.lessonDesc}>
                                                     Категория: {categoryName || 'Не указана'}
@@ -280,7 +288,7 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
                                             </button>
                                             <button 
                                                 className={style.delete}
-                                                onClick={() => item.id && handleDelete(item.id, `Курс: ${item.course}, Урок №${item.lesson_number}`)}
+                                                onClick={() => item.id && handleDelete(item.id, `Курс: ${courseName}, Урок №${item.lesson_number}`)}
                                                 disabled={isDeleting}
                                             >
                                                 {isDeleting ? 'Удаление...' : 'Удалить'}

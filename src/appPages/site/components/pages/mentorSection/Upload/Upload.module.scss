@@ -181,6 +181,85 @@
                             }
                         }
 
+                        .dropdown {
+                            position: relative;
+                            width: 100%;
+
+                            .dropdownTrigger {
+                                padding: 10px;
+                                font-size: 25px;
+                                color: white;
+                                border: 2px solid white;
+                                background: black;
+                                transition: all 0.3s ease-in-out;
+                                box-shadow: 5px 5px 0 rgb(255, 0, 0);
+                                cursor: pointer;
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                width: 100%;
+                                text-align: left;
+
+                                &:hover {
+                                    box-shadow: 8px 8px 0 rgb(255, 0, 0);
+                                    transform: translateY(-2px);
+                                }
+
+                                &.error {
+                                    border-color: #ff4444;
+                                    box-shadow: 5px 5px 0 rgba(255, 68, 68, 0.8);
+                                    animation: shake 0.3s ease-in-out;
+                                }
+
+                                .dropdownArrow {
+                                    font-size: 16px;
+                                    transition: transform 0.3s ease;
+                                }
+                            }
+
+                            .dropdownMenu {
+                                position: absolute;
+                                top: 100%;
+                                left: 0;
+                                right: 0;
+                                background: black;
+                                border: 2px solid white;
+                                border-top: none;
+                                box-shadow: 5px 5px 0 rgb(255, 0, 0);
+                                z-index: 9999;
+                                max-height: 200px;
+                                overflow-y: auto;
+                                pointer-events: auto;
+
+                                .dropdownItem {
+                                    padding: 12px 10px;
+                                    font-size: 18px;
+                                    color: white;
+                                    cursor: pointer;
+                                    transition: all 0.2s ease;
+                                    pointer-events: auto;
+                                    user-select: none;
+
+                                    &:hover {
+                                        background: rgba(255, 0, 0, 0.2);
+                                        padding-left: 15px;
+                                    }
+
+                                    &:active {
+                                        background: rgba(255, 0, 0, 0.4);
+                                    }
+
+                                    &:first-child {
+                                        padding-top: 15px;
+                                    }
+
+                                    &:last-child {
+                                        padding-bottom: 15px;
+                                    }
+                                }
+                            }
+                        }
+
                         .errorMessage {
                             color: #ff4444;
                             font-size: 14px;
@@ -225,11 +304,48 @@
                         }
                     }
 
-                    .errorMessage {
-                        color: #ff4444;
-                        font-size: 14px;
-                        margin-top: -5px;
-                        animation: fadeIn 0.3s ease-in-out;
+                    .dropdown {
+                        position: relative;
+                        width: 100%;
+
+                        .dropdownTrigger {
+                            padding: 10px;
+                            font-size: 25px;
+                            color: white;
+                            border: 2px solid white;
+                            background: black;
+                            transition: all 0.3s ease-in-out;
+                            box-shadow: 5px 5px 0 rgb(255, 0, 0);
+                            cursor: pointer;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            width: 100%;
+                            text-align: left;
+
+                            &:hover {
+                                box-shadow: 8px 8px 0 rgb(255, 0, 0);
+                                transform: translateY(-2px);
+                            }
+
+                            &.error {
+                                border-color: #ff4444;
+                                box-shadow: 5px 5px 0 rgba(255, 68, 68, 0.8);
+                                animation: shake 0.3s ease-in-out;
+                            }
+
+                            .dropdownArrow {
+                                font-size: 16px;
+                                transition: transform 0.3s ease;
+                            }
+                        }
+
+                        .errorMessage {
+                            color: #ff4444;
+                            font-size: 14px;
+                            margin-top: -5px;
+                            animation: fadeIn 0.3s ease-in-out;
+                        }
                     }
                 }
 
