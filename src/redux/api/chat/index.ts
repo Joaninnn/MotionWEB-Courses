@@ -92,6 +92,21 @@ export const chatApi = createApi({
         
         if (file) {
           formData.append('file', file);
+          console.log('📤 API отправка файла:', {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            groupId
+          });
+        }
+        
+        console.log('📤 FormData содержимое:');
+        for (const [key, value] of formData.entries()) {
+          console.log(`  ${key}:`, value instanceof File ? {
+            name: value.name,
+            type: value.type,
+            size: value.size
+          } : value);
         }
         
         return {

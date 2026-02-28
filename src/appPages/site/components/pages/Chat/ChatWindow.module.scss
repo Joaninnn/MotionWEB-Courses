@@ -1,12 +1,11 @@
 // src/components/Chat/ChatWindow.module.scss
 .chatWindow {
   background: black;
-  min-height: calc(100vh - 120px); // Меняем на min-height для гибкости
-  max-height: calc(100vh - 120px); // Ограничиваем максимальную высоту
+  height: 100vh;
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden; // Предотвращаем выход контента за границы
+  overflow: hidden;
 
   .chatHeader {
     display: flex;
@@ -169,6 +168,7 @@
   .chatFooter {
     border-top: 2px solid white;
     background: black;
+    flex-shrink: 0;
   }
 
   .membersSidebar {

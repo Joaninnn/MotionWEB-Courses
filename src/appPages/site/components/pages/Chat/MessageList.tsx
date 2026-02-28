@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useGetMessagesQuery, useGetGroupDetailFullQuery, useEditMessageMutation, useDeleteMessageMutation } from '@/redux/api/chat';
 import ImageModal from '@/components/ImageModal/ImageModal';
+import VoicePlayer from '@/components/VoicePlayer/VoicePlayer';
 import styles from './MessageList.module.scss';
 import { Message } from '../../../../../redux/api/chat/types';
 
@@ -290,10 +291,30 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
                   autoFocus
                 />
                 <div className={styles.editActions}>
-                  <button className={styles.editButton} onClick={handleEditMessage}>
+                  <button 
+                    className={styles.editButton} 
+                    onClick={handleEditMessage}
+                    style={{
+                      background: '#007bff',
+                      border: '1px solid #007bff',
+                      borderRadius: '10px',
+                      color: 'white',
+                      padding: '8px 12px'
+                    }}
+                  >
                     Сохранить
                   </button>
-                  <button className={styles.editButton} onClick={cancelEditing}>
+                  <button 
+                    className={styles.editButton} 
+                    onClick={cancelEditing}
+                    style={{
+                      background: '#222',
+                      border: '1px solid rgb(98, 98, 98)',
+                      borderRadius: '10px',
+                      color: 'white',
+                      padding: '8px 12px'
+                    }}
+                  >
                     Отмена
                   </button>
                 </div>
@@ -303,23 +324,45 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
                 <p className={styles.messageText}>{message.text}</p>
                 {(message.file_url || message.attachments) && (
                   <div className={styles.messageFile}>
-                    {message.file_url && message.file_type?.startsWith('image/') && (
-                      <Image 
-                        src={message.file_url.startsWith('http') 
-                          ? message.file_url 
-                          : `${process.env.NEXT_PUBLIC_CHAT_API || 'https://chat.apibackendokukg.space'}${message.file_url}`} 
-                        alt="Shared image"
-                        width={200}
-                        height={200}
-                        style={{ objectFit: 'cover' }}
-                        onClick={() => setModalImage({ 
-                          url: message.file_url && message.file_url.startsWith('http') 
-                            ? message.file_url 
-                            : `${process.env.NEXT_PUBLIC_CHAT_API || 'https://chat.apibackendokukg.space'}${message.file_url || ''}`, 
-                          alt: 'Shared image' 
-                        })}
-                        className={styles.clickableImage}
-                      />
+                    {message.file_url && (
+                      <>
+                        {message.file_type?.startsWith('image/') ? (
+                          <Image 
+                            src={message.file_url.startsWith('http') 
+                              ? message.file_url 
+                              : `${process.env.NEXT_PUBLIC_CHAT_API || 'https://chat.apibackendokukg.space'}${message.file_url}`} 
+                            alt="Shared image"
+                            width={200}
+                            height={200}
+                            style={{ objectFit: 'cover' }}
+                            onClick={() => setModalImage({ 
+                              url: message.file_url && message.file_url.startsWith('http') 
+                                ? message.file_url 
+                                : `${process.env.NEXT_PUBLIC_CHAT_API || 'https://chat.apibackendokukg.space'}${message.file_url || ''}`, 
+                              alt: 'Shared image' 
+                            })}
+                            className={styles.clickableImage}
+                          />
+                        ) : message.file_type?.startsWith('audio/') ? (
+                          <VoicePlayer 
+                            audioUrl={message.file_url.startsWith('http') 
+                              ? message.file_url 
+                              : `${process.env.NEXT_PUBLIC_CHAT_API || 'https://chat.apibackendokukg.space'}${message.file_url}`}
+                            className={styles.voicePlayer}
+                          />
+                        ) : (
+                          <a 
+                            href={message.file_url.startsWith('http') 
+                              ? message.file_url 
+                              : `${process.env.NEXT_PUBLIC_CHAT_API || 'https://chat.apibackendokukg.space'}${message.file_url}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.fileLink}
+                          >
+                            📎 Открыть файл
+                          </a>
+                        )}
+                      </>
                     )}
                     {message.attachments?.map((attachment) => {
                       const imageUrl = attachment.url || attachment.file_url;
@@ -327,19 +370,35 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
                         ? imageUrl 
                         : `${process.env.NEXT_PUBLIC_CHAT_API || 'https://chat.apibackendokukg.space'}${imageUrl}`;
                       const isImage = attachment.type?.startsWith('image/') || attachment.file_type?.startsWith('image/') || attachment.mime?.startsWith('image/');
+                      const isAudio = attachment.type?.startsWith('audio/') || attachment.file_type?.startsWith('audio/') || attachment.mime?.startsWith('audio/');
                       
-                      return isImage ? (
-                        <Image 
-                          key={attachment.id}
-                          src={fullImageUrl} 
-                          alt="Shared image"
-                          width={200}
-                          height={200}
-                          style={{ objectFit: 'cover' }}
-                          onClick={() => setModalImage({ url: fullImageUrl, alt: 'Shared image' })}
-                          className={styles.clickableImage}
-                        />
-                      ) : (
+                      if (isImage) {
+                        return (
+                          <Image 
+                            key={attachment.id}
+                            src={fullImageUrl} 
+                            alt="Shared image"
+                            width={200}
+                            height={200}
+                            style={{ objectFit: 'cover' }}
+                            onClick={() => setModalImage({ url: fullImageUrl, alt: 'Shared image' })}
+                            className={styles.clickableImage}
+                          />
+                        );
+                      }
+                      
+                      if (isAudio) {
+                        return (
+                          <VoicePlayer 
+                            key={attachment.id}
+                            audioUrl={fullImageUrl}
+                            duration={attachment.duration}
+                            className={styles.voicePlayer}
+                          />
+                        );
+                      }
+                      
+                      return (
                         <a 
                           key={attachment.id}
                           href={fullImageUrl} 

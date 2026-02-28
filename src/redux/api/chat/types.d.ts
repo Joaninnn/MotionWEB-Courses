@@ -38,6 +38,7 @@ export interface Attachment {
   type?: string;
   mime?: string;
   name?: string;
+  duration?: number; // Длительность аудио в секундах
 }
 
 export interface GroupDetail {

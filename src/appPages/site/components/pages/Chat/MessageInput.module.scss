@@ -1,7 +1,7 @@
 // src/components/Chat/MessageInput.module.scss
 .messageInput {
   background: black;
-  padding: 16px;
+  padding: 8px;
   border-top: 2px solid white;
 
   .imagePreview {
@@ -30,17 +30,74 @@
       width: 24px;
       height: 24px;
       border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 16px;
-      font-weight: bold;
 
       &:hover {
-        background-color: #ff0000;
-        transform: scale(1.1);
+        background: rgb(200, 0, 0);
+      }
+    }
+  }
+
+  .audioPreview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f9fa;
+    border: 2px solid white;
+    box-shadow: 3px 3px 0 red;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    gap: 12px;
+
+    .audioInfo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .audioIcon {
+      font-size: 16px;
+    }
+
+    .audioDuration {
+      font-weight: 600;
+      color: #666;
+      font-size: 14px;
+      background: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+
+    .audioLabel {
+      font-size: 14px;
+      color: #333;
+    }
+
+    .removeAudio {
+      background: red;
+      color: white;
+      border: 2px solid white;
+      box-shadow: 2px 2px 0 rgb(139, 0, 0);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        background: rgb(200, 0, 0);
       }
     }
   }
@@ -236,7 +293,7 @@
     background: black;
     border: 2px solid white;
     box-shadow: 3px 3px 0 red;
-    padding: 12px;
+    padding: 8px;
     border-radius: 4px;
 
     .inputWrapper {

@@ -1,0 +1,130 @@
+.voicePlayer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 12px;
+  padding: 8px 12px;
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.playButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #007bff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+
+  &:hover {
+    background: #0056b3;
+    transform: scale(1.05);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+.playIcon, .pauseIcon {
+  font-size: 14px;
+}
+
+.loadingSpinner {
+  font-size: 14px;
+  animation: spin 1s linear infinite;
+}
+
+.playerContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.progressBar {
+  position: relative;
+  height: 4px;
+  background: #444;
+  border-radius: 2px;
+  cursor: pointer;
+  overflow: hidden;
+
+  &:hover {
+    height: 6px;
+  }
+}
+
+.progressFill {
+  height: 100%;
+  background: #007bff;
+  border-radius: 2px;
+  transition: width 0.1s ease;
+}
+
+.timeInfo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #ccc;
+}
+
+.currentTime, .totalTime {
+  font-weight: 500;
+}
+
+.separator {
+  color: #999;
+}
+
+.voiceIcon {
+  font-size: 16px;
+  opacity: 0.7;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .voicePlayer {
+    min-width: 180px;
+    padding: 6px 10px;
+  }
+
+  .playButton {
+    width: 28px;
+    height: 28px;
+  }
+
+  .playIcon, .pauseIcon {
+    font-size: 12px;
+  }
+
+  .timeInfo {
+    font-size: 11px;
+  }
+
+  .voiceIcon {
+    font-size: 14px;
+  }
+}
