@@ -211,10 +211,6 @@ const Header: React.FC = () => {
                                             <p className={style.profileName}>
                                                 {currentUser.username}
                                             </p>
-                                            <p className={style.profileEmail}>
-                                                {currentUser.email ||
-                                                    "Email не указан"}
-                                            </p>
                                             <p className={style.profileStatus}>
                                                 {currentUser?.status === "mentor" ? "Ментор" : "Студент"}
                                             </p>
