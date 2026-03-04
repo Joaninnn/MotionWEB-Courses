@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import style from "./lessonDetail.module.scss";
 import { useGetVideosDetailQuery } from "@/redux/api/video";
+import { useGetMentorVideoDetailQuery, useGetCategoryLessonListQuery } from "@/redux/api/mentor";
 import { useGetCourseVideosQuery, useGetLessonDetailQuery } from "@/redux/api/lessons";
 import { useAppSelector } from "@/redux/hooks";
 
@@ -13,14 +14,43 @@ function LessonDetailContent() {
     const { id } = useParams();
     const [visibleCount, setVisibleCount] = useState(6);
 
+    // Определяем роль пользователя
+    const isMentor = currentUser?.status === "mentor";
+
+    // Получаем список категорий для менторов
+    const { data: categories = [] } = useGetCategoryLessonListQuery();
+
+    // Вспомогательная функция для безопасного получения названия категории
+    const getCategoryName = (category: { ct_lesson_name?: string } | number | undefined) => {
+        if (typeof category === 'object' && category?.ct_lesson_name) {
+            return category.ct_lesson_name;
+        }
+        
+        // Если category это число, найдем название по ID из списка категорий
+        if (typeof category === 'number') {
+            const foundCategory = categories.find(cat => cat.id === category);
+            if (foundCategory) {
+                return foundCategory.ct_lesson_name;
+            }
+            return `Категория ID: ${category}`;
+        }
+        
+        return 'Не указана';
+    };
+
     // Получаем детали текущего видео
-    const { 
-        data: videoDetail, 
-        isLoading: isVideoLoading, 
-        error: videoError 
-    } = useGetVideosDetailQuery(Number(id), {
-        skip: !id,
+    const studentVideoQuery = useGetVideosDetailQuery(Number(id), {
+        skip: !id || isMentor, // Пропускаем если ментор
     });
+
+    const mentorVideoQuery = useGetMentorVideoDetailQuery(Number(id), {
+        skip: !id || !isMentor, // Пропускаем если не ментор
+    });
+
+    // Выбираем нужные данные в зависимости от роли
+    const videoDetail = isMentor ? mentorVideoQuery.data : studentVideoQuery.data;
+    const isVideoLoading = isMentor ? mentorVideoQuery.isLoading : studentVideoQuery.isLoading;
+    const videoError = isMentor ? mentorVideoQuery.error : studentVideoQuery.error;
 
     // Получаем детали курса, к которому принадлежит видео
     const { 
@@ -39,15 +69,18 @@ function LessonDetailContent() {
             course_id: currentUser?.course?.toString() || "",
         },
         {
-            skip: !currentUser?.course || !videoDetail,
+            skip: !currentUser?.course || !videoDetail || isMentor, // Для менторов не показываем следующие уроки
         }
     );
 
     const videoRef = useRef<HTMLVideoElement | null>(null);
 
-    // Проверка доступа - видео должно принадлежать курсу пользователя
-    const hasAccess = videoDetail && videoDetail.course === currentUser?.course;
+    // Проверка доступа - для менторов доступ ко всем своим видео, для студентов только к видео своего курса
+    const hasAccess = isMentor ? 
+        !!videoDetail : // Ментор имеет доступ к своим видео
+        (videoDetail && videoDetail.course === currentUser?.course); // Студент только к видео своего курса
 
+    console.log("🔍 [LESSON_DETAIL] User role:", isMentor ? "mentor" : "student");
     console.log("🔍 [LESSON_DETAIL] User course ID:", currentUser?.course);
     console.log("🔍 [LESSON_DETAIL] Video course ID:", videoDetail?.course);
     console.log("🔍 [LESSON_DETAIL] Video ID:", id);
@@ -55,10 +88,20 @@ function LessonDetailContent() {
 
     // Фильтруем видео с использованием useMemo для оптимизации
     const allNextLessons = useMemo(() => {
+        if (isMentor) return []; // Для менторов не показываем следующие уроки
+        
         return courseVideos
             .filter((video) => {
-                const sameCategory = videoDetail && 
-                    video.category_lesson.id === videoDetail.category_lesson.id;
+                // Безопасно получаем ID категории
+                const categoryId = typeof videoDetail?.category_lesson === 'object' 
+                    ? videoDetail.category_lesson?.id 
+                    : videoDetail?.category_lesson;
+                
+                const videoCategoryId = typeof video.category_lesson === 'object' 
+                    ? video.category_lesson?.id 
+                    : video.category_lesson;
+                
+                const sameCategory = categoryId && videoCategoryId && categoryId === videoCategoryId;
                 const notCurrent = video.id !== Number(id);
                 const isNext = videoDetail && 
                     video.lesson_number > videoDetail.lesson_number;
@@ -66,7 +109,7 @@ function LessonDetailContent() {
                 return sameCategory && notCurrent && isNext;
             })
             .sort((a, b) => a.lesson_number - b.lesson_number);
-    }, [courseVideos, videoDetail, id]);
+    }, [courseVideos, videoDetail, id, isMentor]);
 
     // Видимые уроки
     const nextLessons = allNextLessons.slice(0, visibleCount);
@@ -191,7 +234,7 @@ function LessonDetailContent() {
 
                         <div className={style.lessonInfo}>
                             <h2 className={style.title}>
-                                {videoDetail.category_lesson.ct_lesson_name}
+                                {getCategoryName(videoDetail.category_lesson)}
                             </h2>
                             <div className={style.hr}></div>
 
@@ -231,7 +274,7 @@ function LessonDetailContent() {
                     {allNextLessons.length > 0 && (
                         <div className={style.table}>
                             <h2 className={style.title}>
-                                СЛЕДУЮЩИЕ УРОКИ ПО ТЕМЕ: {videoDetail.category_lesson.ct_lesson_name}
+                                СЛЕДУЮЩИЕ УРОКИ ПО ТЕМЕ: {getCategoryName(videoDetail.category_lesson)}
                             </h2>
                             <div className={style.cards}>
                                 {nextLessons.map((video) => (
@@ -241,7 +284,7 @@ function LessonDetailContent() {
                                         onClick={() => handleVideoClick(video)}
                                     >
                                         <h3 className={style.cardTitle}>
-                                            {video.category_lesson.ct_lesson_name}
+                                            {getCategoryName(video.category_lesson)}
                                         </h3>
                                         <p className={style.cardNumber}>
                                             Номер урока: {video.lesson_number}

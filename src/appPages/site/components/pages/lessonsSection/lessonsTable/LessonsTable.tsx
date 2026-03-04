@@ -4,7 +4,15 @@ import React, { useState } from "react";
 import style from "./lessonsTable.module.scss";
 import { useRouter } from "next/navigation";
 import { useGetCourseVideosQuery, useGetLessonDetailQuery } from "@/redux/api/lessons";
+import { useGetMentorVideosQuery, useGetCourseListQuery } from "@/redux/api/mentor";
 import { useAppSelector } from "@/redux/hooks";
+
+interface MentorVideoResponse {
+    id?: number;
+    teaching_courses?: Array<{
+        video_course?: MENTOR.VideoResponse[];
+    }>;
+}
 
 function LessonsTable() {
     const [search, setSearch] = useState("");
@@ -14,34 +22,88 @@ function LessonsTable() {
     
     const currentUser = useAppSelector((state) => state.user);
     
-    // Получаем видео курса пользователя
-    const { data: videos = [], isLoading } = useGetCourseVideosQuery(
+    // Определяем роль пользователя
+    const isMentor = currentUser?.status === "mentor";
+    
+    // Получаем список курсов для отображения названий (для менторов)
+    const { data: courses = [] } = useGetCourseListQuery();
+    
+    // Получаем видео курса пользователя (для студентов)
+    const { data: studentVideos = [], isLoading: isStudentLoading } = useGetCourseVideosQuery(
         {
             course_id: currentUser?.course?.toString() || "",
             category_lesson: search || undefined,
             lesson_number: lessonNumber || undefined,
         },
         {
-            skip: !currentUser?.course,
+            skip: !currentUser?.course || isMentor, // Пропускаем если ментор
         }
     );
 
-    // Получаем детали курса по ID из профиля пользователя
+    // Получаем видео ментора (для менторов)
+    const mentorVideosQuery = useGetMentorVideosQuery(
+        undefined,
+        {
+            skip: !isMentor, // Пропускаем если не ментор
+        }
+    );
+    
+    const mentorVideosData = mentorVideosQuery.data || [];
+    const isLoading = isMentor ? mentorVideosQuery.isLoading : isStudentLoading;
+    const error = isMentor ? mentorVideosQuery.error : null;
+
+    // Получаем детали курса по ID из профиля пользователя (только для студентов)
     const { data: courseDetail } = useGetLessonDetailQuery(
         currentUser?.course || 0,
         {
-            skip: !currentUser?.course,
+            skip: !currentUser?.course || isMentor, // Пропускаем если ментор
         }
     );
 
+    // Обрабатываем менторские видео
+    const extractedMentorVideos = mentorVideosData.reduce((acc: MENTOR.VideoResponse[], mentorVideo: MentorVideoResponse) => {
+        if (mentorVideo?.teaching_courses) {
+            mentorVideo.teaching_courses.forEach((course: { video_course?: MENTOR.VideoResponse[] }) => {
+                if (course?.video_course && Array.isArray(course.video_course)) {
+                    acc.push(...course.video_course);
+                }
+            });
+        }
+        return acc;
+    }, []);
+
     // Фильтрация на клиентской стороне
-    const filteredVideos = videos.filter((video) => {
-        const matchesCategory = !search || 
-            video.category_lesson.ct_lesson_name.toLowerCase().includes(search.toLowerCase());
-        const matchesNumber = !lessonNumber || 
-            video.lesson_number.toString() === lessonNumber;
-        
-        return matchesCategory && matchesNumber;
+    const allVideos = isMentor ? extractedMentorVideos : studentVideos;
+    
+    const filteredVideos = allVideos.filter((video) => {
+        if (isMentor) {
+            // Фильтрация для менторов
+            const searchLower = search.toLowerCase();
+            const categoryName = typeof (video as MENTOR.VideoResponse).category_lesson === 'object' && (video as MENTOR.VideoResponse).category_lesson !== null
+                ? ((video as MENTOR.VideoResponse).category_lesson as MENTOR.CategoryLesson)?.ct_lesson_name
+                : (video as MENTOR.VideoResponse).category_lesson?.toString() || 'Не указана';
+            
+            const courseName = (video as MENTOR.VideoResponse).course ? courses.find(c => c.id === (video as MENTOR.VideoResponse).course)?.course_name || `ID: ${(video as MENTOR.VideoResponse).course}` : 'Не указан';
+                
+            const matchesSearch = 
+                (courseName?.toString().toLowerCase() || "").includes(searchLower) ||
+                (categoryName?.toString().toLowerCase() || "").includes(searchLower) ||
+                ((video as MENTOR.VideoResponse).lesson_number?.toString().toLowerCase() || "").includes(searchLower) ||
+                ((video as MENTOR.VideoResponse).description?.toString().toLowerCase() || "").includes(searchLower);
+
+            const matchesNumber = !lessonNumber || 
+                (video as MENTOR.VideoResponse).lesson_number?.toString() === lessonNumber;
+            
+            return matchesSearch && matchesNumber;
+        } else {
+            // Фильтрация для студентов (как было раньше)
+            const matchesCategory = !search || 
+                (video as LESSONS.VideoListItem).category_lesson.ct_lesson_name.toLowerCase().includes(search.toLowerCase());
+            const matchesNumber = !lessonNumber || 
+                (video as LESSONS.VideoListItem).lesson_number.toString() === lessonNumber;
+            
+            return matchesCategory && matchesNumber;
+        }
     });
 
     // Видимые видео (только первые visibleCount штук)
@@ -50,7 +112,7 @@ function LessonsTable() {
     // Есть ли еще видео для показа
     const hasMore = filteredVideos.length > visibleCount;
 
-    const handleVideoClick = (video: LESSONS.VideoListItem): void => {
+    const handleVideoClick = (video: MENTOR.VideoResponse | LESSONS.VideoListItem): void => {
         router.push(`/lessons/${video.id}`);
     };
 
@@ -70,9 +132,9 @@ function LessonsTable() {
                     <div className={style.title}>
                         <div className={style.titleContent}>
                             <h2 className={style.cardsTitle}>
-                                БИБЛИОТЕКА УРОКОВ
+                                {isMentor ? "МОИ ВИДЕО" : "БИБЛИОТЕКА УРОКОВ"}
                             </h2>
-                            {courseDetail && (
+                            {courseDetail && !isMentor && (
                                 <h2 className={style.cardsTitleCourse}>
                                     {courseDetail.course_name}
                                 </h2>
@@ -81,7 +143,7 @@ function LessonsTable() {
                         <div className={style.filters}>
                             <input
                                 type="text"
-                                placeholder="Поиск по названию урока..."
+                                placeholder={isMentor ? "Поиск по курсу, категории..." : "Поиск по названию урока..."}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className={style.input}
@@ -97,29 +159,70 @@ function LessonsTable() {
                         </div>
                     </div>
                     <div className={style.cards}>
-                        {!currentUser?.course ? (
+                        {!currentUser ? (
+                            <p className={style.empty}>Вы не авторизованы</p>
+                        ) : isMentor && !currentUser?.username ? (
+                            <p className={style.empty}>Загрузка данных...</p>
+                        ) : !isMentor && !currentUser?.course ? (
                             <p className={style.empty}>У вас нет назначенного курса</p>
                         ) : isLoading ? (
                             <p className={style.empty}>Загрузка...</p>
+                        ) : error ? (
+                            <p className={style.empty}>Ошибка загрузки видео</p>
                         ) : visibleVideos.length > 0 ? (
-                            visibleVideos.map((video) => (
-                                <div
-                                    key={video.id}
-                                    className={style.card}
-                                    onClick={() => handleVideoClick(video)}
-                                >
-                                    <div className={style.videoCard}>
-                                        <div className={style.videoHeader}>
-                                            <h3>Урок: {video.category_lesson.ct_lesson_name}</h3>
+                            visibleVideos.map((video) => {
+                                if (isMentor) {
+                                    // Карточка для ментора (стиль как в UploadedVideos)
+                                    const categoryName = typeof (video as MENTOR.VideoResponse).category_lesson === 'object' && (video as MENTOR.VideoResponse).category_lesson !== null
+                                        ? ((video as MENTOR.VideoResponse).category_lesson as MENTOR.CategoryLesson)?.ct_lesson_name
+                                        : (video as MENTOR.VideoResponse).category_lesson?.toString() || 'Не указана';
+                                    
+                                    const courseName = (video as MENTOR.VideoResponse).course ? courses.find(c => c.id === (video as MENTOR.VideoResponse).course)?.course_name || `ID: ${(video as MENTOR.VideoResponse).course}` : 'Не указан';
+
+                                    return (
+                                        <div
+                                            key={video.id || `video-${(video as MENTOR.VideoResponse).lesson_number}-${(video as MENTOR.VideoResponse).course}`}
+                                            className={style.card}
+                                            onClick={() => handleVideoClick(video)}
+                                        >
+                                            <div className={style.videoCard}>
+                                                <div className={style.videoHeader}>
+                                                    <h3>Курс: {courseName}</h3>
+                                                </div>
+                                                <div className={style.videoInfo}>
+                                                    <p>Категория: {categoryName || 'Не указана'}</p>
+                                                    <p>Номер урока: {(video as MENTOR.VideoResponse).lesson_number || 'Не указан'}</p>
+                                                    {(video as MENTOR.VideoResponse).description && (
+                                                        <p>Описание: {(video as MENTOR.VideoResponse).description}</p>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className={style.videoInfo}>
-                                            <p>Номер урока: {video.lesson_number}</p>
+                                    );
+                                } else {
+                                    // Карточка для студента (как было раньше)
+                                    return (
+                                        <div
+                                            key={video.id}
+                                            className={style.card}
+                                            onClick={() => handleVideoClick(video)}
+                                        >
+                                            <div className={style.videoCard}>
+                                                <div className={style.videoHeader}>
+                                                    <h3>Урок: {video.category_lesson.ct_lesson_name}</h3>
+                                                </div>
+                                                <div className={style.videoInfo}>
+                                                    <p>Номер урока: {video.lesson_number}</p>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            ))
+                                    );
+                                }
+                            })
                         ) : (
-                            <p className={style.empty}>Ничего не найдено 😕</p>
+                            <p className={style.empty}>
+                                {search || lessonNumber ? 'Ничего не найдено 😕' : (isMentor ? 'Нет загруженных видео' : 'Нет доступных уроков')}
+                            </p>
                         )}
                     </div>
 
