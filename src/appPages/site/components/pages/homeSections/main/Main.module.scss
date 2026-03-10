@@ -9,18 +9,17 @@
     .content {
         display: flex;
         flex-direction: column;
-        gap: 60px;
-        padding-bottom: 100px;
     }
 
     .hero {
         display: flex;
-        padding: 100px 20px 0;
+        padding: 20px 20px 40px 20px;
         align-items: center;
         flex-direction: column;
         gap: 20px;
         justify-content: center;
         text-align: center;
+        min-height: 100vh;
 
         .titleBlock {
             display: flex;
@@ -65,46 +64,13 @@
             }
         }
     }
-
-    .courseInfo {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 30px;
-        padding: 0 20px;
-
-        .infoBlock {
-            border: white solid 4px;
-            padding: 25px;
-            transition: 0.3s;
-            box-shadow: 8px 8px 0 red;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-
-            &:hover {
-                box-shadow: 0 5px 15px rgba(255, 0, 0, 0.5);
-                transform: translateY(-5px);
-            }
-        }
-
-        .infoTitle {
-            font-size: 22px;
-            color: red;
-        }
-
-        .info {
-            color: white;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-    }
 }
 
 /* Tablet */
 @media (max-width: 1024px) {
     .Main {
         .hero {
-            padding-top: 80px;
+            padding: 20px 20px;
 
             .title1,
             .title2 {
@@ -122,7 +88,7 @@
 @media (max-width: 768px) {
     .Main {
         .hero {
-            padding-top: 60px;
+            padding: 10px 20px;
 
             .title1,
             .title2 {
@@ -145,7 +111,7 @@
 @media (max-width: 480px) {
     .Main {
         .hero {
-            padding-top: 40px;
+            padding: 5px 20px;
 
             .title1,
             .title2 {

@@ -24,8 +24,8 @@ function LessonsTable() {
     
     // Определяем роль пользователя
     const isMentor = currentUser?.status === "mentor";
-    
-    // Получаем список курсов для отображения названий (для менторов)
+
+    // Получаем список курсов
     const { data: courses = [] } = useGetCourseListQuery();
     
     // Получаем видео курса пользователя (для студентов)
@@ -74,6 +74,25 @@ function LessonsTable() {
 
     // Фильтрация на клиентской стороне
     const allVideos = isMentor ? extractedMentorVideos : studentVideos;
+    
+    // Получаем уникальные категории из текущих видео для дропдауна
+    const uniqueCategories = React.useMemo(() => {
+        const categories = new Set<string>();
+        allVideos.forEach((video) => {
+            let categoryName = '';
+            if (isMentor) {
+                categoryName = typeof (video as MENTOR.VideoResponse).category_lesson === 'object' && (video as MENTOR.VideoResponse).category_lesson !== null
+                    ? ((video as MENTOR.VideoResponse).category_lesson as MENTOR.CategoryLesson)?.ct_lesson_name || ''
+                    : (video as MENTOR.VideoResponse).category_lesson?.toString() || '';
+            } else {
+                categoryName = (video as LESSONS.VideoListItem).category_lesson.ct_lesson_name;
+            }
+            if (categoryName) {
+                categories.add(categoryName);
+            }
+        });
+        return Array.from(categories).sort();
+    }, [allVideos, isMentor]);
     
     const filteredVideos = allVideos.filter((video) => {
         if (isMentor) {
@@ -141,13 +160,18 @@ function LessonsTable() {
                             )}
                         </div>
                         <div className={style.filters}>
-                            <input
-                                type="text"
-                                placeholder={isMentor ? "Поиск по курсу, категории..." : "Поиск по названию урока..."}
+                            <select
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className={style.input}
-                            />
+                                className={style.select}
+                            >
+                                <option value="">Все категории</option>
+                                {uniqueCategories.map((category) => (
+                                    <option key={category} value={category}>
+                                        {category}
+                                    </option>
+                                ))}
+                            </select>
                             <input
                                 type="number"
                                 placeholder="Номер урока..."

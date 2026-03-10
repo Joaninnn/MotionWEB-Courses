@@ -31,41 +31,7 @@ export default function Main() {
                             СМОТРЕТЬ УРОКИ
                         </button>
                     </div>
-                    <div className={style.courseInfo}>
-                        <div className={style.infoBlock}>
-                            <h2 className={style.infoTitle}>
-                                🎯 <br />
-                                Структурированные <br />
-                                уроки
-                            </h2>
-                            <h2 className={style.info}>
-                                Пошаговая программа обучения от базовых
-                                концепций до продвинутых техник веб-разработки
-                            </h2>
-                        </div>
-                        <div className={style.infoBlock}>
-                            <h2 className={style.infoTitle}>
-                                💬 <br />
-                                Живое <br />
-                                общение{" "}
-                            </h2>
-                            <h2 className={style.info}>
-                                Общайтесь с преподавателями и другими студентами
-                                в реальном времени через чат
-                            </h2>
-                        </div>
-                        <div className={style.infoBlock}>
-                            <h2 className={style.infoTitle}>
-                                🔒
-                                <br /> Персональный
-                                <br /> доступ
-                            </h2>
-                            <h2 className={style.info}>
-                                Индивидуальный трек обучения с отслеживанием
-                                прогресса и персональными рекомендациями
-                            </h2>
-                        </div>
-                    </div>
+                   
                 </div>
             </div>
         </section>
