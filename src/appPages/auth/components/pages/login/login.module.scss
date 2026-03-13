@@ -60,6 +60,39 @@
                     width: 100%;
                     box-sizing: border-box;
                 }
+
+                .passwordInputWrapper {
+                    position: relative;
+                    width: 100%;
+
+                    .input {
+                        padding-right: 50px !important; // Место для кнопки
+                    }
+
+                    .passwordToggle {
+                        position: absolute !important;
+                        right: 10px !important;
+                        top: 50% !important;
+                        transform: translateY(-50%) !important;
+                        background: none !important;
+                        border: none !important;
+                        cursor: pointer !important;
+                        font-size: 18px !important;
+                        padding: 5px !important;
+                        border-radius: 4px !important;
+                        transition: all 0.2s ease !important;
+                        z-index: 10 !important;
+                        
+                        &:hover {
+                            background-color: rgba(0, 0, 0, 0.1) !important;
+                        }
+
+                        &:disabled {
+                            opacity: 0.5 !important;
+                            cursor: not-allowed !important;
+                        }
+                    }
+                }
             }
 
             .button {
@@ -117,6 +150,17 @@
                     font-size: 14px;
                 }
 
+                .Block .passwordInputWrapper {
+                    .input {
+                        padding-right: 45px;
+                    }
+                    
+                    .passwordToggle {
+                        font-size: 16px;
+                        right: 8px;
+                    }
+                }
+
                 .button {
                     padding: 15px;
                     font-size: 15px;
@@ -144,6 +188,17 @@
                 .Block .Text,
                 .Block .input {
                     font-size: 13px;
+                }
+
+                .Block .passwordInputWrapper {
+                    .input {
+                        padding-right: 40px;
+                    }
+                    
+                    .passwordToggle {
+                        font-size: 14px;
+                        right: 6px;
+                    }
                 }
 
                 .button {

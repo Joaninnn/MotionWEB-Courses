@@ -142,12 +142,18 @@ export const chatApi = createApi({
     }),
     
     markAsRead: builder.mutation<string, { groupId: number; messageId: number }>({
-      query: ({ groupId, messageId }) => ({
-        url: `/chats/${groupId}/read`,
-        method: 'POST',
-        params: { message_id: messageId },
-      }),
-      invalidatesTags: ['Chat'],
+      query: ({ groupId, messageId }) => {
+        console.log('🔍 [markAsRead] Запрос:', { groupId, messageId });
+        console.log('🔗 [markAsRead] URL:', `/chats/${groupId}/read`);
+        console.log('📦 [markAsRead] Query params:', { message_id: messageId });
+        
+        return {
+          url: `/chats/${groupId}/read`,
+          method: 'POST',
+          params: { message_id: messageId }, // Возвращаем params как было
+        };
+      },
+      invalidatesTags: ['Chat', 'Message'], // Обновляем и чаты и сообщения
     }),
     
     // Dialogs
@@ -161,7 +167,10 @@ export const chatApi = createApi({
     
     // Test endpoint
     testMe: builder.query<string, void>({
-      query: () => '/test/me',
+      query: () => {
+        console.log('🔍 [testMe] Проверка доступности бэкенда...');
+        return '/test/me';
+      },
     }),
   }),
 });

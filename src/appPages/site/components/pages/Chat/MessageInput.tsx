@@ -8,9 +8,10 @@ import styles from './MessageInput.module.scss';
 
 interface MessageInputProps {
   groupId: number;
+  sendMessage?: (text: string, fileUrl?: string, fileType?: string) => void;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ groupId }) => {
+const MessageInput: React.FC<MessageInputProps> = ({ groupId, sendMessage }) => {
   const [sendMessageMutation, { isLoading: isSending }] = useSendMessageMutation();
   const [message, setMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -116,11 +117,29 @@ const MessageInput: React.FC<MessageInputProps> = ({ groupId }) => {
         hasImage: !!selectedFile
       });
       
-      await sendMessageMutation({
-        groupId,
-        text: message.trim() || (selectedAudio ? 'Голосовое сообщение' : undefined),
-        file: fileToSend || undefined,
-      }).unwrap();
+      // Используем WebSocket sendMessage если доступен, иначе HTTP мутацию
+      if (sendMessage) {
+        // Для файлов нужно будет загрузить их сначала и получить URL
+        // Пока отправляем только текст через WebSocket
+        if (fileToSend) {
+          // Загружаем файл через HTTP мутацию
+          await sendMessageMutation({
+            groupId,
+            text: message.trim() || (selectedAudio ? 'Голосовое сообщение' : undefined),
+            file: fileToSend || undefined,
+          }).unwrap();
+        } else {
+          // Отправляем текст через WebSocket
+          sendMessage(message.trim());
+        }
+      } else {
+        // Fallback на HTTP мутацию
+        await sendMessageMutation({
+          groupId,
+          text: message.trim() || (selectedAudio ? 'Голосовое сообщение' : undefined),
+          file: fileToSend || undefined,
+        }).unwrap();
+      }
       
       setMessage('');
       setSelectedFile(null);

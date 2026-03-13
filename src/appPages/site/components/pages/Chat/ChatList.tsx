@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useGetMyChatsQuery } from '../../../../../redux/api/chat';
-import { setActiveGroup } from '../../../../../redux/slices/chatSlice';
+import { setActiveGroup, resetUnreadCount, clearUnreadCountOverrides } from '../../../../../redux/slices/chatSlice';
 import { RootState } from '../../../../../redux/store';
 import { ChatItem } from '../../../../../redux/api/chat/types';
 import { getUserNameById } from '../../../../../constants/userNames';
@@ -17,8 +17,55 @@ interface ChatListProps {
 const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user);
+  const { unreadCountOverrides } = useSelector((state: RootState) => state.chat);
   const { data: chats = [], isLoading, error } = useGetMyChatsQuery();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Загружаем overrides из localStorage при монтировании или смене пользователя
+  useEffect(() => {
+    // Ждем полной авторизации пользователя
+    if (!user.id || !user.username) return;
+    
+    console.log(`🔄 Пользователь авторизован ID: ${user.id}, НЕ очищаем overrides`);
+    
+    // НЕ очищаем overrides чтобы сохранять состояние между чатами
+    // Загружаем сохраненные overrides если они есть
+    const userKey = `unreadCountOverrides_user_${user.id}`;
+    const savedOverrides = localStorage.getItem(userKey);
+    
+    if (savedOverrides) {
+      try {
+        const overrides = JSON.parse(savedOverrides);
+        console.log(`🔄 Загружены overrides для пользователя ${user.id}:`, overrides);
+        
+        // Применяем загруженные overrides
+        Object.entries(overrides).forEach(([groupId, count]) => {
+          dispatch(resetUnreadCount(Number(groupId)));
+        });
+      } catch (error) {
+        console.error('❌ Ошибка загрузки overrides:', error);
+      }
+    } else {
+      console.log(`📝 Нет сохраненных overrides для пользователя ${user.id}`);
+    }
+  }, [user.id, user.username, dispatch]);
+
+  // Очищаем overrides при смене пользователя (когда ID меняется)
+  useEffect(() => {
+    return () => {
+      console.log('🧹 Компонент размонтируется, очищаем overrides');
+      dispatch(clearUnreadCountOverrides());
+    };
+  }, [dispatch]);
+
+  // Сохраняем overrides в localStorage при изменении
+  useEffect(() => {
+    if (!user.id || Object.keys(unreadCountOverrides).length === 0) return;
+    
+    const storageKey = `unreadCountOverrides_user_${user.id}`;
+    localStorage.setItem(storageKey, JSON.stringify(unreadCountOverrides));
+    console.log(`💾 Сохранены overrides для пользователя ${user.id} в localStorage:`, unreadCountOverrides);
+  }, [unreadCountOverrides, user.id]);
 
   // Функция для получения имени собеседника для личного чата
   const getChatDisplayName = (chat: ChatItem) => {
@@ -57,16 +104,29 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
     return title;
   };
 
+  // Применяем overrides к данным из API (только если они не были сброшены)
+  const chatsWithOverrides = chats.map(chat => ({
+    ...chat,
+    unread_count: unreadCountOverrides[chat.group_id] !== undefined 
+      ? unreadCountOverrides[chat.group_id] 
+      : chat.unread_count
+  }));
+
   // Фильтруем чаты по chat_group_id пользователя
-  const filteredChats = chats.filter(chat => {
+  const filteredChats = chatsWithOverrides.filter(chat => {
     // Если у пользователя нет chat_group_id, показываем все чаты
     if (!user.chat_group_id) return true;
     
-    // Фильтруем по group_id в чате
-    console.log(' Чат:', chat.title, 'Group ID:', chat.group_id, 'User chat_group_id:', user.chat_group_id);
+    // Показываем чаты если:
+    // 1. Это групповой чат и group_id совпадает
+    // 2. Это личный чат (dialog_) - показываем всегда
+    const isGroupChat = chat.group_id === user.chat_group_id;
+    const isPrivateChat = chat.title.startsWith('dialog_');
+    
+    console.log(' Чат:', chat.title, 'Group ID:', chat.group_id, 'User chat_group_id:', user.chat_group_id, 'Is private:', isPrivateChat);
     console.log(' Курс пользователя:', user.course);
     
-    return chat.group_id === user.chat_group_id;
+    return isGroupChat || isPrivateChat;
   });
 
   // Сортируем чаты по времени последнего сообщения (самые свежие наверху)
@@ -116,7 +176,21 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
     }
   }, [sortedChats, filteredChats, chats, isLoading, error, user.chat_group_id, user.course]);
 
+  // Отладка: логируем все чаты и их unread_count
+  useEffect(() => {
+    console.log(`🔍 ОТЛАДКА: Все чаты из API:`);
+    chats.forEach(chat => {
+      console.log(`  💬 Чат ${chat.group_id}: "${chat.title}"`);
+      console.log(`     📊 unread_count: ${chat.unread_count} (тип: ${typeof chat.unread_count})`);
+      console.log(`     📝 Последнее сообщение:`, chat.last_message);
+      console.log(`     🔢 Override: ${unreadCountOverrides[chat.group_id]}`);
+      console.log(`     ✨ Финальный счетчик: ${unreadCountOverrides[chat.group_id] !== undefined ? unreadCountOverrides[chat.group_id] : chat.unread_count}`);
+    });
+  }, [chats, unreadCountOverrides]);
+
   const handleSelectChat = (groupId: number, title: string) => {
+    console.log(`🔄 Клик на чат ${groupId}`);
+    
     // Сохраняем текущую позицию скролла
     const scrollContainer = scrollContainerRef.current;
     if (scrollContainer) {
@@ -221,7 +295,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
           </div>
         ) : (
           <div className={styles.chatItems}>
-            {sortedChats.map((chat) => (
+            {sortedChats.map((chat) => {
+              const shouldShowBadge = chat.unread_count && Number(chat.unread_count) > 0;
+              console.log(`💬 Чат ${chat.group_id}: ${chat.title}, непрочитанных: ${chat.unread_count} (тип: ${typeof chat.unread_count}, показать бейдж: ${shouldShowBadge})`);
+              return (
               <div
                 key={chat.group_id}
                 className={`${styles.chatItem} ${activeGroupId === chat.group_id ? styles.active : ''}`}
@@ -262,10 +339,16 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
                         'Сообщений еще нет'
                       )}
                     </p>
+                    {Boolean(chat.unread_count) && Number(chat.unread_count) > 0 && (
+                      <div className={styles.unreadBadge}>
+                        {Number(chat.unread_count) > 99 ? '99+' : chat.unread_count}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

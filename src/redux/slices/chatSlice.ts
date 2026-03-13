@@ -47,6 +47,9 @@ export interface ChatState {
   chats: ChatItem[];
   chatsLoading: boolean;
   
+  // Unread counts override (для постоянного сброса счетчиков)
+  unreadCountOverrides: Record<number, number>;
+  
   // Group members
   groupMembers: Record<number, GroupMember[]>;
   
@@ -83,6 +86,7 @@ const initialState: ChatState = {
   hasMoreMessages: {},
   chats: [],
   chatsLoading: false,
+  unreadCountOverrides: {},
   groupMembers: {},
   typingUsers: {},
   wsConnected: false,
@@ -334,6 +338,24 @@ const chatSlice = createSlice({
           break;
       }
     },
+
+    resetUnreadCount: (state, action: PayloadAction<number>) => {
+      const groupId = action.payload;
+      // УДАЛЯЕМ override чтобы счетчик мог обновиться с сервера
+      delete state.unreadCountOverrides[groupId];
+      
+      // Также обновляем в текущем списке чатов если есть
+      const chatIndex = state.chats.findIndex(chat => chat.group_id === groupId);
+      if (chatIndex !== -1) {
+        state.chats[chatIndex].unread_count = 0;
+      }
+      console.log(`Счетчик непрочитанных для чата ${groupId} сброшен (override удален)`);
+    },
+
+    clearUnreadCountOverrides: (state) => {
+      state.unreadCountOverrides = {};
+      console.log('Все overrides счетчиков очищены');
+    },
   },
 });
 
@@ -357,6 +379,8 @@ export const {
   setIsTyping,
   setUploadingFile,
   handleWebSocketMessage,
+  resetUnreadCount,
+  clearUnreadCountOverrides,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
