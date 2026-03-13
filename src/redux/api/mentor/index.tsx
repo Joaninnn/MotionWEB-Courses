@@ -2,7 +2,6 @@ import { api as index } from "..";
 
 const api = index.injectEndpoints({
     endpoints: (build) => ({
-        // Получить все видео ментора
         getMentorVideos: build.query<MENTOR.VideoResponse[], void>({
             query: () => ({
                 url: `/mentor/videos/`,
@@ -11,7 +10,6 @@ const api = index.injectEndpoints({
             providesTags: ["mentor", "video"],
         }),
 
-        // Получить детали видео
         getMentorVideoDetail: build.query<MENTOR.GetVideoDetailResponse, number>({
             query: (id) => ({
                 url: `video-update/${id}/`,
@@ -20,7 +18,6 @@ const api = index.injectEndpoints({
             providesTags: ["mentor"],
         }),
 
-        // Создать видео
         createVideo: build.mutation<MENTOR.CreateVideoResponse, MENTOR.CreateVideoRequest>({
             query: (data) => {
                 const formData = new FormData();
@@ -34,9 +31,7 @@ const api = index.injectEndpoints({
                     formData.append("description", data.description);
                 }
 
-                console.log("🔍 [MENTOR_API] FormData being sent:");
                 for (const [key, value] of formData.entries()) {
-                    console.log(`  ${key}:`, value instanceof File ? `File(${value.name}, ${value.size} bytes)` : value);
                 }
 
                 return {
@@ -48,7 +43,6 @@ const api = index.injectEndpoints({
             invalidatesTags: ["mentor", "video"],
         }),
 
-        // Обновить видео
         updateVideo: build.mutation<MENTOR.UpdateVideoResponse, MENTOR.UpdateVideoRequest>({
             query: ({ id, ...data }) => ({
                 url: `video-update/${id}/`,
@@ -58,7 +52,6 @@ const api = index.injectEndpoints({
             invalidatesTags: ["mentor", "video"],
         }),
 
-        // Удалить видео
         deleteVideo: build.mutation<void, number>({
             query: (id) => ({
                 url: `video-update/${id}/`,
@@ -67,7 +60,6 @@ const api = index.injectEndpoints({
             invalidatesTags: ["mentor", "video"],
         }),
 
-        // Получить список курсов
         getCourseList: build.query<{ id: number; course_name: string }[], void>({
             query: () => ({
                 url: `/course_list/`,
@@ -76,7 +68,6 @@ const api = index.injectEndpoints({
             providesTags: ["course"],
         }),
 
-        // Получить список категорий уроков
         getCategoryLessonList: build.query<{ id: number; ct_lesson_name: string }[], void>({
             query: () => ({
                 url: `/cactegory_lesson_list/`,

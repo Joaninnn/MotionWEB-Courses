@@ -1,7 +1,5 @@
-// src/redux/slices/userSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-// Определяем константы для статусов пользователя
 export const USER_STATUS = {
     MENTOR: 'mentor',
     STUDENT: 'student'
@@ -16,13 +14,12 @@ export interface UserState {
     lastName: string | null;
     phoneNumber: string | null;
     course: number | null;
-    chat_group_id: number | null; // ID группы в FastAPI чате
+    chat_group_id: number | null; 
     role: string | null;
     id: number | null;
-    status: UserStatus | null; // Mentor или Student
+    status: UserStatus | null; 
 }
 
-// Создаем тип для payload действия setUser
 type SetUserPayload = Omit<UserState, 'username'> & { username: string };
 
 const initialState: UserState = {
@@ -46,15 +43,11 @@ const userSlice = createSlice({
             state,
             action: PayloadAction<SetUserPayload>
         ) => {
-            // Убираем console.log в production для SEO и производительности
             if (process.env.NODE_ENV === 'development') {
-                console.log("✅ [USER_SLICE] setUser called with:", action.payload);
             }
             
-            // Деструктуризация для лучшей читаемости
             const { username, email, firstName, lastName, phoneNumber, course, chat_group_id, role, id, status } = action.payload;
             
-            // Присваиваем значения
             state.username = username;
             state.email = email;
             state.firstName = firstName;
@@ -67,12 +60,9 @@ const userSlice = createSlice({
             state.status = status;
         },
         clearUser: (state) => {
-            // Убираем console.log в production для SEO и производительности
             if (process.env.NODE_ENV === 'development') {
-                console.log("🧹 [USER_SLICE] clearUser called");
             }
             
-            // Эффективный сброс всех полей используя Object.assign
             Object.assign(state, initialState);
         },
     },

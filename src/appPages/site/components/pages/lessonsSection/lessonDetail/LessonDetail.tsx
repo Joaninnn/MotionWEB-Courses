@@ -14,19 +14,15 @@ function LessonDetailContent() {
     const { id } = useParams();
     const [visibleCount, setVisibleCount] = useState(6);
 
-    // Определяем роль пользователя
     const isMentor = currentUser?.status === "mentor";
 
-    // Получаем список категорий для менторов
     const { data: categories = [] } = useGetCategoryLessonListQuery();
 
-    // Вспомогательная функция для безопасного получения названия категории
     const getCategoryName = (category: { ct_lesson_name?: string } | number | undefined) => {
         if (typeof category === 'object' && category?.ct_lesson_name) {
             return category.ct_lesson_name;
         }
         
-        // Если category это число, найдем название по ID из списка категорий
         if (typeof category === 'number') {
             const foundCategory = categories.find(cat => cat.id === category);
             if (foundCategory) {
@@ -38,21 +34,18 @@ function LessonDetailContent() {
         return 'Не указана';
     };
 
-    // Получаем детали текущего видео
     const studentVideoQuery = useGetVideosDetailQuery(Number(id), {
-        skip: !id || isMentor, // Пропускаем если ментор
+        skip: !id || isMentor, 
     });
 
     const mentorVideoQuery = useGetMentorVideoDetailQuery(Number(id), {
-        skip: !id || !isMentor, // Пропускаем если не ментор
+        skip: !id || !isMentor,
     });
 
-    // Выбираем нужные данные в зависимости от роли
     const videoDetail = isMentor ? mentorVideoQuery.data : studentVideoQuery.data;
     const isVideoLoading = isMentor ? mentorVideoQuery.isLoading : studentVideoQuery.isLoading;
     const videoError = isMentor ? mentorVideoQuery.error : studentVideoQuery.error;
 
-    // Получаем детали курса, к которому принадлежит видео
     const { 
         data: courseDetail, 
         isLoading: isCourseLoading 
@@ -63,36 +56,28 @@ function LessonDetailContent() {
         }
     );
 
-    // Получаем список других видео того же курса для "Следующие уроки"
     const { data: courseVideos = [] } = useGetCourseVideosQuery(
         {
             course_id: currentUser?.course?.toString() || "",
         },
         {
-            skip: !currentUser?.course || !videoDetail || isMentor, // Для менторов не показываем следующие уроки
+            skip: !currentUser?.course || !videoDetail || isMentor, 
         }
     );
 
     const videoRef = useRef<HTMLVideoElement | null>(null);
 
-    // Проверка доступа - для менторов доступ ко всем своим видео, для студентов только к видео своего курса
     const hasAccess = isMentor ? 
-        !!videoDetail : // Ментор имеет доступ к своим видео
-        (videoDetail && videoDetail.course === currentUser?.course); // Студент только к видео своего курса
+        !!videoDetail : 
+        (videoDetail && videoDetail.course === currentUser?.course);
 
-    console.log("🔍 [LESSON_DETAIL] User role:", isMentor ? "mentor" : "student");
-    console.log("🔍 [LESSON_DETAIL] User course ID:", currentUser?.course);
-    console.log("🔍 [LESSON_DETAIL] Video course ID:", videoDetail?.course);
-    console.log("🔍 [LESSON_DETAIL] Video ID:", id);
-    console.log("🔍 [LESSON_DETAIL] Has access:", hasAccess);
+    
 
-    // Фильтруем видео с использованием useMemo для оптимизации
     const allNextLessons = useMemo(() => {
-        if (isMentor) return []; // Для менторов не показываем следующие уроки
+        if (isMentor) return []; 
         
         return courseVideos
             .filter((video) => {
-                // Безопасно получаем ID категории
                 const categoryId = typeof videoDetail?.category_lesson === 'object' 
                     ? videoDetail.category_lesson?.id 
                     : videoDetail?.category_lesson;
@@ -111,16 +96,9 @@ function LessonDetailContent() {
             .sort((a, b) => a.lesson_number - b.lesson_number);
     }, [courseVideos, videoDetail, id, isMentor]);
 
-    // Видимые уроки
     const nextLessons = allNextLessons.slice(0, visibleCount);
     
-    // Есть ли еще уроки для показа
     const hasMore = allNextLessons.length > visibleCount;
-
-    console.log("🔍 [NEXT_LESSONS] Current category:", videoDetail?.category_lesson);
-    console.log("🔍 [NEXT_LESSONS] Current lesson number:", videoDetail?.lesson_number);
-    console.log("🔍 [NEXT_LESSONS] All next lessons:", allNextLessons.length);
-    console.log("🔍 [NEXT_LESSONS] Visible lessons:", nextLessons.length);
 
     const handleVideoClick = (video: LESSONS.VideoListItem): void => {
         router.push(`/lessons/${video.id}`);
@@ -146,7 +124,6 @@ function LessonDetailContent() {
         return () => document.removeEventListener("keydown", disableKeys);
     }, []);
 
-    // Обработка состояния загрузки
     if (isVideoLoading || isCourseLoading) {
         return (
             <div className={style.empty}>
@@ -155,7 +132,6 @@ function LessonDetailContent() {
         );
     }
 
-    // Обработка ошибки
     if (videoError) {
         return (
                 <div className={style.empty}>
@@ -171,7 +147,6 @@ function LessonDetailContent() {
             );
     }
 
-    // Если видео не найдено
     if (!videoDetail) {
         return (
                 <div className={style.empty}>
@@ -311,11 +286,9 @@ function LessonDetailContent() {
     );
 }
 
-// Обертка с ключом для сброса состояния при изменении ID
 function LessonDetail() {
     const { id } = useParams();
     
-    // Используем id как ключ - это заставит React пересоздать компонент при изменении id
     return <LessonDetailContent key={id as string} />;
 }
 

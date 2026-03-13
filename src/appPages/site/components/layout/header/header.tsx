@@ -1,4 +1,3 @@
-// src/appPages/site/components/layout/header/header.tsx
 "use client";
 
 import style from "./Header.module.scss";
@@ -30,8 +29,7 @@ const Links: LinkItem[] = [
     {
         name: "Видео",
         href: "/mentor",
-        mentorOnly: true, // Только для менторов
-    },
+        mentorOnly: true, }
 ];
 
 const Header: React.FC = () => {
@@ -40,21 +38,17 @@ const Header: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
     const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false);
 
-    // Блокировка скролла при открытом меню
     useEffect(() => {
-        if (typeof window === 'undefined') return; // Проверка на серверный рендеринг
+        if (typeof window === 'undefined') return; 
         
         if (isMenuOpen) {
-            // Закрываем профильное меню при открытии бургер-меню
             setShowProfileMenu(false);
             
-            // Блокируем скролл
             document.body.style.overflow = 'hidden';
             document.body.style.position = 'fixed';
             document.body.style.width = '100%';
             document.body.style.top = `-${window.scrollY}px`;
         } else {
-            // Восстанавливаем скролл
             const scrollY = document.body.style.top;
             document.body.style.overflow = '';
             document.body.style.position = '';
@@ -66,7 +60,6 @@ const Header: React.FC = () => {
             }
         }
 
-        // Cleanup при размонтировании
         return () => {
             if (typeof window === 'undefined') return;
             document.body.style.overflow = '';
@@ -76,46 +69,24 @@ const Header: React.FC = () => {
         };
     }, [isMenuOpen]);
 
-    // Получаем пользователя из Redux (данные уже загружены через AuthInitializer)
     const currentUser = useAppSelector((state) => state.user);
 
-    // Проверяем наличие токена
     const hasToken =
         typeof window !== "undefined" && !!Cookies.get("access_token");
 
-    // Пользователь аутентифицирован, если есть токен и имя пользователя в Redux
-    // ВАЖНО: проверяем как токен, так и данные в Redux
     const isAuthenticated = hasToken && !!currentUser?.username;
 
-    // Логирование для отладки
-    console.log("🔍 [HEADER] Debug info:", {
-        hasToken,
-        currentUser,
-        isAuthenticated,
-        username: currentUser?.username || "не загружен",
-        status: currentUser?.status || "не определен",
-        statusType: typeof currentUser?.status,
-        statusValue: currentUser?.status,
-        timestamp: new Date().toISOString(),
-    });
-
-    // Дополнительная проверка состояния localStorage
     if (typeof window !== "undefined") {
         const localStorageData = localStorage.getItem("userState");
-        console.log("🔍 [HEADER] localStorage data:", localStorageData ? "exists" : "empty");
         if (localStorageData) {
             try {
                 const parsed = JSON.parse(localStorageData);
-                console.log("🔍 [HEADER] localStorage status:", parsed.status);
-                console.log("🔍 [HEADER] localStorage status type:", typeof parsed.status);
             } catch (e) {
-                console.log("🔍 [HEADER] localStorage parse error:", e);
             }
         }
     }
 
     const handleProfileClick = (): void => {
-        // Если бургер-меню открыто, не открываем профиль
         if (isMenuOpen) {
             return;
         }
@@ -131,7 +102,6 @@ const Header: React.FC = () => {
         try {
             await logout().unwrap();
         } catch (error) {
-            console.log("⚠️ Logout failed:", error);
         } finally {
             setShowProfileMenu(false);
             setTimeout(() => {
@@ -161,10 +131,8 @@ const Header: React.FC = () => {
 
                     <div className={style.navs}>
                         {Links.filter((link) => {
-                            // Если ссылка только для менторов, проверяем статус пользователя
                             if (link.mentorOnly) {
                                 const isMentor = currentUser?.status === "mentor";
-                                console.log(`🔍 [HEADER] Link "${link.name}" mentorOnly=${link.mentorOnly}, isMentor=${isMentor}, status=${currentUser?.status}`);
                                 return isMentor;
                             }
                             return true;
@@ -248,7 +216,6 @@ const Header: React.FC = () => {
                         </button>
                     </div>
 
-                    {/* Оверлей для закрытия меню по клику на фон */}
                     {isMenuOpen && (
                         <div 
                             className={style.menuOverlay}
@@ -262,7 +229,6 @@ const Header: React.FC = () => {
                         }`}
                     >
                         {Links.filter((link) => {
-                            // Если ссылка только для менторов, проверяем статус пользователя
                             if (link.mentorOnly) {
                                 return currentUser?.status === "mentor";
                             }

@@ -1,4 +1,3 @@
-// src/hooks/useNotifications.ts
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { addNotification, markAsRead, markAllAsRead } from '@/redux/slices/notificationsSlice';

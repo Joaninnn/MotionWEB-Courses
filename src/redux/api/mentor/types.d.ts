@@ -13,7 +13,6 @@ namespace MENTOR {
         description?: string;
     }
 
-    // Типы для создания/обновления видео
     interface CreateVideoRequest {
         course: number;
         category_lesson: number;
@@ -32,7 +31,6 @@ namespace MENTOR {
 
     type VideoItem = VideoResponse
 
-    // Response types
     type GetVideosResponse = VideoResponse[];
     type GetVideoDetailResponse = VideoResponse;
     type CreateVideoResponse = VideoResponse;

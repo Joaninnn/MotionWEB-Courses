@@ -14,13 +14,8 @@ const chatBaseQuery = fetchBaseQuery({
   prepareHeaders: (headers) => {
     const token = Cookies.get('access_token');
     
-    console.log("🔍 [CHAT_API] Access token:", token ? 'exists' : 'missing');
-    console.log("🔍 [CHAT_API] Token length:", token?.length || 0);
-    console.log("🔍 [CHAT_API] Token preview:", token?.substring(0, 20) + '...');
-    
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
-      console.log("🔍 [CHAT_API] Authorization header set");
     }
     return headers;
   },
@@ -31,7 +26,6 @@ export const chatApi = createApi({
   baseQuery: chatBaseQuery,
   tagTypes: ['Group', 'Message', 'Chat'],
   endpoints: (builder) => ({
-    // Groups
     getMyGroups: builder.query<Group[], void>({
       query: () => '/groups',
       providesTags: ['Group'],
@@ -73,7 +67,6 @@ export const chatApi = createApi({
       invalidatesTags: ['Group'],
     }),
     
-    // Messages
     getMessages: builder.query<MessagesResponse, { groupId: number; limit?: number; beforeId?: number }>({
       query: ({ groupId, limit = 50, beforeId }) => ({
         url: `/groups/${groupId}/messages`,
@@ -92,21 +85,11 @@ export const chatApi = createApi({
         
         if (file) {
           formData.append('file', file);
-          console.log('📤 API отправка файла:', {
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            groupId
-          });
+          
         }
         
-        console.log('📤 FormData содержимое:');
         for (const [key, value] of formData.entries()) {
-          console.log(`  ${key}:`, value instanceof File ? {
-            name: value.name,
-            type: value.type,
-            size: value.size
-          } : value);
+          
         }
         
         return {
@@ -135,7 +118,6 @@ export const chatApi = createApi({
       invalidatesTags: ['Message'],
     }),
     
-    // Chats
     getMyChats: builder.query<ChatItem[], void>({
       query: () => '/chats/my',
       providesTags: ['Chat'],
@@ -143,20 +125,16 @@ export const chatApi = createApi({
     
     markAsRead: builder.mutation<string, { groupId: number; messageId: number }>({
       query: ({ groupId, messageId }) => {
-        console.log('🔍 [markAsRead] Запрос:', { groupId, messageId });
-        console.log('🔗 [markAsRead] URL:', `/chats/${groupId}/read`);
-        console.log('📦 [markAsRead] Query params:', { message_id: messageId });
         
         return {
           url: `/chats/${groupId}/read`,
           method: 'POST',
-          params: { message_id: messageId }, // Возвращаем params как было
+          params: { message_id: messageId },
         };
       },
-      invalidatesTags: ['Chat', 'Message'], // Обновляем и чаты и сообщения
+      invalidatesTags: ['Chat', 'Message'], 
     }),
     
-    // Dialogs
     getOrCreateDialog: builder.mutation<string, number>({
       query: (otherUserId) => ({
         url: `/dialogs/${otherUserId}`,
@@ -165,10 +143,8 @@ export const chatApi = createApi({
       invalidatesTags: ['Chat', 'Group'],
     }),
     
-    // Test endpoint
     testMe: builder.query<string, void>({
       query: () => {
-        console.log('🔍 [testMe] Проверка доступности бэкенда...');
         return '/test/me';
       },
     }),

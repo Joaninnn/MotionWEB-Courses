@@ -1,4 +1,3 @@
-// src/redux/store.ts
 import { configureStore } from "@reduxjs/toolkit";
 import { api } from "./api";
 import { chatApi } from "./api/chat";
@@ -6,7 +5,6 @@ import userReducer from "./slices/userSlice";
 import chatReducer from "./slices/chatSlice";
 import notificationsReducer from "./slices/notificationsSlice";
 
-// Создаём функцию для создания store (нужно определить раньше для типов)
 export const makeStore = () => {
     return configureStore({
         reducer: {

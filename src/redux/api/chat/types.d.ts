@@ -1,4 +1,3 @@
-// src/redux/api/chat/types.d.ts
 
 export interface Group {
   id: number;
@@ -38,7 +37,7 @@ export interface Attachment {
   type?: string;
   mime?: string;
   name?: string;
-  duration?: number; // Длительность аудио в секундах
+  duration?: number; 
 }
 
 export interface GroupDetail {
@@ -67,7 +66,7 @@ export interface ChatItem {
   members_count: number;
   last_message: Message | null;
   unread_count: number;
-  course: number | null; // ID курса, к которому относится чат
+  course: number | null; 
 }
 
 export interface CreateGroupRequest {
@@ -82,7 +81,6 @@ export interface EditMessageRequest {
   text: string;
 }
 
-// WebSocket message types
 export interface WebSocketMessage {
   type: 'message' | 'typing' | 'user_joined' | 'user_left' | 'message_edited' | 'message_deleted';
   data: unknown;

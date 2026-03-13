@@ -60,7 +60,6 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
         videoInfo: null
     });
 
-    // Получаем список курсов для отображения названий
     const { data: courses = [] } = useGetCourseListQuery();
 
     const mentorVideosQuery = useGetMentorVideosQuery(
@@ -75,7 +74,6 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
 
     const [deleteVideo, { isLoading: isDeleting }] = useDeleteVideoMutation();
 
-    // Toast auto-hide
     useEffect(() => {
         if (toast) {
             const timer = setTimeout(() => {
@@ -100,21 +98,11 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
         return acc;
     }, []);
 
-    console.log("📊 [UPLOADED_VIDEOS] State:", {
-        currentUser: !!currentUser,
-        videosCount: videos.length,
-        extractedVideosCount: extractedVideos.length,
-        isLoading,
-        error,
-        videosData: JSON.parse(JSON.stringify(videos)),
-        extractedVideos,
-    });
+  
 
     const handleEdit = (id: number) => {
-        console.log("✏️ [UPLOADED_VIDEOS] Editing video:", id);
         externalSetEditingId?.(id);
         
-        // Smooth scroll to top
         window.scrollTo({
             top: 0,
             behavior: 'smooth'
@@ -134,12 +122,10 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
         if (!deleteModal.videoId) return;
         
         try {
-            console.log("🗑️ [UPLOADED_VIDEOS] Deleting video:", deleteModal.videoId);
             await deleteVideo(deleteModal.videoId).unwrap();
             showToast('success', 'Видео успешно удалено!');
             setDeleteModal({ isOpen: false, videoId: null, videoTitle: "", videoInfo: null });
         } catch (error: unknown) {
-            console.error("❌ [UPLOADED_VIDEOS] Delete error:", error);
             
             const errorObj = error as { status?: number };
             if (errorObj?.status === 403) {
@@ -174,7 +160,6 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
         return matchesSearch;
     });
 
-    console.log("🔍 [UPLOADED_VIDEOS] Filtered videos:", filteredData.length);
 
     return (
         <section className={style.UploadedVideos}>
@@ -185,7 +170,6 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
                 </div>
             )}
             
-            {/* Модальное окно подтверждения удаления */}
             {deleteModal.isOpen && (
                 <div className={style.modalOverlay}>
                     <div className={style.deleteModal}>

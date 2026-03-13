@@ -1,4 +1,3 @@
-// src/appPages/site/components/pages/Chat/ChatWindow.tsx
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
@@ -28,125 +27,80 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   const [showDebugger, setShowDebugger] = useState(false);
   const [createDialog] = useGetOrCreateDialogMutation();
 
-  // Получаем сообщения для определения ID последнего сообщения
   const { data: messagesData } = useGetMessagesQuery(
     { groupId, limit: 50 },
     { skip: !groupId }
   );
 
-  // Получаем список чатов для обновления кэша
   const { refetch: refetchChats } = useGetMyChatsQuery();
   
-  // API для отметки сообщений как прочитанных
   const [markAsRead] = useMarkAsReadMutation();
   
-  // Временная проверка доступности бэкенда
   const { data: testData, error: testError } = useTestMeQuery();
 
-  // Инициализируем WebSocket подключение
   const { sendMessage, getConnectionStatus } = useWebSocket(groupId);
   
-  console.log('🔗 ChatWindow render:', { groupId, title, wsConnected });
-  
-  // Проверяем доступность бэкенда
-  useEffect(() => {
-    if (testError) {
-      console.error('❌ Бэкенд недоступен:', testError);
-    } else if (testData) {
-      console.log('✅ Бэкенд доступен:', testData);
-    }
-  }, [testData, testError]);
-
-  // Функция для определения никнейма собеседника в личном чате
   const getChatPartnerName = () => {
-    // Проверяем, является ли это личным чатом по названию или флагу
     const isPrivateChat = title.startsWith('dialog_') || groupDetail?.is_private;
     
     if (isPrivateChat) {
-      // Из названия dialog_X_Y можно определить ID собеседника
       const parts = title.split('_');
       if (parts.length === 3) {
         const userId1 = parseInt(parts[1]);
         const userId2 = parseInt(parts[2]);
         const currentUserId = user.id;
         
-        // Определяем ID собеседника
         const partnerId = userId1 === currentUserId ? userId2 : userId1;
         
-        // Используем общий кэш имен
         return getUserNameById(partnerId);
       }
     }
     
-    // Для групповых чатов или если не смогли определить, форматируем название
     return formatChatTitle(title);
   };
 
-  // Функция для определения роли собеседника в личном чате
   const getChatPartnerRole = () => {
-    // Проверяем, является ли это личным чатом по названию или флагу
     const isPrivateChat = title.startsWith('dialog_') || groupDetail?.is_private;
     
     if (isPrivateChat) {
-      // Из названия dialog_X_Y можно определить ID собеседника
       const parts = title.split('_');
       if (parts.length === 3) {
         const userId1 = parseInt(parts[1]);
         const userId2 = parseInt(parts[2]);
         const currentUserId = user.id;
         
-        // Определяем ID собеседника
         const partnerId = userId1 === currentUserId ? userId2 : userId1;
         
-        // Используем общий кэш ролей
         const role = getUserRoleById(partnerId);
         return getDisplayRole(role);
       }
     }
     
-    // Для групповых чатов не показываем роль
     return null;
   };
 
-  // Функция для обработки клика на участника (создание личного чата)
   const handleMemberClick = async (member: GroupMember) => {
-    // Не создаем диалог с самим собой
     if (member.user_id === user.id) {
-      console.log('Нельзя создать диалог с самим собой');
       return;
     }
 
     try {
-      console.log('🔄 Создание диалога с пользователем:', member.user_id);
       const result = await createDialog(member.user_id).unwrap();
-      console.log('✅ Диалог создан:', result);
       
-      // Здесь можно добавить логику для перехода в созданный диалог
-      // Например, обновить список чатов и выбрать новый диалог
       
     } catch (error) {
-      console.error('❌ Ошибка создания диалога:', error);
     }
   };
 
-  // Функция для определения роли участника
   const getMemberRole = (member: GroupMember) => {
-    console.log('🔍 [ROLE] Участник:', member);
-    console.log('🔍 [ROLE] Текущий пользователь:', user);
     
-    // Если роль участника - ментор, показываем как ментора
     if (member.role === 'mentor') {
-      console.log('✅ [ROLE] Ментор → Ментор');
       return 'Ментор';
     }
     
-    // Все остальные - студенты
-    console.log('❌ [ROLE] Остальные → Студент');
     return 'Студент';
   };
-  // Функция для форматирования названия чата
   const formatChatTitle = (title: string) => {
-    // Если название начинается с 'course:', заменяем на 'группа:'
     if (title.startsWith('course:')) {
       return title.replace('course:', 'группа:');
     }
@@ -158,143 +112,76 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
     skip: !groupId,
   });
 
-  // Фиксируем скролл вверху при переключении групп
   useEffect(() => {
-    // НЕ скроллируем автоматически при переключении групп
-    // Пользователь должен сам контролировать скролл
   }, [groupId]);
 
-  // Отмечаем сообщения как прочитанные при загрузке чата
   useEffect(() => {
-    console.log(`🔄 useEffect для сброса счетчиков triggered, groupId: ${groupId}`);
-    
-    // Сбрасываем счетчик непрочитанных сообщений для этого чата (удаляем override)
-    console.log(`🔄 Вызываем dispatch(resetUnreadCount(${groupId}))`);
     dispatch(resetUnreadCount(groupId));
     
-    // Отмечаем сообщения как прочитанные на сервере
     if (messagesData?.items && messagesData.items.length > 0) {
-      // Фильтруем сообщения только от других пользователей и только из текущего чата
       const otherUserMessages = messagesData.items.filter(msg => 
         msg.user_id !== user.id && msg.group_id === groupId
       );
       
-      console.log(`📝 Сообщения от других пользователей в чате ${groupId}:`, otherUserMessages.length);
       
       if (otherUserMessages.length > 0) {
-        const lastMessageFromOther = otherUserMessages[0]; // Берем последнее сообщение (отсортированы по убыванию даты)
+        const lastMessageFromOther = otherUserMessages[0]; 
         
-        console.log(`📝 Последнее сообщение от другого пользователя:`, lastMessageFromOther);
         
         if (lastMessageFromOther?.id) {
-          console.log(`📤 Вызываем markAsRead API для groupId: ${groupId}, messageId: ${lastMessageFromOther.id}`);
-          console.log(`📦 Параметры: groupId=${groupId}, messageId=${lastMessageFromOther.id}`);
-          console.log(`📦 URL: POST /chats/${groupId}/read`);
           
-          // Проверяем, что сообщение действительно существует в списке И в текущем чате
           const messageExists = messagesData?.items?.some(msg => 
             msg.id === lastMessageFromOther.id && msg.group_id === groupId
           );
-          console.log(`🔍 Проверка существования сообщения:`, {
-            messageId: lastMessageFromOther.id,
-            groupId: groupId,
-            exists: messageExists,
-            totalMessages: messagesData?.items?.length
-          });
           
           if (!messageExists) {
-            console.warn(`⚠️ Сообщение ${lastMessageFromOther.id} не найдено в чате ${groupId}, пробуем последнее сообщение в чате`);
             
-            // Берем самое последнее сообщение из текущего чата
             const lastMessageInChat = messagesData?.items?.find(msg => 
               msg.group_id === groupId && msg.user_id !== user.id
             );
             
             if (lastMessageInChat) {
-              console.log(`🔄 Используем последнее сообщение в чате ${groupId}:`, lastMessageInChat.id);
               
               markAsRead({ 
                 groupId, 
                 messageId: lastMessageInChat.id 
               }).unwrap()
                 .then((response) => {
-                  console.log(`✅ markAsRead успешен (альтернатива):`, response);
-                  // Обновляем список чатов чтобы получить актуальные счетчики
                   setTimeout(() => {
                     refetchChats();
                   }, 500);
                 })
                 .catch((error) => {
-                  console.error(`❌ Ошибка markAsRead (альтернатива):`, error);
-                  console.error(`❌ Полный объект ошибки:`, JSON.stringify(error, null, 2));
                 });
             } else {
-              console.warn(`⚠️ Нет подходящих сообщений для отметки прочтения в чате ${groupId}`);
             }
             return;
           }
-          
-          // ВСЕГДА вызываем API при открытии чата для синхронизации с бэкендом
-          console.log(`🚀 [markAsRead] Начинаем запрос:`, {
-            groupId,
-            messageId: lastMessageFromOther.id,
-            url: `${process.env.NEXT_PUBLIC_CHAT_API}/chats/${groupId}/read`
-          });
           
           markAsRead({ 
             groupId, 
             messageId: lastMessageFromOther.id 
           }).unwrap()
             .then((response) => {
-              console.log(`✅ markAsRead успешен:`, response);
-              // Обновляем список чатов чтобы получить актуальные счетчики с бэкенда
               setTimeout(() => {
                 refetchChats();
-              }, 500); // Небольшая задержка для обновления бэкенда
+              }, 500); 
             })
             .catch((error) => {
-              console.error(`❌ Ошибка markAsRead:`, error);
-              console.error(`❌ Полный объект ошибки:`, JSON.stringify(error, null, 2));
-              console.error(`❌ Детали ошибки:`, {
-                status: error?.status || 'unknown',
-                statusText: error?.statusText || 'unknown',
-                data: error?.data || 'unknown',
-                message: error?.message || 'unknown',
-                error: error?.error || 'unknown'
-              });
-              
-              // Проверяем конкретные типы ошибок
-              if (error?.status === 404) {
-                console.error(`❌ Сообщение не найдено в чате - возможно ID сообщения неверный или оно было удалено`);
-              } else if (error?.status === 403) {
-                console.error(`❌ Ошибка доступа - проблема с авторизацией`);
-              } else if (error?.status === 500) {
-                console.error(`❌ Внутренняя ошибка бэкенда`);
-              } else {
-                console.error(`❌ Неизвестная ошибка сети или бэкенда`);
-              }
-              
-              // Даже при ошибке пытаем обновить список чатов
               setTimeout(() => {
                 refetchChats();
               }, 1000);
             });
         } else {
-          console.log(`⚠️ Нет непрочитанных сообщений от других пользователей`);
         }
       } else {
-        console.log(`⚠️ Нет сообщений от других пользователей`);
       }
     } else {
-      console.log(`⚠️ Нет сообщений для отметки как прочитанные`);
     }
   }, [groupId, dispatch, refetchChats, markAsRead, messagesData, user.id]);
 
-  // Дополнительно обновляем счетчики при отправке сообщений
   useEffect(() => {
     if (messagesData?.items && messagesData.items.length > 0) {
-      // При появлении новых сообщений обновляем список чатов
-      console.log(`🔄 Обновляем список чатов после загрузки сообщений...`);
       setTimeout(() => {
         refetchChats();
       }, 1000);
@@ -318,7 +205,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
 
   return (
     <div className={styles.chatWindow} ref={chatWindowRef}>
-      {/* ДОБАВЛЕНО: Дебаггер в самом верху */}
       {showDebugger && (
         <div style={{ marginBottom: '10px' }}>
           <WebSocketDebugger groupId={groupId} />
@@ -371,7 +257,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
         </div>
         
         <div className={styles.headerRight}>
-          {/* Показываем кнопку участников только для групповых чатов */}
           {!title.startsWith('dialog_') && !groupDetail?.is_private && (
             <button 
               className={styles.headerButton}

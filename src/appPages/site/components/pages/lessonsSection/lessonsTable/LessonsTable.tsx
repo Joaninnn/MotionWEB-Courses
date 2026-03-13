@@ -17,18 +17,15 @@ interface MentorVideoResponse {
 function LessonsTable() {
     const [search, setSearch] = useState("");
     const [lessonNumber, setLessonNumber] = useState("");
-    const [visibleCount, setVisibleCount] = useState(9); // Начальное количество видимых уроков
+    const [visibleCount, setVisibleCount] = useState(9); 
     const router = useRouter();
     
     const currentUser = useAppSelector((state) => state.user);
     
-    // Определяем роль пользователя
     const isMentor = currentUser?.status === "mentor";
 
-    // Получаем список курсов
     const { data: courses = [] } = useGetCourseListQuery();
     
-    // Получаем видео курса пользователя (для студентов)
     const { data: studentVideos = [], isLoading: isStudentLoading } = useGetCourseVideosQuery(
         {
             course_id: currentUser?.course?.toString() || "",
@@ -36,15 +33,14 @@ function LessonsTable() {
             lesson_number: lessonNumber || undefined,
         },
         {
-            skip: !currentUser?.course || isMentor, // Пропускаем если ментор
+            skip: !currentUser?.course || isMentor,
         }
     );
 
-    // Получаем видео ментора (для менторов)
     const mentorVideosQuery = useGetMentorVideosQuery(
         undefined,
         {
-            skip: !isMentor, // Пропускаем если не ментор
+            skip: !isMentor, 
         }
     );
     
@@ -52,15 +48,13 @@ function LessonsTable() {
     const isLoading = isMentor ? mentorVideosQuery.isLoading : isStudentLoading;
     const error = isMentor ? mentorVideosQuery.error : null;
 
-    // Получаем детали курса по ID из профиля пользователя (только для студентов)
     const { data: courseDetail } = useGetLessonDetailQuery(
         currentUser?.course || 0,
         {
-            skip: !currentUser?.course || isMentor, // Пропускаем если ментор
+            skip: !currentUser?.course || isMentor, 
         }
     );
 
-    // Обрабатываем менторские видео
     const extractedMentorVideos = mentorVideosData.reduce((acc: MENTOR.VideoResponse[], mentorVideo: MentorVideoResponse) => {
         if (mentorVideo?.teaching_courses) {
             mentorVideo.teaching_courses.forEach((course: { video_course?: MENTOR.VideoResponse[] }) => {
@@ -72,10 +66,8 @@ function LessonsTable() {
         return acc;
     }, []);
 
-    // Фильтрация на клиентской стороне
     const allVideos = isMentor ? extractedMentorVideos : studentVideos;
     
-    // Получаем уникальные категории из текущих видео для дропдауна
     const uniqueCategories = React.useMemo(() => {
         const categories = new Set<string>();
         allVideos.forEach((video) => {
@@ -96,7 +88,6 @@ function LessonsTable() {
     
     const filteredVideos = allVideos.filter((video) => {
         if (isMentor) {
-            // Фильтрация для менторов
             const searchLower = search.toLowerCase();
             const categoryName = typeof (video as MENTOR.VideoResponse).category_lesson === 'object' && (video as MENTOR.VideoResponse).category_lesson !== null
                 ? ((video as MENTOR.VideoResponse).category_lesson as MENTOR.CategoryLesson)?.ct_lesson_name
@@ -115,7 +106,6 @@ function LessonsTable() {
             
             return matchesSearch && matchesNumber;
         } else {
-            // Фильтрация для студентов (как было раньше)
             const matchesCategory = !search || 
                 (video as LESSONS.VideoListItem).category_lesson.ct_lesson_name.toLowerCase().includes(search.toLowerCase());
             const matchesNumber = !lessonNumber || 
@@ -125,10 +115,8 @@ function LessonsTable() {
         }
     });
 
-    // Видимые видео (только первые visibleCount штук)
     const visibleVideos = filteredVideos.slice(0, visibleCount);
     
-    // Есть ли еще видео для показа
     const hasMore = filteredVideos.length > visibleCount;
 
     const handleVideoClick = (video: MENTOR.VideoResponse | LESSONS.VideoListItem): void => {
@@ -136,10 +124,9 @@ function LessonsTable() {
     };
 
     const handleShowMore = () => {
-        setVisibleCount(prev => prev + 9); // Добавляем еще 9 уроков
+        setVisibleCount(prev => prev + 9); 
     };
 
-    // Сброс visibleCount при изменении фильтров
     React.useEffect(() => {
         setVisibleCount(9);
     }, [search, lessonNumber]);
@@ -196,7 +183,6 @@ function LessonsTable() {
                         ) : visibleVideos.length > 0 ? (
                             visibleVideos.map((video) => {
                                 if (isMentor) {
-                                    // Карточка для ментора (стиль как в UploadedVideos)
                                     const categoryName = typeof (video as MENTOR.VideoResponse).category_lesson === 'object' && (video as MENTOR.VideoResponse).category_lesson !== null
                                         ? ((video as MENTOR.VideoResponse).category_lesson as MENTOR.CategoryLesson)?.ct_lesson_name
                                         : (video as MENTOR.VideoResponse).category_lesson?.toString() || 'Не указана';
@@ -224,7 +210,6 @@ function LessonsTable() {
                                         </div>
                                     );
                                 } else {
-                                    // Карточка для студента (как было раньше)
                                     return (
                                         <div
                                             key={video.id}

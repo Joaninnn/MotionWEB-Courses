@@ -1,8 +1,6 @@
-// src/redux/slices/chatSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ChatItem, Message, GroupMember, WebSocketMessage } from '../api/chat/types';
 
-// Определяем константы для типов соединения
 export const CONNECTION_STATES = {
   DISCONNECTED: 'disconnected',
   CONNECTING: 'connecting',
@@ -13,8 +11,6 @@ export const CONNECTION_STATES = {
 } as const;
 
 type ConnectionState = typeof CONNECTION_STATES[keyof typeof CONNECTION_STATES];
-
-// Определяем константы для событий WebSocket
 export const WS_EVENTS = {
   CONNECTED: 'connected',
   MESSAGE: 'message',
@@ -32,41 +28,31 @@ export interface TypingUser {
   timeout?: NodeJS.Timeout;
 }
 
-// Создаем более строгие типы для интерфейсов
 export interface ChatState {
-  // Current active chat
   activeGroupId: number | null;
   activeGroupTitle: string;
   
-  // Messages
   messages: Record<number, Message[]>;
   loadingMessages: Record<number, boolean>;
   hasMoreMessages: Record<number, boolean>;
   
-  // Chats list
   chats: ChatItem[];
   chatsLoading: boolean;
   
-  // Unread counts override (для постоянного сброса счетчиков)
   unreadCountOverrides: Record<number, number>;
   
-  // Group members
   groupMembers: Record<number, GroupMember[]>;
   
-  // Typing indicators
   typingUsers: Record<number, TypingUser[]>;
   
-  // Connection status
   wsConnected: boolean;
   wsConnectionState: ConnectionState;
   
-  // UI state
   messageInput: string;
   isTyping: boolean;
   uploadingFile: boolean;
 }
 
-// Типы для payload действий
 type SetActiveGroupPayload = { groupId: number; title: string };
 type SetMessagesPayload = { groupId: number; messages: Message[]; hasMore: boolean };
 type AddMessagesPayload = { groupId: number; messages: Message[] };
@@ -100,7 +86,6 @@ const chatSlice = createSlice({
   name: 'chat',
   initialState,
   reducers: {
-    // Active chat management
     setActiveGroup: (state, action: PayloadAction<SetActiveGroupPayload>) => {
       const { groupId, title } = action.payload;
       state.activeGroupId = groupId;
@@ -112,7 +97,6 @@ const chatSlice = createSlice({
       state.activeGroupTitle = '';
     },
     
-    // Messages
     setMessages: (state, action: PayloadAction<SetMessagesPayload>) => {
       const { groupId, messages, hasMore } = action.payload;
       state.messages[groupId] = messages;
@@ -134,28 +118,21 @@ const chatSlice = createSlice({
         state.messages[groupId] = [];
       }
       
-      // Проверяем, нет ли уже такого сообщения в списке
       const existingMessageIndex = state.messages[groupId].findIndex(
         msg => msg.id === message.id
       );
       
       if (existingMessageIndex === -1) {
-        // Добавляем только если сообщения еще нет
         state.messages[groupId].push(message);
       } else {
-        // Обновляем существующее сообщение
         state.messages[groupId][existingMessageIndex] = message;
       }
       
-      // Update last message in chats list
       const chatIndex = state.chats.findIndex(chat => chat.group_id === groupId);
       if (chatIndex !== -1) {
         state.chats[chatIndex].last_message = message;
         
-        // Автоматически сбрасываем счетчик если последнее сообщение от текущего пользователя
         if (message.user_id && state.chats[chatIndex].unread_count > 0) {
-          // Это проверка на стороне клиента, реальный сброс будет через middleware
-          console.log(`🔍 [addMessage] Проверяем сброс счетчика для чата ${groupId}, user_id: ${message.user_id}, unread_count: ${state.chats[chatIndex].unread_count}`);
         }
       }
     },
@@ -166,30 +143,23 @@ const chatSlice = createSlice({
         state.messages[groupId] = [];
       }
       
-      // Проверяем, нет ли уже такого сообщения в списке
       const existingMessageIndex = state.messages[groupId].findIndex(
         msg => msg.id === message.id
       );
       
       if (existingMessageIndex === -1) {
-        // Добавляем только если сообщения еще нет
         state.messages[groupId].push(message);
       } else {
-        // Обновляем существующее сообщение
         state.messages[groupId][existingMessageIndex] = message;
       }
       
-      // Update last message in chats list
       const chatIndex = state.chats.findIndex(chat => chat.group_id === groupId);
       if (chatIndex !== -1) {
         state.chats[chatIndex].last_message = message;
         
-        // Увеличиваем счетчик непрочитанных только для сообщений от других пользователей
         if (message.user_id !== currentUserId) {
           state.chats[chatIndex].unread_count = (state.chats[chatIndex].unread_count || 0) + 1;
-          console.log(`🔔 Увеличен счетчик для чата ${groupId}: ${state.chats[chatIndex].unread_count} (сообщение от пользователя ${message.user_id}, текущий пользователь: ${currentUserId})`);
         } else {
-          console.log(`📤 Сообщение от текущего пользователя ${currentUserId}, счетчик не увеличивается`);
         }
       }
     },
@@ -216,7 +186,6 @@ const chatSlice = createSlice({
       state.loadingMessages[action.payload.groupId] = action.payload.loading;
     },
     
-    // Chats list
     setChats: (state, action: PayloadAction<ChatItem[]>) => {
       state.chats = action.payload;
       state.chatsLoading = false;
@@ -227,33 +196,27 @@ const chatSlice = createSlice({
     },
     
     
-    // Group members
     setGroupMembers: (state, action: PayloadAction<SetGroupMembersPayload>) => {
       state.groupMembers[action.payload.groupId] = action.payload.members;
     },
     
-    // Typing indicators
     setTypingUser: (state, action: PayloadAction<SetTypingUserPayload>) => {
       const { groupId, user } = action.payload;
       if (!state.typingUsers[groupId]) {
         state.typingUsers[groupId] = [];
       }
       
-      // Remove existing typing for this user
       state.typingUsers[groupId] = state.typingUsers[groupId].filter(
         u => u.user_id !== user.user_id
       );
       
-      // Add new typing indicator if user is typing
       if (user.is_typing) {
         state.typingUsers[groupId].push(user);
         
-        // Auto-remove typing indicator after 3 seconds
         if (user.timeout) {
           clearTimeout(user.timeout);
         }
         user.timeout = setTimeout(() => {
-          // This will be handled in the component or via WebSocket message
         }, 3000);
       }
     },
@@ -266,8 +229,6 @@ const chatSlice = createSlice({
         );
       }
     },
-    
-    // WebSocket connection
     setWsConnected: (state, action: PayloadAction<boolean>) => {
       state.wsConnected = action.payload;
     },
@@ -276,7 +237,6 @@ const chatSlice = createSlice({
       state.wsConnectionState = action.payload;
     },
     
-    // UI state
     setMessageInput: (state, action: PayloadAction<string>) => {
       state.messageInput = action.payload;
     },
@@ -289,11 +249,9 @@ const chatSlice = createSlice({
       state.uploadingFile = action.payload;
     },
     
-    // WebSocket message handlers
     handleWebSocketMessage: (state, action: PayloadAction<unknown>) => {
       const payload = action.payload;
 
-      // Backend format: { event: 'connected'|'message'|'read_receipt'|'error', ... }
       if (payload && typeof payload === 'object' && 'event' in payload) {
         const backendPayload = payload as { event: string; [key: string]: unknown };
 
@@ -312,7 +270,6 @@ const chatSlice = createSlice({
               state.messages[groupId] = [];
             }
             
-            // Проверяем, нет ли уже такого сообщения
             const existingMessageIndex = state.messages[groupId].findIndex(
               m => m.id === msg.id
             );
@@ -320,7 +277,6 @@ const chatSlice = createSlice({
             if (existingMessageIndex === -1) {
               state.messages[groupId].push(msg);
             } else {
-              // Обновляем существующее сообщение
               state.messages[groupId][existingMessageIndex] = msg;
             }
 
@@ -332,7 +288,6 @@ const chatSlice = createSlice({
           }
 
           case WS_EVENTS.READ_RECEIPT:
-            // Optional: update unread counts/read state if needed
             break;
 
           case WS_EVENTS.ERROR:
@@ -344,7 +299,6 @@ const chatSlice = createSlice({
         return;
       }
 
-      // Legacy format (kept for compatibility): { type: 'message', group_id, data }
       const message = payload as WebSocketMessage;
       switch (message.type) {
         case WS_EVENTS.MESSAGE:
@@ -354,8 +308,6 @@ const chatSlice = createSlice({
             }
             
             const msg = message.data as Message;
-            
-            // Проверяем, нет ли уже такого сообщения
             const existingMessageIndex = state.messages[message.group_id].findIndex(
               m => m.id === msg.id
             );
@@ -363,7 +315,6 @@ const chatSlice = createSlice({
             if (existingMessageIndex === -1) {
               state.messages[message.group_id].push(msg);
             } else {
-              // Обновляем существующее сообщение
               state.messages[message.group_id][existingMessageIndex] = msg;
             }
 
@@ -418,22 +369,17 @@ const chatSlice = createSlice({
     resetUnreadCount: (state, action: PayloadAction<number>) => {
       const groupId = action.payload;
       
-      // УДАЛЯЕМ override чтобы счетчик мог обновиться с сервера
       delete state.unreadCountOverrides[groupId];
       
-      // Также ПРИНУДИТЕЛЬНО обновляем в текущем списке чатов
       const chatIndex = state.chats.findIndex(chat => chat.group_id === groupId);
       if (chatIndex !== -1) {
         state.chats[chatIndex].unread_count = 0;
-        console.log(`🔥 Счетчик непрочитанных для чата ${groupId} ПРИНУДИТЕЛЬНО сброшен до 0`);
       }
       
-      console.log(`Счетчик непрочитанных для чата ${groupId} сброшен (override удален)`);
     },
 
     clearUnreadCountOverrides: (state) => {
       state.unreadCountOverrides = {};
-      console.log('Все overrides счетчиков очищены');
     },
   },
 });

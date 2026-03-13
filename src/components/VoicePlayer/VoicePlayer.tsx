@@ -16,14 +16,12 @@ const VoicePlayer: React.FC<VoicePlayerProps> = ({ audioUrl, duration, className
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Форматирование времени в MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Переключение воспроизведения
   const togglePlayPause = () => {
     if (!audioRef.current) return;
 
@@ -35,14 +33,12 @@ const VoicePlayer: React.FC<VoicePlayerProps> = ({ audioUrl, duration, className
     setIsPlaying(!isPlaying);
   };
 
-  // Обновление времени воспроизведения
   const handleTimeUpdate = () => {
     if (audioRef.current) {
       setCurrentTime(audioRef.current.currentTime);
     }
   };
 
-  // Обработка загрузки метаданных
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
       setAudioDuration(audioRef.current.duration);
@@ -50,13 +46,11 @@ const VoicePlayer: React.FC<VoicePlayerProps> = ({ audioUrl, duration, className
     }
   };
 
-  // Обработка окончания воспроизведения
   const handleEnded = () => {
     setIsPlaying(false);
     setCurrentTime(0);
   };
 
-  // Перемотка по клику на прогресс бар
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!audioRef.current || !audioDuration) return;
 
@@ -69,7 +63,6 @@ const VoicePlayer: React.FC<VoicePlayerProps> = ({ audioUrl, duration, className
     setCurrentTime(newTime);
   };
 
-  // Вычисление прогресса
   const progress = audioDuration > 0 ? (currentTime / audioDuration) * 100 : 0;
 
   useEffect(() => {

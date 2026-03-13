@@ -55,7 +55,6 @@ function Upload({ editingId, onCancel }: UploadProps) {
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
     const [toast, setToast] = useState<ToastMessage | null>(null);
 
-    // Получаем списки курсов и категорий
     const { data: courses = [], isLoading: coursesLoading } = useGetCourseListQuery();
     const { data: categories = [], isLoading: categoriesLoading } = useGetCategoryLessonListQuery();
 
@@ -65,14 +64,12 @@ function Upload({ editingId, onCancel }: UploadProps) {
         skip: !editingId,
     });
 
-    // Scroll to top when editing
     useEffect(() => {
         if (editingId && uploadRef.current) {
             uploadRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }, [editingId]);
 
-    // Load editing video data
     const loadedVideoIdRef = useRef<number | null>(null);
     
     const resetForm = () => {
@@ -121,7 +118,6 @@ function Upload({ editingId, onCancel }: UploadProps) {
         }
     }, [editingVideo, editingId]);
 
-    // Toast auto-hide
     useEffect(() => {
         if (toast) {
             const timer = setTimeout(() => {
@@ -217,17 +213,7 @@ function Upload({ editingId, onCancel }: UploadProps) {
             const apiError = error as ApiError;
             
             if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-                console.log("Upload Error Details:", {
-                    status: apiError?.status,
-                    data: apiError?.data,
-                    formData: {
-                        course: formData.course,
-                        category_lesson: formData.category_lesson,
-                        lesson_number: formData.lesson_number,
-                        description: formData.description,
-                        hasVideoFile: !!formData.videoFile,
-                    }
-                });
+               
             }
             
             const errors: FieldErrors = {};

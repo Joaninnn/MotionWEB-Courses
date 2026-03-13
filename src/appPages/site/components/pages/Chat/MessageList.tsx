@@ -1,4 +1,3 @@
-// src/components/Chat/MessageList.tsx
 'use client'
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
@@ -49,14 +48,8 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Set messages from API response
   useEffect(() => {
-    console.log('📨 Messages data received:', {
-      messagesData,
-      items: messagesData?.items,
-      itemsLength: messagesData?.items?.length,
-      groupId
-    });
+   
     
     if (messagesData) {
       dispatch({
@@ -70,22 +63,19 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
     }
   }, [messagesData, groupId, dispatch]);
 
-  // Auto scroll to bottom on new messages, but only if user is at bottom
   const currentMessages = messages[groupId];
-  const [isAtBottom, setIsAtBottom] = useState(false); // Изменено на false по умолчанию
-  const [hasInitialized, setHasInitialized] = useState(false); // Флаг для первой загрузки
+  const [isAtBottom, setIsAtBottom] = useState(false); 
+  const [hasInitialized, setHasInitialized] = useState(false); 
   
-  // Скролл вниз только при первой загрузке чата
   useEffect(() => {
     if (currentMessages && currentMessages.length > 0 && !hasInitialized) {
       scrollToBottom();
-      setTimeout(() => setHasInitialized(true), 0); // Асинхронное обновление состояния
+      setTimeout(() => setHasInitialized(true), 0); 
     }
   }, [currentMessages, hasInitialized]);
   
-  // Сбрасываем флаг при смене чата
   useEffect(() => {
-    setTimeout(() => setHasInitialized(false), 0); // Асинхронное обновление состояния
+    setTimeout(() => setHasInitialized(false), 0); 
   }, [groupId]);
   
   useEffect(() => {
@@ -94,22 +84,19 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
     }
   }, [currentMessages, isAtBottom]);
 
-  // Track scroll position
   const handleScroll = useCallback(() => {
     if (containerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-      const threshold = 100; // 100px from bottom
+      const threshold = 100; 
       const newIsAtBottom = scrollHeight - scrollTop - clientHeight < threshold;
       
       if (newIsAtBottom !== isAtBottom) {
         setIsAtBottom(newIsAtBottom);
       }
       
-      // Mark messages as read logic
       if (newIsAtBottom && messages[groupId]?.length > 0) {
         const lastMessage = messages[groupId][messages[groupId].length - 1];
         if (lastMessage) {
-          // Mark as read logic would go here
         }
       }
     }
@@ -141,7 +128,6 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
         setEditingMessageId(null);
         setEditingText('');
       } catch (error) {
-        console.error('Failed to edit message:', error);
       }
     }
   };
@@ -151,7 +137,6 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
       await deleteMessage(messageId).unwrap();
       setShowMenuId(null);
     } catch (error) {
-      console.error('Failed to delete message:', error);
     }
   };
 
@@ -167,7 +152,6 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
   };
 
   const formatTime = (dateString: string) => {
-    // Сервер отдаёт UTC без Z, парсим как UTC
     const date = new Date(dateString + 'Z');
     return date.toLocaleTimeString('ru-RU', { 
       timeZone: 'Asia/Bishkek',
@@ -456,13 +440,7 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
   const groupMessages = messages[groupId] || [];
   const groupedMessages = groupMessagesByDate(groupMessages);
 
-  console.log('📨 MessageList debug:', {
-    groupId,
-    allMessages: messages,
-    groupMessages,
-    groupedMessages,
-    messagesData
-  });
+ 
 
   return (
     <div className={styles.messageList} ref={containerRef}>

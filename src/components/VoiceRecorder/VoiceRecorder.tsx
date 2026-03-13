@@ -41,7 +41,6 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onRecordingComplete, disa
       return stream;
     } catch (err) {
       setError('Не удалось получить доступ к микрофону');
-      console.error('Microphone permission error:', err);
       return null;
     }
   }, []);
@@ -80,7 +79,6 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onRecordingComplete, disa
         mimeType = 'audio/ogg;codecs=opus';
       }
       
-      console.log('🎤 Используемый MIME тип:', mimeType);
       
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
       
@@ -95,12 +93,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onRecordingComplete, disa
 
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(chunksRef.current, { type: mimeType });
-        console.log('🎤 Аудио blob создан:', {
-          size: audioBlob.size,
-          type: audioBlob.type,
-          chunks: chunksRef.current.length,
-          duration
-        });
+       
         
         // Определяем расширение файла в зависимости от формата
         let extension = 'mp3';
@@ -109,11 +102,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onRecordingComplete, disa
         else if (mimeType.includes('ogg')) extension = 'ogg';
         
         const audioFile = new File([audioBlob], `voice_${Date.now()}.${extension}`, { type: mimeType });
-        console.log('🎤 Аудио файл создан:', {
-          name: audioFile.name,
-          size: audioFile.size,
-          type: audioFile.type
-        });
+        
         
         setAudioBlob(audioBlob);
         onRecordingComplete(audioFile, duration);
@@ -130,7 +119,6 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onRecordingComplete, disa
 
     } catch (err) {
       setError('Не удалось начать запись');
-      console.error('Recording start error:', err);
     }
   }, [disabled, duration, onRecordingComplete, requestMicrophonePermission]);
 

@@ -2,23 +2,21 @@ import { api as index } from "..";
 
 const api = index.injectEndpoints({
     endpoints: (build) => ({
-        // Список видео
         getVideos: build.query<
-            VIDEO.GetVideoListResponse, // тип ответа
-            VIDEO.GetVideoListRequest // тип параметров запроса
+            VIDEO.GetVideoListResponse,
+            VIDEO.GetVideoListRequest 
         >({
             query: (params) => ({
                 url: `video`,
                 method: "GET",
-                params, // пере даем query-параметры, если есть
+                params, 
             }),
             providesTags: ["video"],
         }),
 
-        // Детали видео по id
         getVideosDetail: build.query<
-            VIDEO.GetVideoDetailResponse, // тип ответа
-            VIDEO.GetVideoDetailRequest // id видео
+            VIDEO.GetVideoDetailResponse, 
+            VIDEO.GetVideoDetailRequest 
         >({
             query: (id) => ({
                 url: `video/${id}`,
@@ -27,8 +25,6 @@ const api = index.injectEndpoints({
             providesTags: ["video"],
         }),
 
-        // Видео по курсу пользователя
-       
     }),
 });
 

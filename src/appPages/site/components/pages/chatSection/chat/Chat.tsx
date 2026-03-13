@@ -1,4 +1,3 @@
-// src/appPages/site/components/pages/chatSection/chat/Chat.tsx
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import ChatList from '../../Chat/ChatList';
@@ -7,26 +6,22 @@ import styles from './chat.module.scss';
 
 function Chat() {
   const [selectedChat, setSelectedChat] = useState<{ groupId: number; title: string } | null>(null);
-  const [forceUpdate, setForceUpdate] = useState(0); // Для принудительного обновления
+  const [forceUpdate, setForceUpdate] = useState(0); 
   const scrollLockRef = useRef<{ locked: boolean; position: number; allowScroll: boolean }>({ locked: false, position: 0, allowScroll: false });
 
   const handleSelectChat = (groupId: number, title: string) => {
-    // Сохраняем позицию и блокируем скролл
     scrollLockRef.current = { locked: true, position: window.scrollY, allowScroll: false };
     
     document.body.classList.add('scroll-locked');
     
     setSelectedChat({ groupId, title });
-    setForceUpdate(prev => prev + 1); // Принудительное обновление
+    setForceUpdate(prev => prev + 1); 
     
-    // Разблокируем скролл после рендера
     setTimeout(() => {
       document.body.classList.remove('scroll-locked');
       
-      // Восстанавливаем позицию
       window.scrollTo(0, scrollLockRef.current.position);
       
-      // Разрешаем скролл через 200ms
       setTimeout(() => {
         scrollLockRef.current.allowScroll = true;
         scrollLockRef.current.locked = false;
@@ -34,7 +29,6 @@ function Chat() {
     }, 100);
   };
 
-  // Следим за скроллом и контролируем его
   useEffect(() => {
     const handleScroll = () => {
       if (scrollLockRef.current.locked && !scrollLockRef.current.allowScroll) {
@@ -42,7 +36,7 @@ function Chat() {
       }
     };
 
-    const intervalId = setInterval(handleScroll, 10); // Проверяем каждые 10ms
+    const intervalId = setInterval(handleScroll, 10); 
     
     return () => clearInterval(intervalId);
   }, []);

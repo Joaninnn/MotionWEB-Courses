@@ -1,4 +1,3 @@
-// src/components/Chat/ChatList.tsx
 'use client';
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,90 +20,63 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
   const { data: chats = [], isLoading, error } = useGetMyChatsQuery();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Загружаем overrides из localStorage при монтировании или смене пользователя
   useEffect(() => {
-    // Ждем полной авторизации пользователя
     if (!user.id || !user.username) return;
     
-    console.log(`🔄 Пользователь авторизован ID: ${user.id}, НЕ очищаем overrides`);
-    
-    // НЕ очищаем overrides чтобы сохранять состояние между чатами
-    // Загружаем сохраненные overrides если они есть
     const userKey = `unreadCountOverrides_user_${user.id}`;
     const savedOverrides = localStorage.getItem(userKey);
     
     if (savedOverrides) {
       try {
         const overrides = JSON.parse(savedOverrides);
-        console.log(`🔄 Загружены overrides для пользователя ${user.id}:`, overrides);
         
-        // Применяем загруженные overrides
         Object.entries(overrides).forEach(([groupId, count]) => {
           dispatch(resetUnreadCount(Number(groupId)));
         });
       } catch (error) {
-        console.error('❌ Ошибка загрузки overrides:', error);
       }
     } else {
-      console.log(`📝 Нет сохраненных overrides для пользователя ${user.id}`);
     }
   }, [user.id, user.username, dispatch]);
 
-  // Очищаем overrides при смене пользователя (когда ID меняется)
   useEffect(() => {
     return () => {
-      console.log('🧹 Компонент размонтируется, очищаем overrides');
       dispatch(clearUnreadCountOverrides());
     };
   }, [dispatch]);
 
-  // Сохраняем overrides в localStorage при изменении
   useEffect(() => {
     if (!user.id || Object.keys(unreadCountOverrides).length === 0) return;
     
     const storageKey = `unreadCountOverrides_user_${user.id}`;
     localStorage.setItem(storageKey, JSON.stringify(unreadCountOverrides));
-    console.log(`💾 Сохранены overrides для пользователя ${user.id} в localStorage:`, unreadCountOverrides);
   }, [unreadCountOverrides, user.id]);
 
-  // Функция для получения имени собеседника для личного чата
   const getChatDisplayName = (chat: ChatItem) => {
-    // Если это личный чат (dialog_), пытаемся извлечь имя собеседника
     if (chat.title.startsWith('dialog_') && chat.is_private) {
-      // Из названия dialog_X_Y можно определить ID собеседника
       const parts = chat.title.split('_');
       if (parts.length === 3) {
         const userId1 = parseInt(parts[1]);
         const userId2 = parseInt(parts[2]);
         const currentUserId = user.id;
         
-        // Определяем ID собеседника
         const partnerId = userId1 === currentUserId ? userId2 : userId1;
         
-        // Ищем имя собеседника в других чатах, где он может быть участником
-        // const partnerName = findPartnerNameInChats();
-        // if (partnerName) {
-        //   return partnerName;
-        // }
-        
-        // Используем общий кэш имен
+   
         return getUserNameById(partnerId);
       }
     }
     
-    // Для групповых чатов или если не смогли определить, используем форматирование
     return formatChatTitle(chat.title);
   };
 
     const formatChatTitle = (title: string) => {
-    // Если название начинается с 'course:', заменяем на 'группа:'
     if (title.startsWith('course:')) {
       return title.replace('course:', 'группа:');
     }
     return title;
   };
 
-  // Применяем overrides к данным из API (только если они не были сброшены)
   const chatsWithOverrides = chats.map(chat => ({
     ...chat,
     unread_count: unreadCountOverrides[chat.group_id] !== undefined 
@@ -112,31 +84,21 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
       : chat.unread_count
   }));
 
-  // Фильтруем чаты по chat_group_id пользователя
   const filteredChats = chatsWithOverrides.filter(chat => {
-    // Если у пользователя нет chat_group_id, показываем все чаты
     if (!user.chat_group_id) return true;
     
-    // Показываем чаты если:
-    // 1. Это групповой чат и group_id совпадает
-    // 2. Это личный чат (dialog_) - показываем всегда
+    
     const isGroupChat = chat.group_id === user.chat_group_id;
     const isPrivateChat = chat.title.startsWith('dialog_');
-    
-    console.log(' Чат:', chat.title, 'Group ID:', chat.group_id, 'User chat_group_id:', user.chat_group_id, 'Is private:', isPrivateChat);
-    console.log(' Курс пользователя:', user.course);
     
     return isGroupChat || isPrivateChat;
   });
 
-  // Сортируем чаты по времени последнего сообщения (самые свежие наверху)
   const sortedChats = [...filteredChats].sort((a, b) => {
-    // Если у обоих чатов есть последние сообщения, сортируем по времени
     if (a.last_message && b.last_message) {
       return new Date(b.last_message.created_date).getTime() - new Date(a.last_message.created_date).getTime();
     }
     
-    // Если только у одного чата есть последнее сообщение, он идет наверх
     if (a.last_message && !b.last_message) {
       return -1;
     }
@@ -145,70 +107,43 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
       return 1;
     }
     
-    // Если у обоих нет последних сообщений, сортируем по group_id (для стабильности)
     return b.group_id - a.group_id;
   });
 
-  // Сохраняем позицию скролла при переключении чатов
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
     if (scrollContainer) {
-      // НЕ восстанавливаем позицию скролла при загрузке чатов
-      // Пользователь должен сам контролировать скролл
     }
   }, [sortedChats]);
 
-  // Логирование для проверки автоматического создания групп
   useEffect(() => {
-    console.log(' Все чаты с эндпоинта /chats/my:', chats);
-    console.log(' Отфильтрованные чаты:', filteredChats);
-    console.log(' Отсортированные чаты:', sortedChats);
-    console.log(' Chat group ID пользователя:', user.chat_group_id);
-    console.log(' Курс пользователя:', user.course);
-    console.log(' Количество чатов:', sortedChats.length);
-    console.log(' Загрузка:', isLoading);
-    console.log(' Ошибка:', error);
     
     if (sortedChats.length > 0) {
-      console.log(' Группы автоматически созданы! Пример чата:', sortedChats[0]);
     } else if (!isLoading && !error) {
-      console.log(' Группы не найдены. Возможно, они не создаются автоматически.');
     }
   }, [sortedChats, filteredChats, chats, isLoading, error, user.chat_group_id, user.course]);
 
-  // Отслеживаем отправку сообщений и сбрасываем счетчик для своих сообщений
   useEffect(() => {
     const interval = setInterval(() => {
       chats.forEach(chat => {
-        // Простая проверка: если последнее сообщение от нас и есть счетчик - сбрасываем
         const isOwnLastMessage = chat.last_message && chat.last_message.user_id === user.id;
         
         if (isOwnLastMessage && chat.unread_count > 0) {
-          console.log(`🔄 Сбрасываем счетчик для чата ${chat.group_id} (${chat.title}) т.к. последнее сообщение от текущего пользователя (user_id: ${chat.last_message?.user_id})`);
           dispatch(resetUnreadCount(chat.group_id));
         }
       });
-    }, 500); // Проверяем каждые 0.5 секунды
+    }, 500); 
 
     return () => clearInterval(interval);
   }, [chats, user.id, dispatch]);
 
-  // Отладка: логируем все чаты и их unread_count
   useEffect(() => {
-    console.log(`🔍 ОТЛАДКА: Все чаты из API:`);
     chats.forEach(chat => {
-      console.log(`  💬 Чат ${chat.group_id}: "${chat.title}"`);
-      console.log(`     📊 unread_count: ${chat.unread_count} (тип: ${typeof chat.unread_count})`);
-      console.log(`     📝 Последнее сообщение:`, chat.last_message);
-      console.log(`     🔢 Override: ${unreadCountOverrides[chat.group_id]}`);
-      console.log(`     ✨ Финальный счетчик: ${unreadCountOverrides[chat.group_id] !== undefined ? unreadCountOverrides[chat.group_id] : chat.unread_count}`);
     });
   }, [chats, unreadCountOverrides]);
 
   const handleSelectChat = (groupId: number, title: string) => {
-    console.log(`🔄 Клик на чат ${groupId}`);
     
-    // Сохраняем текущую позицию скролла
     const scrollContainer = scrollContainerRef.current;
     if (scrollContainer) {
       localStorage.setItem('chatListScrollTop', scrollContainer.scrollTop.toString());
@@ -226,7 +161,6 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
     const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
     
-    // Если сообщение отправлено сегодня
     if (diffInDays === 0) {
       if (diffInMinutes < 1) {
         return 'только что';
@@ -243,12 +177,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
       }
     }
     
-    // Если сообщение отправлено вчера
     if (diffInDays === 1) {
       return 'вчера';
     }
     
-    // Если сообщение отправлено в течение недели
     if (diffInDays < 7) {
       return date.toLocaleDateString('ru-RU', { 
         timeZone: 'Asia/Bishkek',
@@ -256,7 +188,6 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
       });
     }
     
-    // Для более старых сообщений
     return date.toLocaleDateString('ru-RU', { 
       timeZone: 'Asia/Bishkek',
       month: 'short', 
@@ -313,31 +244,14 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
         ) : (
           <div className={styles.chatItems}>
             {sortedChats.map((chat) => {
-              // Определяем, является ли последнее сообщение от текущего пользователя
               const isOwnLastMessage = chat.last_message && chat.last_message.user_id === user.id;
               
-              // Показываем бейдж только если:
-              // 1. unread_count существует и это число
-              // 2. unread_count > 0  
-              // 3. Последнее сообщение НЕ от текущего пользователя
               const shouldShowBadge = chat.unread_count !== null && 
                                       chat.unread_count !== undefined && 
                                       typeof chat.unread_count === 'number' && 
                                       chat.unread_count > 0 && 
                                       !isOwnLastMessage;
               
-              // Дополнительная проверка для отладки
-              const hasUnreadCount = chat.unread_count !== null && chat.unread_count !== undefined;
-              const isPositiveCount = typeof chat.unread_count === 'number' && chat.unread_count > 0;
-              const isNotOwnMessage = !isOwnLastMessage;
-              
-              console.log(`💬 Чат ${chat.group_id}: ${chat.title}`);
-              console.log(`     unread_count: ${chat.unread_count} (тип: ${typeof chat.unread_count})`);
-              console.log(`     hasUnreadCount: ${hasUnreadCount}`);
-              console.log(`     isPositiveCount: ${isPositiveCount}`);
-              console.log(`     isNotOwnMessage: ${isNotOwnMessage}`);
-              console.log(`     shouldShowBadge: ${shouldShowBadge}`);
-              console.log(`     последнее сообщение:`, chat.last_message);
               return (
               <div
                 key={chat.group_id}

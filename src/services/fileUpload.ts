@@ -1,4 +1,3 @@
-// src/services/fileUpload.ts
 import Cookies from 'js-cookie';
 
 export interface FileUploadResponse {
@@ -45,13 +44,11 @@ export class FileUploadService {
 
       return await response.json();
     } catch (error) {
-      console.error('File upload error:', error);
       throw error;
     }
   }
 
   validateFile(file: File): { valid: boolean; error?: string } {
-    // Check file size (max 10MB)
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       return {
@@ -60,23 +57,18 @@ export class FileUploadService {
       };
     }
 
-    // Check file type
     const allowedTypes = [
-      // Images
       'image/jpeg',
       'image/png',
       'image/gif',
       'image/webp',
-      // Videos
       'video/mp4',
       'video/webm',
       'video/ogg',
-      // Audio
       'audio/mpeg',
       'audio/wav',
       'audio/ogg',
       'audio/webm',
-      // Documents
       'application/pdf',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

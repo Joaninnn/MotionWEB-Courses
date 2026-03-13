@@ -1,4 +1,3 @@
-// src/provider/ReduxProvider.tsx
 "use client";
 
 import { useState } from "react";
@@ -10,10 +9,7 @@ export default function ReduxProvider({
 }: {
     children: React.ReactNode;
 }) {
-    // Используем useState с функцией инициализации
-    // Функция вызовется ТОЛЬКО ОДИН РАЗ при первом рендере
     const [store] = useState(() => {
-        console.log("🏪 [REDUX_PROVIDER] Store created");
         return makeStore();
     });
 

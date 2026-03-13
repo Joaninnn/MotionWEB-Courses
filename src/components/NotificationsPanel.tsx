@@ -1,4 +1,3 @@
-// src/components/NotificationsPanel.tsx
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
@@ -12,7 +11,6 @@ const NotificationsPanel: React.FC = () => {
   const { notifications, unreadCount } = useSelector((state: RootState) => state.notifications);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Автоматически закрываем уведомления при входе в чат
   const { activeGroupId } = useSelector((state: RootState) => state.chat);
   
   useEffect(() => {
