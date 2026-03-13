@@ -1,12 +1,11 @@
 'use client';
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useGetMyChatsQuery } from '../../../../../redux/api/chat';
+import { useGetMyChatsQuery, useGetGroupDetailFullQuery } from '../../../../../redux/api/chat';
 import { setActiveGroup, resetUnreadCount, clearUnreadCountOverrides } from '../../../../../redux/slices/chatSlice';
 import { RootState } from '../../../../../redux/store';
 import { ChatItem } from '../../../../../redux/api/chat/types';
-import { getUserNameById } from '../../../../../constants/userNames';
-import styles from './ChatList.module.scss';
+  import styles from './ChatList.module.scss';
 
 interface ChatListProps {
   onSelectChat: (groupId: number, title: string) => void;
@@ -52,29 +51,42 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
     localStorage.setItem(storageKey, JSON.stringify(unreadCountOverrides));
   }, [unreadCountOverrides, user.id]);
 
-  const getChatDisplayName = (chat: ChatItem) => {
-    if (chat.title.startsWith('dialog_') && chat.is_private) {
-      const parts = chat.title.split('_');
-      if (parts.length === 3) {
-        const userId1 = parseInt(parts[1]);
-        const userId2 = parseInt(parts[2]);
-        const currentUserId = user.id;
-        
-        const partnerId = userId1 === currentUserId ? userId2 : userId1;
-        
-   
-        return getUserNameById(partnerId);
-      }
-    }
-    
-    return formatChatTitle(chat.title);
-  };
-
-    const formatChatTitle = (title: string) => {
+  const formatChatTitle = (title: string) => {
     if (title.startsWith('course:')) {
       return title.replace('course:', 'группа:');
     }
     return title;
+  };
+
+  const UserNameResolver: React.FC<{ chat: ChatItem; children: (name: string) => React.ReactNode }> = ({ chat, children }) => {
+    const { data: groupDetail } = useGetGroupDetailFullQuery(chat.group_id, { 
+      skip: !chat.is_private 
+    });
+    
+    const getUserName = () => {
+      if (chat.title.startsWith('dialog_') && chat.is_private) {
+        const parts = chat.title.split('_');
+        if (parts.length === 3) {
+          const userId1 = parseInt(parts[1]);
+          const userId2 = parseInt(parts[2]);
+          const currentUserId = user.id;
+          const partnerId = userId1 === currentUserId ? userId2 : userId1;
+          
+          if (groupDetail?.members) {
+            const partner = groupDetail.members.find(member => member.user_id === partnerId);
+            if (partner?.username) {
+              return partner.username;
+            }
+          }
+          
+          return `Пользователь ${partnerId}`;
+        }
+      }
+      
+      return formatChatTitle(chat.title);
+    };
+    
+    return <>{children(getUserName())}</>;
   };
 
   const chatsWithOverrides = chats.map(chat => ({
@@ -253,57 +265,60 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
                                       !isOwnLastMessage;
               
               return (
-              <div
-                key={chat.group_id}
-                className={`${styles.chatItem} ${activeGroupId === chat.group_id ? styles.active : ''}`}
-                onClick={() => handleSelectChat(chat.group_id, chat.title)}
-              >
-                <div className={styles.chatAvatar}>
-                  <div className={styles.avatarPlaceholder}>
-                    {getChatDisplayName(chat).charAt(0).toUpperCase()}
-                  </div>
-                  {chat.is_private && (
-                    <div className={styles.privateIndicator}>🔒</div>
-                  )}
-                </div>
-                
-                <div className={styles.chatInfo}>
-                  <div className={styles.chatHeader}>
-                    <h4 className={styles.chatTitle}>{getChatDisplayName(chat)}</h4>
-                    <span className={styles.chatTime}>
-                      {chat.last_message ? formatTime(chat.last_message.created_date) : ''}
-                    </span>
-                  </div>
-                  
-                  <div className={styles.chatPreview}>
-                    <p className={styles.lastMessage}>
-                      {chat.last_message && !chat.last_message.is_deleted ? (
-                        <>
-                          {chat.last_message.file_url || chat.last_message.attachments?.length ? (
-                            <>
-                              {chat.last_message.file_url?.includes('audio') ? (
-                                <span>🗣️</span>
-                              ) : (
-                                <span>📷</span>
-                              )}
-                              {chat.last_message.text ? chat.last_message.text : 'Фото'}
-                            </>
-                          ) : chat.last_message.text || 'Сообщений еще нет'}
-                        </>
-                      ) : chat.last_message?.is_deleted ? (
-                        'Сообщение удалено'
-                      ) : (
-                        'Сообщений еще нет'
-                      )}
-                    </p>
-                    {shouldShowBadge && (
-                      <div className={styles.unreadBadge}>
-                        {Number(chat.unread_count) > 99 ? '99+' : chat.unread_count}
+                <UserNameResolver key={chat.group_id} chat={chat}>
+                  {(displayName) => (
+                    <div
+                      className={`${styles.chatItem} ${activeGroupId === chat.group_id ? styles.active : ''}`}
+                      onClick={() => handleSelectChat(chat.group_id, chat.title)}
+                    >
+                      <div className={styles.chatAvatar}>
+                        <div className={styles.avatarPlaceholder}>
+                          {displayName.charAt(0).toUpperCase()}
+                        </div>
+                        {chat.is_private && (
+                          <div className={styles.privateIndicator}>🔒</div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+                      
+                      <div className={styles.chatInfo}>
+                        <div className={styles.chatHeader}>
+                          <h4 className={styles.chatTitle}>{displayName}</h4>
+                          <span className={styles.chatTime}>
+                            {chat.last_message ? formatTime(chat.last_message.created_date) : ''}
+                          </span>
+                        </div>
+                        
+                        <div className={styles.chatPreview}>
+                          <p className={styles.lastMessage}>
+                            {chat.last_message && !chat.last_message.is_deleted ? (
+                              <>
+                                {chat.last_message.file_url || chat.last_message.attachments?.length ? (
+                                  <>
+                                    {chat.last_message.file_url?.includes('audio') ? (
+                                      <span>🗣️</span>
+                                    ) : (
+                                      <span>📷</span>
+                                    )}
+                                    {chat.last_message.text ? chat.last_message.text : 'Фото'}
+                                  </>
+                                ) : chat.last_message.text || 'Сообщений еще нет'}
+                              </>
+                            ) : chat.last_message?.is_deleted ? (
+                              'Сообщение удалено'
+                            ) : (
+                              'Сообщений еще нет'
+                            )}
+                          </p>
+                          {shouldShowBadge && (
+                            <div className={styles.unreadBadge}>
+                              {Number(chat.unread_count) > 99 ? '99+' : chat.unread_count}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </UserNameResolver>
               );
             })}
           </div>

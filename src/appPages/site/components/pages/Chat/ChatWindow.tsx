@@ -43,7 +43,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   const getChatPartnerName = () => {
     const isPrivateChat = title.startsWith('dialog_') || groupDetail?.is_private;
     
-    if (isPrivateChat) {
+    if (isPrivateChat && groupDetail?.members) {
       const parts = title.split('_');
       if (parts.length === 3) {
         const userId1 = parseInt(parts[1]);
@@ -52,7 +52,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
         
         const partnerId = userId1 === currentUserId ? userId2 : userId1;
         
-        return getUserNameById(partnerId);
+        const partner = groupDetail.members.find(member => member.user_id === partnerId);
+        if (partner?.username) {
+          return partner.username;
+        }
       }
     }
     
@@ -62,7 +65,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   const getChatPartnerRole = () => {
     const isPrivateChat = title.startsWith('dialog_') || groupDetail?.is_private;
     
-    if (isPrivateChat) {
+    if (isPrivateChat && groupDetail?.members) {
       const parts = title.split('_');
       if (parts.length === 3) {
         const userId1 = parseInt(parts[1]);
@@ -71,8 +74,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
         
         const partnerId = userId1 === currentUserId ? userId2 : userId1;
         
-        const role = getUserRoleById(partnerId);
-        return getDisplayRole(role);
+        const partner = groupDetail.members.find(member => member.user_id === partnerId);
+        if (partner?.role) {
+          return getDisplayRole(partner.role);
+        }
       }
     }
     
