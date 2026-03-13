@@ -176,6 +176,23 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
     }
   }, [sortedChats, filteredChats, chats, isLoading, error, user.chat_group_id, user.course]);
 
+  // Отслеживаем отправку сообщений и сбрасываем счетчик для своих сообщений
+  useEffect(() => {
+    const interval = setInterval(() => {
+      chats.forEach(chat => {
+        // Простая проверка: если последнее сообщение от нас и есть счетчик - сбрасываем
+        const isOwnLastMessage = chat.last_message && chat.last_message.user_id === user.id;
+        
+        if (isOwnLastMessage && chat.unread_count > 0) {
+          console.log(`🔄 Сбрасываем счетчик для чата ${chat.group_id} (${chat.title}) т.к. последнее сообщение от текущего пользователя (user_id: ${chat.last_message?.user_id})`);
+          dispatch(resetUnreadCount(chat.group_id));
+        }
+      });
+    }, 500); // Проверяем каждые 0.5 секунды
+
+    return () => clearInterval(interval);
+  }, [chats, user.id, dispatch]);
+
   // Отладка: логируем все чаты и их unread_count
   useEffect(() => {
     console.log(`🔍 ОТЛАДКА: Все чаты из API:`);
@@ -296,8 +313,31 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
         ) : (
           <div className={styles.chatItems}>
             {sortedChats.map((chat) => {
-              const shouldShowBadge = chat.unread_count && Number(chat.unread_count) > 0;
-              console.log(`💬 Чат ${chat.group_id}: ${chat.title}, непрочитанных: ${chat.unread_count} (тип: ${typeof chat.unread_count}, показать бейдж: ${shouldShowBadge})`);
+              // Определяем, является ли последнее сообщение от текущего пользователя
+              const isOwnLastMessage = chat.last_message && chat.last_message.user_id === user.id;
+              
+              // Показываем бейдж только если:
+              // 1. unread_count существует и это число
+              // 2. unread_count > 0  
+              // 3. Последнее сообщение НЕ от текущего пользователя
+              const shouldShowBadge = chat.unread_count !== null && 
+                                      chat.unread_count !== undefined && 
+                                      typeof chat.unread_count === 'number' && 
+                                      chat.unread_count > 0 && 
+                                      !isOwnLastMessage;
+              
+              // Дополнительная проверка для отладки
+              const hasUnreadCount = chat.unread_count !== null && chat.unread_count !== undefined;
+              const isPositiveCount = typeof chat.unread_count === 'number' && chat.unread_count > 0;
+              const isNotOwnMessage = !isOwnLastMessage;
+              
+              console.log(`💬 Чат ${chat.group_id}: ${chat.title}`);
+              console.log(`     unread_count: ${chat.unread_count} (тип: ${typeof chat.unread_count})`);
+              console.log(`     hasUnreadCount: ${hasUnreadCount}`);
+              console.log(`     isPositiveCount: ${isPositiveCount}`);
+              console.log(`     isNotOwnMessage: ${isNotOwnMessage}`);
+              console.log(`     shouldShowBadge: ${shouldShowBadge}`);
+              console.log(`     последнее сообщение:`, chat.last_message);
               return (
               <div
                 key={chat.group_id}
@@ -327,11 +367,14 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
                         <>
                           {chat.last_message.file_url || chat.last_message.attachments?.length ? (
                             <>
-                              📷 {chat.last_message.text ? chat.last_message.text : 'Фото'}
+                              {chat.last_message.file_url?.includes('audio') ? (
+                                <span>🗣️</span>
+                              ) : (
+                                <span>📷</span>
+                              )}
+                              {chat.last_message.text ? chat.last_message.text : 'Фото'}
                             </>
-                          ) : (
-                            chat.last_message.text || 'Сообщений еще нет'
-                          )}
+                          ) : chat.last_message.text || 'Сообщений еще нет'}
                         </>
                       ) : chat.last_message?.is_deleted ? (
                         'Сообщение удалено'
@@ -339,7 +382,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
                         'Сообщений еще нет'
                       )}
                     </p>
-                    {Boolean(chat.unread_count) && Number(chat.unread_count) > 0 && (
+                    {shouldShowBadge && (
                       <div className={styles.unreadBadge}>
                         {Number(chat.unread_count) > 99 ? '99+' : chat.unread_count}
                       </div>

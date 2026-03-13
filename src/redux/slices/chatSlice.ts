@@ -133,12 +133,64 @@ const chatSlice = createSlice({
       if (!state.messages[groupId]) {
         state.messages[groupId] = [];
       }
-      state.messages[groupId].push(message);
+      
+      // Проверяем, нет ли уже такого сообщения в списке
+      const existingMessageIndex = state.messages[groupId].findIndex(
+        msg => msg.id === message.id
+      );
+      
+      if (existingMessageIndex === -1) {
+        // Добавляем только если сообщения еще нет
+        state.messages[groupId].push(message);
+      } else {
+        // Обновляем существующее сообщение
+        state.messages[groupId][existingMessageIndex] = message;
+      }
       
       // Update last message in chats list
       const chatIndex = state.chats.findIndex(chat => chat.group_id === groupId);
       if (chatIndex !== -1) {
         state.chats[chatIndex].last_message = message;
+        
+        // Автоматически сбрасываем счетчик если последнее сообщение от текущего пользователя
+        if (message.user_id && state.chats[chatIndex].unread_count > 0) {
+          // Это проверка на стороне клиента, реальный сброс будет через middleware
+          console.log(`🔍 [addMessage] Проверяем сброс счетчика для чата ${groupId}, user_id: ${message.user_id}, unread_count: ${state.chats[chatIndex].unread_count}`);
+        }
+      }
+    },
+
+    addIncomingMessage: (state, action: PayloadAction<{ groupId: number; message: Message; currentUserId: number }>) => {
+      const { groupId, message, currentUserId } = action.payload;
+      if (!state.messages[groupId]) {
+        state.messages[groupId] = [];
+      }
+      
+      // Проверяем, нет ли уже такого сообщения в списке
+      const existingMessageIndex = state.messages[groupId].findIndex(
+        msg => msg.id === message.id
+      );
+      
+      if (existingMessageIndex === -1) {
+        // Добавляем только если сообщения еще нет
+        state.messages[groupId].push(message);
+      } else {
+        // Обновляем существующее сообщение
+        state.messages[groupId][existingMessageIndex] = message;
+      }
+      
+      // Update last message in chats list
+      const chatIndex = state.chats.findIndex(chat => chat.group_id === groupId);
+      if (chatIndex !== -1) {
+        state.chats[chatIndex].last_message = message;
+        
+        // Увеличиваем счетчик непрочитанных только для сообщений от других пользователей
+        if (message.user_id !== currentUserId) {
+          state.chats[chatIndex].unread_count = (state.chats[chatIndex].unread_count || 0) + 1;
+          console.log(`🔔 Увеличен счетчик для чата ${groupId}: ${state.chats[chatIndex].unread_count} (сообщение от пользователя ${message.user_id}, текущий пользователь: ${currentUserId})`);
+        } else {
+          console.log(`📤 Сообщение от текущего пользователя ${currentUserId}, счетчик не увеличивается`);
+        }
       }
     },
     
@@ -259,7 +311,18 @@ const chatSlice = createSlice({
             if (!state.messages[groupId]) {
               state.messages[groupId] = [];
             }
-            state.messages[groupId].push(msg);
+            
+            // Проверяем, нет ли уже такого сообщения
+            const existingMessageIndex = state.messages[groupId].findIndex(
+              m => m.id === msg.id
+            );
+            
+            if (existingMessageIndex === -1) {
+              state.messages[groupId].push(msg);
+            } else {
+              // Обновляем существующее сообщение
+              state.messages[groupId][existingMessageIndex] = msg;
+            }
 
             const chatIndex = state.chats.findIndex(chat => chat.group_id === groupId);
             if (chatIndex !== -1) {
@@ -289,11 +352,24 @@ const chatSlice = createSlice({
             if (!state.messages[message.group_id]) {
               state.messages[message.group_id] = [];
             }
-            state.messages[message.group_id].push(message.data as Message);
+            
+            const msg = message.data as Message;
+            
+            // Проверяем, нет ли уже такого сообщения
+            const existingMessageIndex = state.messages[message.group_id].findIndex(
+              m => m.id === msg.id
+            );
+            
+            if (existingMessageIndex === -1) {
+              state.messages[message.group_id].push(msg);
+            } else {
+              // Обновляем существующее сообщение
+              state.messages[message.group_id][existingMessageIndex] = msg;
+            }
 
             const chatIndex = state.chats.findIndex(chat => chat.group_id === message.group_id);
             if (chatIndex !== -1) {
-              state.chats[chatIndex].last_message = message.data as Message;
+              state.chats[chatIndex].last_message = msg;
             }
           }
           break;
@@ -341,14 +417,17 @@ const chatSlice = createSlice({
 
     resetUnreadCount: (state, action: PayloadAction<number>) => {
       const groupId = action.payload;
+      
       // УДАЛЯЕМ override чтобы счетчик мог обновиться с сервера
       delete state.unreadCountOverrides[groupId];
       
-      // Также обновляем в текущем списке чатов если есть
+      // Также ПРИНУДИТЕЛЬНО обновляем в текущем списке чатов
       const chatIndex = state.chats.findIndex(chat => chat.group_id === groupId);
       if (chatIndex !== -1) {
         state.chats[chatIndex].unread_count = 0;
+        console.log(`🔥 Счетчик непрочитанных для чата ${groupId} ПРИНУДИТЕЛЬНО сброшен до 0`);
       }
+      
       console.log(`Счетчик непрочитанных для чата ${groupId} сброшен (override удален)`);
     },
 
@@ -365,6 +444,7 @@ export const {
   setMessages,
   addMessages,
   addMessage,
+  addIncomingMessage,
   updateMessage,
   deleteMessage,
   setLoadingMessages,

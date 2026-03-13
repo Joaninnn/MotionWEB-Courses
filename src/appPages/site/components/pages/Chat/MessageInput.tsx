@@ -3,6 +3,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useSendMessageMutation } from '../../../../../redux/api/chat';
+import { useDispatch, useSelector } from 'react-redux';
+import { resetUnreadCount } from '../../../../../redux/slices/chatSlice';
+import { RootState } from '../../../../../redux/store';
 import VoiceRecorder from '@/components/VoiceRecorder/VoiceRecorder';
 import styles from './MessageInput.module.scss';
 
@@ -13,6 +16,8 @@ interface MessageInputProps {
 
 const MessageInput: React.FC<MessageInputProps> = ({ groupId, sendMessage }) => {
   const [sendMessageMutation, { isLoading: isSending }] = useSendMessageMutation();
+  const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.user);
   const [message, setMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -139,6 +144,18 @@ const MessageInput: React.FC<MessageInputProps> = ({ groupId, sendMessage }) => 
           text: message.trim() || (selectedAudio ? 'Голосовое сообщение' : undefined),
           file: fileToSend || undefined,
         }).unwrap();
+      }
+      
+      // Сбрасываем счетчик непрочитанных после отправки сообщения
+      dispatch(resetUnreadCount(groupId));
+      
+      // Также очищаем старое значение в localStorage чтобы избежать конфликта
+      const userKey = `unreadCountOverrides_user_${user.id}`;
+      const currentOverrides = JSON.parse(localStorage.getItem(userKey) || '{}');
+      if (currentOverrides[groupId]) {
+        delete currentOverrides[groupId];
+        localStorage.setItem(userKey, JSON.stringify(currentOverrides));
+        console.log(`🗑️ Очищен старый override для чата ${groupId} в localStorage`);
       }
       
       setMessage('');

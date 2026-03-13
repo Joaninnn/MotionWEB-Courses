@@ -223,7 +223,7 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
 
     return (
       <div
-        key={message.id}
+        key={`${message.id}-${message.created_date}-${message.user_id}`}
         className={`${styles.message} ${isOwn ? styles.own : styles.other}`}
       >
         {!isOwn && (

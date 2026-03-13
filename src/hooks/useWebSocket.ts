@@ -5,6 +5,7 @@ import {
   handleWebSocketMessage,
   setWsConnected,
   setWsConnectionState,
+  resetUnreadCount,
 } from '@/redux/slices/chatSlice';
 import { wsManager } from '@/services/websocket';
 
@@ -129,12 +130,15 @@ export const useWebSocket = (groupId: number) => {
 
       // Всегда пытаемся отправить через wsManager - он сам решит, использовать WebSocket или HTTP
       wsManager.sendMessage(payload);
+      
+      // Сбрасываем счетчик непрочитанных после отправки сообщения
+      dispatch(resetUnreadCount(groupId));
     } catch (error) {
       console.error('❌ Ошибка отправки сообщения:', error);
       // Не выбрасываем ошибку дальше, чтобы не прерывать UI
       console.log('⚠️ Попытка отправки не удалась, но приложение продолжает работать');
     }
-  }, [groupId]);
+  }, [groupId, dispatch]);
 
   const sendTyping: SendTypingFn = useCallback(() => {
     return;

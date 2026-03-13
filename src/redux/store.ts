@@ -5,6 +5,7 @@ import { chatApi } from "./api/chat";
 import userReducer, { UserState } from "./slices/userSlice";
 import chatReducer from "./slices/chatSlice";
 import notificationsReducer from "./slices/notificationsSlice";
+import { chatMiddleware } from "./middleware/chatMiddleware";
 
 // Создаём функцию для создания store (нужно определить раньше для типов)
 export const makeStore = () => {
@@ -152,9 +153,10 @@ export const makeStoreWithMiddleware = () => {
             : undefined,
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware().concat(
-                api.middleware,
+                api.middleware, 
                 chatApi.middleware,
-                localStorageMiddleware
+                localStorageMiddleware,
+                chatMiddleware
             ),
     });
 
