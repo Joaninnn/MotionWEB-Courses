@@ -175,12 +175,6 @@ npm start
 
 This project is licensed under the MIT License. Details in LICENSE file.
 
-## 📞 Contacts
-
-For questions and suggestions:
-- Email: support@motioncourse.com
-- GitHub: [repository link]
-
 ---
 
 **MotionCourse** - Making education accessible and modern! 🎓✨
