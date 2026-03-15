@@ -1,44 +1,58 @@
 // src/components/Chat/MessageInput.module.scss
 .messageInput {
-  background: black;
-  padding: 8px;
-  border-top: 2px solid white;
+  background: var(--bg-card);
+  padding: 12px 16px; // Уменьшим padding с 16px до 12px
+  border-top: 2px solid var(--accent-primary);
+  position: relative;
+  z-index: 2;
+  backdrop-filter: blur(10px);
 
   .imagePreview {
     position: relative;
     display: inline-block;
-    margin-bottom: 12px;
-    border: 2px solid white;
-    box-shadow: 3px 3px 0 red;
-    border-radius: 4px;
+    margin-bottom: 16px;
+    border: 2px solid var(--accent-primary);
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-lg);
     overflow: hidden;
+    animation: fadeInUp 0.5s ease-out;
 
     .previewImage {
       max-width: 200px;
       max-height: 150px;
       display: block;
+      transition: all var(--transition-normal);
+    }
+    
+    &:hover .previewImage {
+      transform: scale(1.05);
+      filter: brightness(1.1);
     }
 
     .removeImage {
       position: absolute;
       top: -8px;
       right: -8px;
-      background: red;
+      background: var(--accent-gradient);
       color: white;
-      border: 2px solid white;
-      box-shadow: 2px 2px 0 rgb(139, 0, 0);
-      width: 24px;
-      height: 24px;
+      border: 2px solid var(--text-primary);
+      box-shadow: var(--shadow-sm);
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       cursor: pointer;
       font-size: 16px;
-      font-weight: bold;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-
+      transition: all var(--transition-normal);
+      font-family: "Space Grotesk", sans-serif;
+      animation: pulse-badge 2s ease-in-out infinite;
+      
       &:hover {
-        background: rgb(200, 0, 0);
+        transform: scale(1.1);
+        box-shadow: var(--shadow-md), 0 0 15px rgba(255, 51, 51, 0.4);
       }
     }
   }
@@ -47,57 +61,65 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #f8f9fa;
-    border: 2px solid white;
-    box-shadow: 3px 3px 0 red;
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin-bottom: 12px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--accent-primary);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-lg);
+    padding: 12px 16px;
+    margin-bottom: 16px;
     gap: 12px;
+    animation: fadeInUp 0.5s ease-out;
 
     .audioInfo {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
       flex: 1;
     }
 
     .audioIcon {
-      font-size: 16px;
+      font-size: 20px;
+      color: var(--accent-primary);
+      animation: pulse-icon 2s ease-in-out infinite;
     }
 
     .audioDuration {
       font-weight: 600;
-      color: #666;
+      color: var(--text-primary);
       font-size: 14px;
-      background: white;
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid #ddd;
+      background: var(--bg-card);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-primary);
+      font-family: "JetBrains Mono", monospace;
     }
 
     .audioLabel {
       font-size: 14px;
-      color: #333;
+      color: var(--text-secondary);
+      font-family: "Inter", sans-serif;
     }
 
     .removeAudio {
-      background: red;
+      background: var(--accent-gradient);
       color: white;
-      border: 2px solid white;
-      box-shadow: 2px 2px 0 rgb(139, 0, 0);
-      width: 24px;
-      height: 24px;
+      border: 2px solid var(--text-primary);
+      box-shadow: var(--shadow-sm);
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       cursor: pointer;
       font-size: 16px;
-      font-weight: bold;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-
+      transition: all var(--transition-normal);
+      font-family: "Space Grotesk", sans-serif;
+      
       &:hover {
-        background: rgb(200, 0, 0);
+        transform: scale(1.1);
+        box-shadow: var(--shadow-md), 0 0 15px rgba(255, 51, 51, 0.4);
       }
     }
   }
@@ -107,40 +129,66 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      background: #111;
-      border: 2px solid white;
-      box-shadow: 3px 3px 0 red;
-      padding: 8px;
-      border-radius: 4px;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-primary);
+      box-shadow: var(--shadow-sm);
+      padding: 12px;
+      border-radius: var(--radius-lg);
+      position: relative;
+      overflow: hidden;
+      
+      // Анимированный фон при фокусе
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 51, 51, 0.05), transparent);
+        transition: left var(--transition-slow);
+        z-index: 0;
+      }
+      
+      &:focus-within {
+        border-color: var(--accent-primary);
+        box-shadow: var(--shadow-md), 0 0 15px rgba(255, 51, 51, 0.2);
+        
+        &::before {
+          left: 0;
+        }
+      }
 
       .fileInput {
         display: none;
       }
 
       .attachButton {
-        background: #222;
-        border: 2px solid white;
-        color: white;
-        width: 40px;
-        height: 40px;
-        border-radius: 4px;
+        background: var(--bg-tertiary);
+        border: 2px solid var(--border-primary);
+        color: var(--text-muted);
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-lg);
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-size: 18px;
-        transition: all 0.2s;
-        box-shadow: 2px 2px 0 rgba(255, 255, 255, 0.3);
-
+        font-size: 20px;
+        transition: all var(--transition-normal);
+        box-shadow: var(--shadow-sm);
+        position: relative;
+        z-index: 2;
+        
         &:hover {
-          background: #333;
-          transform: translate(-1px, -1px);
-          box-shadow: 3px 3px 0 rgba(255, 255, 255, 0.5);
+          background: var(--bg-hover);
+          color: var(--accent-primary);
+          transform: translateY(-2px) scale(1.05);
+          box-shadow: var(--shadow-md);
         }
 
         &:active {
-          transform: translate(0, 0);
-          box-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3);
+          transform: translateY(0) scale(1.02);
         }
       }
 
@@ -148,17 +196,19 @@
         flex: 1;
         background: transparent;
         border: none;
-        color: white;
-        font-size: 14px;
-        font-family: inherit;
+        color: var(--text-primary);
+        font-size: 16px;
+        font-family: "Inter", sans-serif;
         resize: none;
         outline: none;
-        min-height: 40px;
+        min-height: 44px;
         max-height: 120px;
         line-height: 1.4;
+        position: relative;
+        z-index: 2;
 
         &::placeholder {
-          color: #888;
+          color: var(--text-muted);
         }
 
         &:disabled {
@@ -168,36 +218,52 @@
       }
 
       .sendButton {
-        background: #dc3545;
-        border: 2px solid white;
+        background: var(--accent-gradient);
+        border: none;
         color: white;
-        width: 40px;
-        height: 40px;
-        border-radius: 4px;
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-lg);
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-size: 16px;
-        transition: all 0.2s;
-        box-shadow: 2px 2px 0 rgba(220, 53, 69, 0.3);
+        font-size: 18px;
+        transition: all var(--transition-normal);
+        box-shadow: var(--shadow-sm);
+        position: relative;
+        z-index: 2;
+        overflow: hidden;
+        
+        // Внутренняя анимация
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: rgba(255, 255, 255, 0.2);
+          transition: left var(--transition-slow);
+          z-index: -1;
+        }
 
         &:hover:not(.disabled) {
-          background: #c82333;
-          transform: translate(-1px, -1px);
-          box-shadow: 3px 3px 0 rgba(220, 53, 69, 0.5);
+          transform: translateY(-2px) scale(1.05);
+          box-shadow: var(--shadow-md), 0 0 15px rgba(255, 51, 51, 0.4);
+          
+          &::before {
+            left: 100%;
+          }
         }
 
         &:active:not(.disabled) {
-          transform: translate(0, 0);
-          box-shadow: 1px 1px 0 rgba(220, 53, 69, 0.3);
+          transform: translateY(0) scale(1.02);
         }
 
         &.disabled {
-          background: #444;
-          color: #888;
-          cursor: not-allowed;
-          opacity: 0.5;
+          background: var(--bg-tertiary);
+          color: var(--text-muted);
         }
       }
     }
@@ -206,13 +272,14 @@
   .filePreview {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: #111;
-    border: 2px solid white;
-    box-shadow: 3px 3px 0 red;
-    margin-bottom: 12px;
-    border-radius: 4px;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-primary);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 16px;
+    border-radius: var(--radius-lg);
+    animation: fadeInUp 0.5s ease-out;
 
     .imagePreview {
       position: relative;
@@ -220,13 +287,15 @@
       .sharedImage {
         max-width: 200px;
         max-height: 150px;
-        border: 2px solid white;
-        box-shadow: 2px 2px 0 red;
+        border: 2px solid var(--accent-primary);
+        box-shadow: var(--shadow-sm);
         cursor: pointer;
-        transition: transform 0.2s;
+        transition: all var(--transition-normal);
+        border-radius: var(--radius-lg);
 
         &:hover {
           transform: scale(1.05);
+          box-shadow: var(--shadow-md), 0 0 15px rgba(255, 51, 51, 0.3);
         }
       }
 
@@ -234,22 +303,24 @@
         position: absolute;
         top: -8px;
         right: -8px;
-        background: red;
+        background: var(--accent-gradient);
         color: white;
-        border: 2px solid white;
-        box-shadow: 2px 2px 0 rgb(139, 0, 0);
-        width: 24px;
-        height: 24px;
+        border: 2px solid var(--text-primary);
+        box-shadow: var(--shadow-sm);
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.2s;
-
+        transition: all var(--transition-normal);
+        font-weight: 700;
+        font-family: "Space Grotesk", sans-serif;
+        
         &:hover {
-          background-color: #ff0000;
           transform: scale(1.1);
+          box-shadow: var(--shadow-md), 0 0 15px rgba(255, 51, 51, 0.4);
         }
       }
     }
@@ -258,30 +329,37 @@
       flex: 1;
 
       .fileName {
-        color: white;
-        font-size: 14px;
+        color: var(--text-primary);
+        font-size: 15px;
         font-weight: 600;
-        margin: 0 0 4px 0;
+        margin: 0 0 6px 0;
+        font-family: "Inter", sans-serif;
       }
 
       .fileSize {
-        color: #888;
-        font-size: 12px;
+        color: var(--text-muted);
+        font-size: 13px;
+        font-family: "JetBrains Mono", monospace;
       }
     }
 
     .removeFile {
-      background: #ff4444;
+      background: var(--accent-gradient);
       color: white;
-      border: 2px solid white;
-      box-shadow: 2px 2px 0 rgb(139, 0, 0);
-      padding: 6px 12px;
+      border: none;
+      box-shadow: var(--shadow-sm);
+      padding: 8px 16px;
       cursor: pointer;
-      transition: all 0.2s;
-
+      transition: all var(--transition-normal);
+      font-weight: 600;
+      font-family: "Space Grotesk", sans-serif;
+      border-radius: var(--radius-lg);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      
       &:hover {
-        background-color: #ff0000;
-        transform: translate(-2px, -2px);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md), 0 0 15px rgba(255, 51, 51, 0.4);
       }
     }
   }
@@ -290,32 +368,57 @@
     display: flex;
     align-items: flex-end;
     gap: 12px;
-    background: black;
-    border: 2px solid white;
-    box-shadow: 3px 3px 0 red;
-    padding: 8px;
-    border-radius: 4px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-primary);
+    box-shadow: var(--shadow-sm);
+    padding: 12px;
+    border-radius: var(--radius-lg);
+    position: relative;
+    overflow: hidden;
+    
+    // Анимированный фон при фокусе
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 51, 51, 0.05), transparent);
+      transition: left var(--transition-slow);
+      z-index: 0;
+    }
+    
+    &:focus-within {
+      border-color: var(--accent-primary);
+      box-shadow: var(--shadow-md), 0 0 15px rgba(255, 51, 51, 0.2);
+      
+      &::before {
+        left: 0;
+      }
+    }
 
     .inputWrapper {
       flex: 1;
       position: relative;
+      z-index: 2;
 
       .messageTextarea {
         width: 100%;
-        min-height: 44px;
+        min-height: 48px;
         max-height: 120px;
-        padding: 10px 50px 10px 12px;
+        padding: 12px 50px 12px 16px;
         border: none;
         background: transparent;
-        color: white;
+        color: var(--text-primary);
         font-size: 16px;
-        font-family: inherit;
+        font-family: "Inter", sans-serif;
         resize: none;
         outline: none;
         line-height: 1.4;
 
         &::placeholder {
-          color: #666;
+          color: var(--text-muted);
         }
 
         &:disabled {
@@ -330,13 +433,15 @@
         bottom: 12px;
         background: transparent;
         border: none;
-        color: #888;
+        color: var(--text-muted);
         cursor: pointer;
-        padding: 4px;
-        transition: color 0.2s;
-
+        padding: 6px;
+        transition: all var(--transition-normal);
+        font-size: 20px;
+        
         &:hover {
-          color: white;
+          color: var(--accent-primary);
+          transform: scale(1.1);
         }
 
         &:disabled {
@@ -347,38 +452,61 @@
     }
 
     .sendButton {
-      background: red;
+      background: var(--accent-gradient);
       color: white;
-      border: 2px solid white;
-      box-shadow: 3px 3px 0 rgb(139, 0, 0);
-      padding: 10px 16px;
+      border: none;
+      box-shadow: var(--shadow-sm);
+      padding: 12px 20px;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all var(--transition-normal);
       font-size: 16px;
-      font-weight: 600;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-width: 80px;
+      min-width: 90px;
+      font-family: "Space Grotesk", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-radius: var(--radius-lg);
+      position: relative;
+      z-index: 2;
+      overflow: hidden;
+      
+      // Внутренняя анимация
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: left var(--transition-slow);
+        z-index: -1;
+      }
 
       &:hover:not(:disabled) {
-        background-color: #ff0000;
-        box-shadow: 5px 5px 0 rgba(139, 0, 0, 0.8);
-        transform: translate(-2px, -2px);
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: var(--shadow-md), 0 0 15px rgba(255, 51, 51, 0.4);
+        
+        &::before {
+          left: 100%;
+        }
       }
 
       &:active:not(:disabled) {
-        box-shadow: 1px 1px 0 rgb(139, 0, 0);
-        transform: translate(1px, 1px);
+        transform: translateY(0) scale(1.01);
       }
 
       &:disabled {
         opacity: 0.6;
         cursor: not-allowed;
+        background: var(--bg-tertiary);
       }
 
       svg {
-        margin-left: 6px;
+        margin-left: 8px;
       }
     }
   }
@@ -386,24 +514,25 @@
   .typingIndicator {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background: #111;
-    border: 1px solid #333;
-    border-radius: 4px;
-    margin-top: 8px;
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    margin-top: 12px;
+    animation: fadeInUp 0.5s ease-out;
 
     .typingDots {
       display: flex;
-      gap: 4px;
+      gap: 6px;
 
       span {
-        width: 6px;
-        height: 6px;
-        background: #888;
+        width: 8px;
+        height: 8px;
+        background: var(--accent-primary);
         border-radius: 50%;
-        animation: typing 1.4s infinite ease-in-out;
-
+        animation: typing-dot 1.4s infinite ease-in-out;
+        
         &:nth-child(1) { animation-delay: 0s; }
         &:nth-child(2) { animation-delay: 0.2s; }
         &:nth-child(3) { animation-delay: 0.4s; }
@@ -411,22 +540,50 @@
     }
 
     .typingText {
-      color: #ccc;
+      color: var(--text-secondary);
       font-size: 14px;
-      font-style: italic;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
     }
   }
 }
 
-@keyframes typing {
-  0%, 60%, 100% {
-    transform: translateY(0);
-    opacity: 0.7;
-  }
-  30% {
-    transform: translateY(-10px);
-    opacity: 1;
-  }
+// Дополнительные анимации
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes typing-dot {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.3;
+    }
+    30% {
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse-badge {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes pulse-icon {
+    0%, 100% { opacity: 0.8; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
 }
 
 /* Mobile */

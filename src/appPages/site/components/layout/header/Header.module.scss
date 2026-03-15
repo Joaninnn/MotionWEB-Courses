@@ -1,11 +1,43 @@
 .header {
-    background-color: #000000;
-    border-bottom: white solid 4px;
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    border-bottom: 2px solid var(--accent-primary);
     position: relative;
+    z-index: 100;
+    overflow-x: clip;
+    overflow-y: visible;
+    
+    // Анимированный фон
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 51, 51, 0.03), transparent);
+        animation: shimmer 12s infinite;
+        pointer-events: none;
+    }
+    
+    // Плавающие частицы
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(255, 51, 51, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 51, 51, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 40% 60%, rgba(255, 51, 51, 0.04) 0%, transparent 50%);
+        animation: float 10s ease-in-out infinite;
+        pointer-events: none;
+    }
 
     .content {
         display: flex;
-        padding: 5px 0;
+        padding: 10px 0;
         flex-direction: row;
         align-items: center;
         gap: 10px;
@@ -15,30 +47,61 @@
         .logoButton {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             cursor: pointer;
-            flex-direction: row;
+            transition: all var(--transition-normal);
+            position: relative;
+            
+            &:hover {
+                transform: translateY(-2px) scale(1.05);
+                
+                .logo {
+                    transform: rotate(360deg) scale(1.1);
+                }
+                
+                .logoTextBlock {
+                    .logoText1 {
+                        text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+                    }
+                    
+                    .logoText2 {
+                        text-shadow: 0 0 25px rgba(255, 51, 51, 0.8);
+                        transform: scale(1.1);
+                    }
+                }
+            }
 
             .logo {
-                width: 80px;
-                height: 100%;
+                width: 60px;
+                height: auto;
+                transition: all var(--transition-slow);
+                filter: drop-shadow(0 0 10px rgba(255, 51, 51, 0.3));
             }
 
             .logoTextBlock {
                 display: flex;
                 flex-direction: row;
-                gap: 5px;
-                align-content: center;
+                gap: 6px;
+                align-items: center;
                 justify-content: center;
 
                 .logoText1 {
-                    color: white;
-                    font-size: 24px;
+                    color: var(--accent-primary);
+                    font-size: 20px;
+                    font-weight: 700;
+                    font-family: "Space Grotesk", sans-serif;
+                    text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+                    transition: all var(--transition-normal);
+                    animation: pulse-red 2s ease-in-out infinite;
                 }
 
                 .logoText2 {
-                    color: rgb(255, 0, 0);
-                    font-size: 24px;
+                    color: var(--text-primary);
+                    font-size: 20px;
+                    font-weight: 700;
+                    font-family: "Space Grotesk", sans-serif;
+                    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+                    transition: all var(--transition-normal);
                 }
             }
         }
@@ -47,26 +110,68 @@
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
 
             .nav {
+                position: relative;
                 color: white;
                 text-decoration: none;
                 cursor: pointer;
-                padding: 10px 20px;
+                padding: 12px 26px;
                 text-align: center;
-                transition: all 0.3s ease-in-out;
-                box-shadow: 5px 5px 0 rgb(255, 0, 0);
-                border: rgb(255, 255, 255) solid 3px;
-                border-radius: 3px;
-                font-size: 18px;
-                font-weight: 500;
+
+                border: 2px solid #ff2b2b;
+                border-radius: 12px;
+
+                font-size: 16px;
+                font-weight: 600;
+                font-family: "Space Grotesk", sans-serif;
+
+                background: black;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+
+                transition: all 0.35s ease;
+
+                overflow: hidden;
+
+                box-shadow: 0 0 0 rgba(255,0,0,0);
+
+                &:before {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(
+                        120deg,
+                        transparent,
+                        rgba(255,255,255,0.4),
+                        transparent
+                    );
+                    transition: all 0.6s ease;
+                }
 
                 &:hover {
-                    background-color: #ff0000;
-                    color: white;
-                    box-shadow: 0 5px 15px rgba(255, 0, 0, 0.5);
-                    transform: translateY(-2px);
+                    transform: translateY(-3px) scale(1.03);
+                    background: linear-gradient(135deg, #0f0f0f, #1a0000);
+                    border-color: #ff0000;
+
+                    box-shadow:
+                        0 8px 25px rgba(255, 0, 0, 0.4),
+                        0 0 20px rgba(255, 0, 0, 0.3);
+
+                    color: #ffffff;
+                }
+
+                &:hover::before {
+                    left: 100%;
+                }
+
+                &:active {
+                    transform: translateY(1px) scale(0.98);
+                    box-shadow: 0 3px 10px rgba(255,0,0,0.4);
                 }
             }
         }
@@ -75,7 +180,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            margin-right: 20px; // Добавляем отступ справа
+            margin-right: 20px;
         }
 
         .profileWrapper {
@@ -105,133 +210,183 @@
                 }
             }
 
-            &:hover:not(.disabled) {
-                transform: translateY(-2px);
-            }
-
             .profile {
-                width: 40px;
+                width: 45px;
                 cursor: pointer;
-                transition: all 0.3s ease-in-out;
+                transition: all var(--transition-normal);
                 height: auto;
-                border-radius: 100%;
+                border-radius: 50%;
+                border: 2px solid var(--accent-primary);
+                position: relative;
+                
+                &::before {
+                    content: '';
+                    position: absolute;
+                    top: -3px;
+                    right: -3px;
+                    width: 12px;
+                    height: 12px;
+                    background: #00ff88;
+                    border-radius: 50%;
+                    border: 2px solid var(--bg-primary);
+                    animation: online-pulse 2s ease-in-out infinite;
+                }
 
                 &:hover {
-                    transform: translateY(-2px);
+                    box-shadow: 0 0 20px rgba(255, 51, 51, 0.6);
+                    transform: scale(1.1) rotate(5deg);
                 }
             }
 
             .username {
-                color: white;
+                color: var(--text-primary);
                 font-size: 16px;
-                font-weight: 500;
+                font-weight: 600;
+                font-family: "Space Grotesk", sans-serif;
+                transition: all var(--transition-normal);
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+                
+                &:hover {
+                    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+                }
             }
         }
 
         .profileMenu {
             position: absolute;
-            top: calc(100% + 10px);
+            top: calc(100% + 15px);
             right: 0;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            padding: 16px;
-            min-width: 200px;
-            z-index: 1000;
-        }
+            background: var(--bg-card);
+            border: 2px solid var(--accent-primary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg), 0 0 25px rgba(255, 51, 51, 0.3);
+            padding: 24px;
+            min-width: 260px;
+            z-index: 99999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px) scale(0.95);
+            transition: all var(--transition-normal);
+            backdrop-filter: blur(10px);
+            
+            &.active {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0) scale(1);
+            }
 
-        .profileInfo {
-            padding-bottom: 12px;
-            border-bottom: 1px solid #e0e0e0;
-            margin-bottom: 12px;
-        }
+            .profileInfo {
+                padding-bottom: 12px;
+                border-bottom: 1px solid #e0e0e0;
+                margin-bottom: 12px;
+            }
 
-        .profileName {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: #333;
-        }
+            .profileName {
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 4px;
+                color: #333;
+            }
 
-        .profileEmail {
-            font-size: 14px;
-            color: #666;
-        }
+            .profileEmail {
+                font-size: 14px;
+                color: #666;
+            }
 
-        .profileStatus {
-            font-size: 12px;
-            color: #007bff;
-            font-weight: 500;
-            margin-top: 4px;
-        }
+            .profileStatus {
+                font-size: 12px;
+                color: #007bff;
+                font-weight: 500;
+                margin-top: 4px;
+            }
 
-        .logoutButton {
-            width: 100%;
-            padding: 10px;
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.3s ease;
-
-            &:hover {
-                background: #d32f2f;
+            .logoutButton {
+                width: 100%;
+                padding: 14px;
+                background: var(--accent-gradient);
+                color: white;
+                border: none;
+                border-radius: var(--radius-lg);
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all var(--transition-normal);
+                font-family: "Space Grotesk", sans-serif;
+                text-transform: uppercase;
+                letter-spacing: 1px;
             }
         }
 
         .burgerButton {
             display: none;
             flex-direction: column;
-            justify-content: space-around;
-            width: 30px;
-            height: 25px;
+            justify-content: center;
+            align-items: center;
+            width: 42px;
+            height: 38px;
             background: transparent;
-            border: none;
+            border: 2px solid var(--accent-primary);
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            padding: 0;
+            padding: 7px 8px;
             z-index: 10;
+            flex-shrink: 0;
 
             .burgerLine {
-                width: 30px;
+                width: 22px;
                 height: 3px;
                 background-color: white;
-                border-radius: 10px;
-                transition: all 0.3s ease-in-out;
-                transform-origin: center;
+                border-radius: 2px;
+                margin: 2px 0;
+                display: block;
+                position: relative;
+                transition: all 0.3s ease;
 
                 &.open:nth-child(1) {
-                    transform: rotate(45deg) translateY(8px);
+                    transform: rotate(45deg) translate(0, 7px);
                 }
 
                 &.open:nth-child(2) {
                     opacity: 0;
+                    transform: scaleX(0);
                 }
 
                 &.open:nth-child(3) {
-                    transform: rotate(-45deg) translateY(-8px);
+                    transform: rotate(-45deg) translate(0, -7px);
                 }
             }
         }
 
         .mobileMenu {
             display: none;
-            position: fixed; // Оставляем fixed для правильного позиционирования
-            top: 80px; // Отступ сверху равный высоте хедера
+            position: fixed;
+            top: 80px;
             left: 0;
             right: 0;
-            bottom: 0; // Растягиваем до низа экрана
-            background-color: rgba(0, 0, 0, 0.98); // Полупрозрачный черный фон
+            bottom: 0;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
             flex-direction: column;
-            padding: 20px; // Убираем отступ сверху, так как уже есть отступ от top
+            padding: 20px;
             gap: 15px;
-            overflow-y: auto; // Добавляем скролл если контент не помещается
+            overflow-y: auto;
             opacity: 0;
-            visibility: hidden; // Добавляем visibility для лучшей анимации
-            transition: all 0.3s ease-in-out;
-            z-index: 9999; // Очень высокий z-index для перекрытия контента
+            visibility: hidden;
+            transition: all 0.35s ease-in-out;
+            z-index: 9999;
+            border-top: 2px solid var(--accent-primary);
+            backdrop-filter: blur(10px);
+            
+            &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 51, 51, 0.05), transparent);
+                animation: shimmer 12s infinite;
+                pointer-events: none;
+            }
 
             &.active {
                 opacity: 1;
@@ -239,40 +394,94 @@
             }
 
             .mobileNav {
-                color: white;
+                position: relative;
+                color: var(--text-primary);
                 text-decoration: none;
                 cursor: pointer;
                 padding: 15px 20px;
                 text-align: center;
-                transition: all 0.3s ease-in-out;
-                box-shadow: 5px 5px 0 rgb(255, 0, 0);
-                border: rgb(255, 255, 255) solid 3px;
-                border-radius: 3px;
+                transition: all var(--transition-normal);
+                border: 2px solid var(--accent-primary);
+                border-radius: var(--radius-lg);
                 font-size: 18px;
-                font-weight: 500;
-
+                font-weight: 600;
+                font-family: "Space Grotesk", sans-serif;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                background: var(--bg-secondary);
+                overflow: hidden;
+                
+                &:before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255, 51, 51, 0.1), transparent);
+                    transition: left var(--transition-slow);
+                    z-index: -1;
+                }
+                
                 &:hover {
-                    background-color: #ff0000;
-                    color: white;
-                    box-shadow: 0 5px 15px rgba(255, 0, 0, 0.5);
+                    background: var(--bg-hover);
+                    color: var(--accent-primary);
+                    transform: translateY(-2px);
+                    box-shadow: var(--shadow-md), 0 0 15px rgba(255, 51, 51, 0.2);
+                    
+                    &:before {
+                        left: 100%;
+                    }
+                }
+                
+                &:active {
+                    transform: translateY(0);
                 }
             }
 
             .mobileLogout {
+                position: relative;
                 width: 100%;
-                padding: 12px;
-                background: #f44336;
-                color: white;
-                border: none;
-                border-radius: 6px;
+                padding: 14px;
+                background: var(--bg-secondary);
+                color: var(--text-primary);
+                border: 2px solid var(--accent-primary);
+                border-radius: var(--radius-lg);
                 font-size: 16px;
-                font-weight: 500;
+                font-weight: 600;
                 cursor: pointer;
                 margin-top: 12px;
-                transition: background 0.3s ease;
-
+                font-family: "Space Grotesk", sans-serif;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                transition: all var(--transition-normal);
+                overflow: hidden;
+                
+                &:before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255, 51, 51, 0.1), transparent);
+                    transition: left var(--transition-slow);
+                    z-index: -1;
+                }
+                
                 &:hover {
-                    background: #d32f2f;
+                    background: var(--accent-primary);
+                    color: white;
+                    transform: translateY(-2px);
+                    box-shadow: var(--shadow-md), 0 0 15px rgba(255, 51, 51, 0.3);
+                    
+                    &:before {
+                        left: 100%;
+                    }
+                }
+                
+                &:active {
+                    transform: translateY(0);
                 }
             }
         }
@@ -314,7 +523,7 @@
     }
 }
 
-// Адаптив для 768px - появление бургер-меню
+// Адаптив для 768px — появление бургер-меню
 @media (max-width: 768px) {
     .header {
         .content {
@@ -349,10 +558,9 @@
                 display: flex;
             }
 
-            // Оверлей для мобильного меню
             .menuOverlay {
                 position: fixed;
-                top: 80px; // Тоже начинаем под хедером
+                top: 80px;
                 left: 0;
                 right: 0;
                 bottom: 0;
@@ -392,12 +600,14 @@
             }
 
             .burgerButton {
-                width: 25px;
-                height: 20px;
+                width: 38px;
+                height: 34px;
+                padding: 6px 7px;
 
                 .burgerLine {
-                    width: 25px;
-                    height: 2.5px;
+                    width: 20px;
+                    height: 3px;
+                    margin: 2px 0;
                 }
             }
 
@@ -407,6 +617,25 @@
                 .mobileNav {
                     padding: 12px 15px;
                     font-size: 16px;
+                }
+            }
+        }
+    }
+}
+
+// Адаптив для очень маленьких экранов (менее 400px)
+@media (max-width: 400px) {
+    .header {
+        .content {
+            .burgerButton {
+                width: 36px;
+                height: 32px;
+                padding: 5px 6px;
+
+                .burgerLine {
+                    width: 20px;
+                    height: 3px;
+                    margin: 2px 0;
                 }
             }
         }

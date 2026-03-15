@@ -174,7 +174,7 @@ const Header: React.FC = () => {
                             {isAuthenticated &&
                                 showProfileMenu &&
                                 currentUser && (
-                                    <div className={style.profileMenu}>
+                                    <div className={`${style.profileMenu} ${showProfileMenu ? style.active : ''}`}>
                                         <div className={style.profileInfo}>
                                             <p className={style.profileName}>
                                                 {currentUser.username}

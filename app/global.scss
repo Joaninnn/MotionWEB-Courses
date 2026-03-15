@@ -1,9 +1,52 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&family=Nunito:wght@200..1000&family=Rubik:wght@300..900&family=Shalimar&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Space+Grotesk:wght@300..700&family=JetBrains+Mono:wght@100..800&display=swap");
+
+// CSS Variables для темной темы с красными акцентами
+:root {
+  // Основные цвета
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #252525;
+  --bg-card: #161616;
+  --bg-hover: #2a2a2a;
+  
+  // Текстовые цвета
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-muted: #808080;
+  --text-accent: #ff3333;
+  
+  // Красные акценты
+  --accent-primary: #ff3333;
+  --accent-secondary: #cc0000;
+  --accent-hover: #ff5555;
+  --accent-light: #ffcccc;
+  --accent-gradient: linear-gradient(135deg, #ff3333 0%, #cc0000 100%);
+  
+  // Границы и тени
+  --border-primary: #333333;
+  --border-secondary: #404040;
+  --border-accent: #ff3333;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-accent: 0 0 20px rgba(255, 51, 51, 0.3);
+  
+  // Радиусы
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  
+  // Анимации
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow: 0.4s ease;
+}
 
 * {
     padding: 0;
     margin: 0;
-    font-family: "Montserrat", sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
     box-sizing: border-box;
 }
 
@@ -12,9 +55,105 @@ body {
     width: 100%;
     overflow-x: hidden;
     overflow-y: auto;
-    background: #000;
-    color: #fff;
-    scroll-behavior: auto; // Отключаем плавный скролл
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    scroll-behavior: auto;
+}
+
+// Современные классы для кнопок
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    
+    &:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transition: left var(--transition-slow);
+    }
+    
+    &:hover:before {
+        left: 100%;
+    }
+}
+
+.btn-primary {
+    background: var(--accent-gradient);
+    color: white;
+    box-shadow: var(--shadow-sm);
+    
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md), var(--shadow-accent);
+    }
+    
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.btn-secondary {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+    
+    &:hover {
+        background: var(--bg-hover);
+        border-color: var(--accent-primary);
+        box-shadow: var(--shadow-sm);
+    }
+}
+
+// Карточки
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-normal);
+    
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--border-accent);
+    }
+}
+
+// Современные инпуты
+.input {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    color: var(--text-primary);
+    font-family: "Inter", sans-serif;
+    font-size: 14px;
+    transition: all var(--transition-normal);
+    
+    &:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(255, 51, 51, 0.1);
+    }
+    
+    &::placeholder {
+        color: var(--text-muted);
+    }
 }
 
 // Класс для блокировки скролла

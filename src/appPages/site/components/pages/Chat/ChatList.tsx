@@ -211,7 +211,6 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
     return (
       <div className={styles.chatList}>
         <div className={styles.header}>
-          <h3>Чаты</h3>
         </div>
         <div className={styles.loading}>
           <div className={styles.spinner}></div>

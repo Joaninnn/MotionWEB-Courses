@@ -19,6 +19,7 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({ username: false, password: false });
 
     useEffect(() => {
         const hasToken = !!Cookies.get("access_token");
@@ -32,26 +33,65 @@ export default function Login() {
     const handleLogin = async () => {
         if (!username || !password) {
             setErrorMessage("Введите логин и пароль");
+            setFieldErrors({ username: !username, password: !password });
             return;
         }
 
-        setErrorMessage(""); 
+        setErrorMessage("");
+        setFieldErrors({ username: false, password: false });
 
         try {
-
             const result = await login({ username, password }).unwrap();
 
             const hasToken = !!Cookies.get("access_token");
 
             if (!hasToken) {
-            
                 return;
             }
 
             router.push("/home");
-        } catch (err) {
-            
+        } catch (err: unknown) {
+            // Улучшенная обработка ошибок для RTK Query
+            setFieldErrors({ username: true, password: true });
+
+            // RTK Query ошибки имеют структуру {status, data}
+            let errorMsg = 'Неверный логин или пароль';
+
+            if (err && typeof err === 'object' && 'status' in err) {
+                const errorStatus = (err as { status?: number }).status;
+                const errorData = (err as { data?: { message?: string; error?: string } }).data;
+
+                if (errorStatus === 401) {
+                    errorMsg = 'Неверные учетные данные';
+                } else if (errorStatus === 429) {
+                    errorMsg = 'Слишком много попыток. Попробуйте позже';
+                } else if (errorStatus === 500) {
+                    errorMsg = 'Ошибка сервера. Попробуйте позже';
+                } else if (errorData?.message) {
+                    errorMsg = errorData.message;
+                } else if (errorData?.error) {
+                    errorMsg = errorData.error;
+                }
+            } else if (err && typeof err === 'object' && 'message' in err) {
+                errorMsg = (err as { message?: string }).message || 'Ошибка авторизации';
+            } else if (err && typeof err === 'string') {
+                errorMsg = err;
+            }
+
+            setErrorMessage(errorMsg);
         }
+    };
+
+    const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setUsername(e.target.value);
+        setFieldErrors(prev => ({ ...prev, username: false }));
+        if (errorMessage) setErrorMessage("");
+    };
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPassword(e.target.value);
+        setFieldErrors(prev => ({ ...prev, password: false }));
+        if (errorMessage) setErrorMessage("");
     };
 
     return (
@@ -61,17 +101,17 @@ export default function Login() {
                     <h2 className={style.title}>ВХОД В СИСТЕМУ</h2>
 
                     {errorMessage && (
-                        <div className={style.errorMessage}>{errorMessage}</div>
+                        <div className={style.error}>{errorMessage}</div>
                     )}
 
                     <div className={style.Block}>
                         <h2 className={style.Text}>ЛОГИН</h2>
                         <input
-                            className={style.input}
+                            className={`${style.input} ${fieldErrors.username ? style.error : ''}`}
                             placeholder="Введите логин"
                             type="text"
                             value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            onChange={handleUsernameChange}
                             disabled={isLoading}
                         />
                     </div>
@@ -80,11 +120,11 @@ export default function Login() {
                         <h2 className={style.Text}>ПАРОЛЬ</h2>
                         <div className={style.passwordInputWrapper}>
                             <input
-                                className={style.input}
+                                className={`${style.input} ${fieldErrors.password ? style.error : ''}`}
                                 placeholder="Введите пароль"
                                 type={showPassword ? "text" : "password"}
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={handlePasswordChange}
                                 onKeyDown={(e) =>
                                     e.key === "Enter" && !isLoading && handleLogin()
                                 }

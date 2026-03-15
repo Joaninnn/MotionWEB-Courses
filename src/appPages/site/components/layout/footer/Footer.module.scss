@@ -1,146 +1,323 @@
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Space+Grotesk:wght@300..700&display=swap");
 
 .footer {
-    background: black;
-    padding: 25px 0;
-    border-top: white solid 4px;
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    padding: 40px 0;
+    border-top: 2px solid var(--accent-primary);
+    position: relative;
+    overflow: hidden;
+    
+    // Анимированный фон
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 51, 51, 0.03), transparent);
+        animation: shimmer 12s infinite;
+        pointer-events: none;
+    }
+    
+    // Плавающие частицы
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(255, 51, 51, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 51, 51, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 40% 60%, rgba(255, 51, 51, 0.04) 0%, transparent 50%);
+        animation: float 10s ease-in-out infinite;
+        pointer-events: none;
+    }
+    
     .content {
         display: flex;
         flex-direction: column;
-        gap: 30px;
+        gap: 40px;
+        position: relative;
+        z-index: 2;
+        
         .topBlockFooter {
             display: flex;
             flex-direction: row;
             align-content: center;
             justify-content: space-between;
-            gap: 20px;
+            gap: 24px;
+            
             .firstTopBlock {
                 display: flex;
                 width: 30ch;
                 flex-direction: column;
-                gap: 10px;
+                gap: 16px;
+                
                 .footerLogo {
                     display: flex;
                     align-items: center;
-                    gap: 10px;
+                    gap: 12px;
                     cursor: pointer;
                     flex-direction: row;
-                    .logo {
-                        width: 80px;
-                        height: auto;
+                    transition: all var(--transition-normal);
+                    
+                    &:hover {
+                        transform: translateY(-2px) scale(1.05);
+                        
+                        .logo {
+                            transform: rotate(360deg) scale(1.1);
+                        }
+                        
+                        .logoTextBlock {
+                            .logoText1 {
+                                text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+                            }
+                            
+                            .logoText2 {
+                                text-shadow: 0 0 25px rgba(255, 51, 51, 0.8);
+                                transform: scale(1.1);
+                            }
+                        }
                     }
+                    
+                    .logo {
+                        width: 60px; // Уменьшено с 80px
+                        height: auto;
+                        transition: all var(--transition-slow);
+                        filter: drop-shadow(0 0 10px rgba(255, 51, 51, 0.3));
+                    }
+                    
                     .logoTextBlock {
                         display: flex;
                         flex-direction: row;
-                        gap: 5px;
+                        gap: 6px;
                         align-content: center;
                         justify-content: center;
+                        
                         .logoText1 {
-                            color: white;
-                            font-size: 24px;
+                            color: var(--text-primary);
+                            font-size: 20px; // Уменьшено с 28px
+                            font-weight: 700;
+                            font-family: "Space Grotesk", sans-serif;
+                            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+                            transition: all var(--transition-normal);
                         }
+                        
                         .logoText2 {
-                            color: rgb(255, 0, 0);
-                            font-size: 24px;
+                            color: var(--accent-primary);
+                            font-size: 20px; // Уменьшено с 28px
+                            font-weight: 700;
+                            font-family: "Space Grotesk", sans-serif;
+                            text-shadow: 0 0 20px rgba(255, 51, 51, 0.6);
+                            animation: pulse-red 2s ease-in-out infinite;
+                            transition: all var(--transition-normal);
                         }
                     }
                 }
+                
                 .footerLogoInfo {
-                    color: gray;
-                    font-size: 14px;
+                    color: var(--text-secondary);
+                    font-size: 15px;
                     font-family: "Playfair Display", serif;
                     letter-spacing: 0.02em;
                     font-weight: 600;
+                    animation: fadeInUp 1s ease-out;
                 }
             }
+            
             .secondTopBlock {
-                padding: 0 220px 0 0;
+                padding: 0;
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
+                gap: 16px;
+                
                 .title {
-                    color: rgb(255, 0, 0);
-                    font-size: 18px;
-                    font-weight: bold;
+                    color: var(--accent-primary);
+                    font-size: 20px;
+                    font-weight: 700;
+                    font-family: "Space Grotesk", sans-serif;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    text-shadow: 0 0 15px rgba(255, 51, 51, 0.5);
+                    animation: glow-red 3s ease-in-out infinite;
                 }
+                
                 .footerNavs {
                     display: flex;
                     flex-direction: column;
-                    gap: 10px;
+                    gap: 12px;
+                    
                     a {
-                        color: white;
-                        font-family: "Playfair Display", serif;
+                        color: var(--text-primary);
+                        font-family: "Inter", sans-serif;
                         letter-spacing: 0.02em;
                         font-weight: 600;
                         text-decoration: none;
-                        font-size: 15px;
+                        font-size: 16px;
                         cursor: pointer;
-                        transition: all 0.3s ease;
+                        transition: all var(--transition-normal);
+                        position: relative;
+                        overflow: hidden;
+                        
+                        &::before {
+                            content: '';
+                            position: absolute;
+                            top: 0;
+                            left: -100%;
+                            width: 100%;
+                            height: 100%;
+                            background: linear-gradient(90deg, transparent, rgba(255, 51, 51, 0.1), transparent);
+                            transition: left var(--transition-slow);
+                            z-index: -1;
+                        }
+                        
                         &:hover {
-                            color: red;
-                            transform: translateX(3px);
+                            color: var(--accent-primary);
+                            transform: translateX(4px);
+                            text-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+                            
+                            &::before {
+                                left: 100%;
+                            }
                         }
                     }
                 }
             }
+            
             .thirstTopBlock {
                 display: flex;
                 width: 100%;
-
-                padding: 0 100px 0 0;
+                padding: 0;
                 flex-direction: column;
-                gap: 10px;
+                gap: 16px;
+                
                 .title {
-                    color: rgb(255, 0, 0);
-                    font-size: 18px;
-                    font-weight: bold;
+                    color: var(--accent-primary);
+                    font-size: 20px;
+                    font-weight: 700;
+                    font-family: "Space Grotesk", sans-serif;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    text-shadow: 0 0 15px rgba(255, 51, 51, 0.5);
+                    animation: glow-red 3s ease-in-out infinite;
                 }
+                
                 .contactsContent {
                     display: flex;
                     flex-direction: column;
-                    gap: 10px;
+                    gap: 12px;
+                    
                     .footerContacts {
-                        transition: all 0.3s ease;
-                        color: white;
-                        font-size: 15px;
-                        font-family: "Playfair Display", serif;
+                        transition: all var(--transition-normal);
+                        color: var(--text-primary);
+                        font-size: 16px;
+                        font-family: "Inter", sans-serif;
                         letter-spacing: 0.02em;
                         font-weight: 600;
                         cursor: pointer;
+                        position: relative;
+                        overflow: hidden;
+                        
+                        &::before {
+                            content: '';
+                            position: absolute;
+                            top: 0;
+                            left: -100%;
+                            width: 100%;
+                            height: 100%;
+                            background: linear-gradient(90deg, transparent, rgba(255, 51, 51, 0.1), transparent);
+                            transition: left var(--transition-slow);
+                            z-index: -1;
+                        }
+                        
                         &:hover {
-                            color: red;
-                            transform: translateX(3px);
+                            color: var(--accent-primary);
+                            transform: translateX(4px);
+                            text-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+                            
+                            &::before {
+                                left: 100%;
+                            }
                         }
                     }
                 }
             }
         }
+        
         .hr {
-            height: 1px;
-            background: white;
-            border-radius: 10px;
+            height: 2px;
+            background: var(--border-primary);
+            border-radius: var(--radius-lg);
+            position: relative;
+            overflow: hidden;
+            
+            &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+                animation: shimmer 8s infinite;
+            }
         }
+        
         .bottomBlockFooter {
             display: flex;
             flex-direction: row;
-            gap: 20px;
+            gap: 24px;
             justify-content: space-between;
             text-align: center;
+            
             .bottomFirstBlock {
-                color: gray;
-                font-size: 12px;
+                color: var(--text-muted);
+                font-size: 14px;
+                font-family: "JetBrains Mono", monospace;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                animation: fadeInUp 1s ease-out;
             }
+            
             .bottomSecondBlock {
                 display: flex;
                 flex-direction: row;
-                gap: 10px;
+                gap: 16px;
+                
                 .bottomButton {
                     cursor: pointer;
-                    color: white;
-                    font-size: 12px;
-                    transition: all 0.3s;
+                    color: var(--text-primary);
+                    font-size: 14px;
+                    font-family: "Inter", sans-serif;
+                    font-weight: 600;
+                    transition: all var(--transition-normal);
+                    position: relative;
+                    overflow: hidden;
+                    
+                    &::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: -100%;
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(90deg, transparent, rgba(255, 51, 51, 0.1), transparent);
+                        transition: left var(--transition-slow);
+                        z-index: -1;
+                    }
+                    
                     &:hover {
-                        color: red;
+                        color: var(--accent-primary);
+                        transform: translateX(4px);
+                        text-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+                        
+                        &::before {
+                            left: 100%;
+                        }
                     }
                 }
             }
@@ -148,60 +325,299 @@
     }
 }
 
-.footer {
-    background: black;
-    padding: 25px 0;
-    border-top: white solid 4px;
+// Дополнительные анимации
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
 
-    .content {
-        display: flex;
-        flex-direction: column;
-        gap: 30px;
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33% { transform: translateY(-15px) rotate(1deg); }
+    66% { transform: translateY(8px) rotate(-1deg); }
+}
 
-        .topBlockFooter {
-            display: flex;
-            justify-content: space-between;
-            gap: 40px;
-            flex-wrap: wrap;
+@keyframes pulse-red {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+}
 
-            .firstTopBlock,
-            .secondTopBlock,
-            .thirstTopBlock {
-                flex: 1 1 250px;
-                min-width: 250px;
+@keyframes glow-red {
+    0%, 100% { text-shadow: 0 0 15px rgba(255, 51, 51, 0.5); }
+    50% { text-shadow: 0 0 25px rgba(255, 51, 51, 0.8); }
+}
+
+// Адаптив для 1024px
+@media (max-width: 1024px) {
+    .footer {
+        padding: 30px 0;
+        
+        .content {
+            gap: 30px;
+            
+            .topBlockFooter {
+                flex-direction: column;
+                gap: 30px;
+                align-items: center;
+                
+                .footerNavs {
+                    align-items: center;
+                    
+                    a {
+                        font-size: 15px;
+                    }
+                }
+                
+                .thirstTopBlock {
+                    align-items: center;
+                    
+                    .title {
+                        font-size: 18px;
+                    }
+                    
+                    .contactsContent {
+                        align-items: center;
+                        
+                        .footerContacts {
+                            font-size: 15px;
+                        }
+                    }
+                }
             }
-
-            .firstTopBlock {
-                max-width: 320px;
-            }
-
-            .secondTopBlock {
-                padding: 0;
-            }
-
-            .thirstTopBlock {
-                padding: 0;
-            }
-        }
-
-        .hr {
-            height: 1px;
-            background: white;
-            border-radius: 10px;
-        }
-
-        .bottomBlockFooter {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 15px;
-            text-align: center;
-
+            
             .bottomSecondBlock {
-                flex-wrap: wrap;
-                justify-content: center;
+                flex-direction: column;
+                gap: 12px;
+                align-items: center;
+                
+                .bottomButton {
+                    font-size: 13px;
+                }
+            }
+            
+            .hr {
+                height: 1px;
+                margin: 20px 0;
+            }
+            
+            .bottomBlockFooter {
+                flex-direction: column;
+                gap: 20px;
+                align-items: center;
+                
+                .bottomFirstBlock {
+                    font-size: 12px;
+                    text-align: center;
+                }
             }
         }
+    }
+}
+
+// Адаптив для 768px
+@media (max-width: 768px) {
+    .footer {
+        padding: 25px 0;
+        
+        .content {
+            gap: 25px;
+            
+            .topBlockFooter {
+                gap: 25px;
+                
+                .footerNavs {
+                    gap: 10px;
+                    
+                    a {
+                        font-size: 14px;
+                        padding: 12px 16px;
+                    }
+                }
+                
+                .thirstTopBlock {
+                    gap: 12px;
+                    
+                    .title {
+                        font-size: 16px;
+                    }
+                    
+                    .contactsContent {
+                        gap: 10px;
+                        
+                        .footerContacts {
+                            font-size: 14px;
+                        }
+                    }
+                }
+            }
+            
+            .bottomSecondBlock {
+                gap: 10px;
+                
+                .bottomButton {
+                    font-size: 12px;
+                    padding: 8px 12px;
+                }
+            }
+            
+            .hr {
+                height: 1px;
+                margin: 15px 0;
+            }
+            
+            .bottomBlockFooter {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+                
+                .bottomFirstBlock {
+                    font-size: 11px;
+                    text-align: center;
+                }
+            }
+        }
+    }
+}
+
+// Адаптив для 480px
+@media (max-width: 480px) {
+    .footer {
+        padding: 20px 0;
+        
+        .content {
+            gap: 20px;
+            
+            .topBlockFooter {
+                gap: 20px;
+                
+                .footerNavs {
+                    gap: 8px;
+                    
+                    a {
+                        font-size: 13px;
+                        padding: 10px 14px;
+                    }
+                }
+                
+                .thirstTopBlock {
+                    gap: 10px;
+                    
+                    .title {
+                        font-size: 14px;
+                    }
+                    
+                    .contactsContent {
+                        gap: 8px;
+                        
+                        .footerContacts {
+                            font-size: 13px;
+                        }
+                    }
+                }
+            }
+            
+            .bottomSecondBlock {
+                gap: 8px;
+                flex-direction: column;
+                
+                .bottomButton {
+                    font-size: 11px;
+                    padding: 6px 10px;
+                }
+            }
+            
+            .hr {
+                height: 1px;
+                margin: 12px 0;
+            }
+            
+            .bottomBlockFooter {
+                flex-direction: column;
+                gap: 12px;
+                align-items: center;
+                
+                .bottomFirstBlock {
+                    font-size: 10px;
+                    text-align: center;
+                }
+            }
+        }
+    }
+}
+
+// Адаптив для 320px
+@media (max-width: 320px) {
+    .footer {
+        padding: 15px 0;
+        
+        .content {
+            gap: 15px;
+            
+            .topBlockFooter {
+                gap: 15px;
+                
+                .footerNavs {
+                    gap: 6px;
+                    
+                    a {
+                        font-size: 12px;
+                        padding: 8px 12px;
+                    }
+                }
+                
+                .thirstTopBlock {
+                    gap: 8px;
+                    
+                    .title {
+                        font-size: 13px;
+                    }
+                    
+                    .contactsContent {
+                        gap: 6px;
+                        
+                        .footerContacts {
+                            font-size: 12px;
+                        }
+                    }
+                }
+            }
+            
+            .bottomSecondBlock {
+                gap: 6px;
+                
+                .bottomButton {
+                    font-size: 10px;
+                    padding: 5px 8px;
+                }
+            }
+            
+            .hr {
+                height: 1px;
+                margin: 10px 0;
+            }
+            
+            .bottomBlockFooter {
+                flex-direction: column;
+                gap: 10px;
+                align-items: center;
+                
+                .bottomFirstBlock {
+                    font-size: 9px;
+                    text-align: center;
+                }
+            }
+        }
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 

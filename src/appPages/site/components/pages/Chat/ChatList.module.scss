@@ -1,59 +1,112 @@
 // src/components/Chat/ChatList.module.scss
 .chatList {
-  background: black;
-  min-height: calc(100vh - 120px); // Учитываем хедер и футер
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  height: 100vh; // Максимальная высота 100vh
   display: flex;
   flex-direction: column;
-  border-right: 2px solid white;
-  overflow: hidden; // Предотвращаем выход контента за границы
-
-  .header {
-    padding: 20px;
-    border-bottom: 2px solid white;
-
-    h3 {
-      color: red;
-      font-size: 24px;
-      margin: 0;
-    }
+  border-right: 2px solid var(--accent-primary);
+  overflow: hidden;
+  position: relative;
+  
+  // Анимированный фон
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 51, 51, 0.05), transparent);
+    animation: shimmer 10s infinite;
+    pointer-events: none;
   }
 
   .chatListHeader {
-    padding: 20px;
-    border-bottom: 2px solid white;
+    padding: 24px;
+    border-bottom: 2px solid var(--accent-primary);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-shrink: 0; // Предотвращаем сжатие заголовка
+    flex-shrink: 0;
+    background: var(--bg-card);
+    position: relative;
+    z-index: 2;
 
     h2 {
-      color: red;
-      font-size: 24px;
+      color: var(--accent-primary);
+      font-size: 28px;
       margin: 0;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px rgba(255, 51, 51, 0.5);
+      animation: glow-red 3s ease-in-out infinite;
     }
 
     .newChatButton {
-      background: black;
+      position: relative;
       color: white;
-      border: 2px solid white;
-      box-shadow: 3px 3px 0 red;
-      padding: 8px 16px;
+      text-decoration: none;
       cursor: pointer;
-      transition: all 0.3s ease;
+      padding: 12px 20px;
+      text-align: center;
+
+      border: 2px solid #ff2b2b;
+      border-radius: 12px;
+
       font-size: 14px;
+      font-weight: 600;
+      font-family: "Space Grotesk", sans-serif;
       display: flex;
       align-items: center;
       gap: 8px;
 
+      background: black;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      transition: all 0.35s ease;
+
+      overflow: hidden;
+
+      box-shadow: 0 0 0 rgba(255,0,0,0);
+
+      &:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          120deg,
+          transparent,
+          rgba(255,255,255,0.4),
+          transparent
+        );
+        transition: all 0.6s ease;
+      }
+
       &:hover {
-        background-color: red;
-        box-shadow: 5px 5px 0 rgba(255, 0, 0, 0.8);
-        transform: translate(-2px, -2px);
+        transform: translateY(-3px) scale(1.03);
+        background: linear-gradient(135deg, #0f0f0f, #1a0000);
+        border-color: #ff0000;
+
+        box-shadow:
+          0 8px 25px rgba(255, 0, 0, 0.4),
+          0 0 20px rgba(255, 0, 0, 0.3);
+
+        color: #ffffff;
+      }
+
+      &:hover::before {
+        left: 100%;
       }
 
       &:active {
-        box-shadow: 1px 1px 0 red;
-        transform: translate(1px, 1px);
+        transform: translateY(1px) scale(0.98);
+        box-shadow: 0 3px 10px rgba(255,0,0,0.4);
       }
     }
   }
@@ -61,22 +114,25 @@
   .chatListContent {
     flex: 1;
     overflow-y: auto;
-    padding: 10px;
-    // Добавляем стили для скроллбара
+    padding: 12px;
+    position: relative;
+    z-index: 1;
+    
     &::-webkit-scrollbar {
       width: 8px;
     }
     
     &::-webkit-scrollbar-track {
-      background: #1a1a1a;
+      background: var(--bg-secondary);
+      border-radius: 4px;
     }
     
     &::-webkit-scrollbar-thumb {
-      background: #333;
+      background: var(--accent-gradient);
       border-radius: 4px;
       
       &:hover {
-        background: #555;
+        background: var(--accent-hover);
       }
     }
   }
@@ -85,18 +141,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    color: white;
+    padding: 40px;
+    color: var(--text-secondary);
     font-size: 16px;
+    font-family: "Space Grotesk", sans-serif;
+    position: relative;
 
     .spinner {
-      width: 20px;
-      height: 20px;
-      border: 2px solid white;
-      border-top: 2px solid red;
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-primary);
+      border-top: 3px solid var(--accent-primary);
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin-right: 10px;
+      margin-right: 16px;
+      box-shadow: 0 0 20px rgba(255, 51, 51, 0.5);
     }
   }
 
@@ -105,28 +164,62 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    color: white;
+    padding: 40px;
+    color: var(--text-primary);
     text-align: center;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    margin: 20px;
+    box-shadow: var(--shadow-md);
 
     span {
-      margin-bottom: 10px;
-      font-size: 16px;
+      margin-bottom: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      font-family: "Space Grotesk", sans-serif;
+    }
+
+    p {
+      margin-bottom: 20px;
+      color: var(--text-secondary);
+      font-size: 14px;
     }
 
     button {
-      background: red;
+      background: var(--accent-gradient);
       color: white;
-      border: 2px solid white;
-      box-shadow: 3px 3px 0 rgb(139, 0, 0);
-      padding: 8px 16px;
+      border: none;
+      box-shadow: var(--shadow-sm);
+      padding: 12px 24px;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all var(--transition-normal);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: "Space Grotesk", sans-serif;
+      border-radius: var(--radius-lg);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: left var(--transition-slow);
+      }
 
       &:hover {
-        background-color: #ff0000;
-        box-shadow: 5px 5px 0 rgba(139, 0, 0, 0.8);
-        transform: translate(-2px, -2px);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md), var(--shadow-accent);
+        
+        &::before {
+          left: 100%;
+        }
       }
     }
   }
@@ -136,70 +229,147 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 20px;
+    padding: 60px 20px;
     text-align: center;
-    color: white;
+    color: var(--text-primary);
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(255, 51, 51, 0.1) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      animation: pulse 4s ease-in-out infinite;
+    }
 
     .emptyIcon {
-      font-size: 48px;
-      margin-bottom: 16px;
+      font-size: 64px;
+      margin-bottom: 20px;
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 20px rgba(255, 51, 51, 0.3));
+    }
+
+    h3 {
+      margin: 0 0 12px 0;
+      font-size: 24px;
+      font-weight: 700;
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--text-primary);
     }
 
     p {
       margin: 8px 0;
       font-size: 16px;
-      color: #ccc;
+      color: var(--text-secondary);
+      font-weight: 400;
     }
   }
 
   .chatItems {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
   }
 
   .chatItem {
     display: flex;
     align-items: center;
-    padding: 12px;
+    padding: 16px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    border-bottom: 1px solid #333;
+    transition: all var(--transition-normal);
+    border-bottom: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    margin-bottom: 4px;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-card);
+    
+    // Анимированный фон при наведении
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 51, 51, 0.1), transparent);
+      transition: left var(--transition-slow);
+    }
 
     &:hover {
-      background: #111;
+      background: var(--bg-hover);
+      transform: translateX(4px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--accent-primary);
+      
+      &::before {
+        left: 100%;
+      }
+      
+      .chatAvatar .avatarPlaceholder {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 0 20px rgba(255, 51, 51, 0.4);
+      }
     }
 
     &.active {
-      background: #222;
-      border-left: 4px solid red;
+      background: var(--bg-hover);
+      border-left: 4px solid var(--accent-primary);
+      box-shadow: var(--shadow-accent);
+      
+      .chatAvatar .avatarPlaceholder {
+        box-shadow: 0 0 25px rgba(255, 51, 51, 0.6);
+      }
     }
   }
 
   .chatAvatar {
     position: relative;
-    margin-right: 12px;
+    margin-right: 16px;
     flex-shrink: 0;
 
     .avatarPlaceholder {
-      width: 48px;
-      height: 48px;
-      border: 2px solid white;
-      box-shadow: 3px 3px 0 red;
+      width: 52px;
+      height: 52px;
+      border: 2px solid var(--accent-primary);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
-      font-size: 18px;
-      color: white;
-      background: #333;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--text-primary);
+      background: var(--bg-secondary);
+      border-radius: 50%;
+      transition: all var(--transition-normal);
+      font-family: "Space Grotesk", sans-serif;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+      
+      // Внутренняя анимация
+      &::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: conic-gradient(from 0deg, transparent, rgba(255, 51, 51, 0.3), transparent);
+        animation: rotate 4s linear infinite;
+      }
     }
 
     .privateIndicator {
       position: absolute;
-      top: -4px;
-      right: -4px;
-      font-size: 12px;
+      top: -2px;
+      right: -2px;
+      font-size: 14px;
+      animation: bounce 2s ease-in-out infinite;
+      filter: drop-shadow(0 0 8px rgba(255, 51, 51, 0.8));
     }
   }
 
@@ -212,23 +382,27 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
   }
 
   .chatTitle {
-    color: white;
+    color: var(--text-primary);
     font-size: 16px;
     font-weight: 600;
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-family: "Space Grotesk", sans-serif;
+    transition: all var(--transition-normal);
   }
 
   .chatTime {
-    color: #888;
+    color: var(--text-muted);
     font-size: 12px;
     white-space: nowrap;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 500;
   }
 
   .chatPreview {
@@ -238,40 +412,96 @@
   }
 
   .lastMessage {
-    color: #ccc;
+    color: var(--text-secondary);
     font-size: 14px;
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     flex: 1;
+    line-height: 1.4;
   }
 
   .unreadBadge {
-    background: red;
+    background: var(--accent-gradient);
     color: white;
     border-radius: 50%;
-    min-width: 20px;
-    height: 20px;
+    min-width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 11px;
-    font-weight: bold;
-    margin-left: 8px;
+    font-weight: 700;
+    margin-left: 12px;
     flex-shrink: 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-sm), 0 0 15px rgba(255, 51, 51, 0.4);
+    font-family: "Space Grotesk", sans-serif;
+    animation: pulse-badge 2s ease-in-out infinite;
+    position: relative;
+    
+    // Свечение вокруг баджа
+    &::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      background: radial-gradient(circle, rgba(255, 51, 51, 0.3) 0%, transparent 70%);
+      animation: pulse-ring 2s ease-in-out infinite;
+    }
   }
 
   .unreadCount {
-    // Убираем уведомления о непрочитанных сообщениях
     display: none;
   }
 }
 
+// Ключевые анимации
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes glow-red {
+    0%, 100% { text-shadow: 0 0 20px rgba(255, 51, 51, 0.5); }
+    50% { text-shadow: 0 0 30px rgba(255, 51, 51, 0.8); }
+}
+
+@keyframes pulse-badge {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes pulse-ring {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(1.2); }
 }
 
 /* Mobile */
