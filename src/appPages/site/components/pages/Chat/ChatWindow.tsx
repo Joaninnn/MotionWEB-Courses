@@ -32,7 +32,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
     { skip: !groupId }
   );
 
-  const { refetch: refetchChats } = useGetMyChatsQuery();
+  const { refetch: refetchChats, isSuccess: chatsLoaded } = useGetMyChatsQuery(undefined, {
+    skip: !user.id
+  });
   
   const [markAsRead] = useMarkAsReadMutation();
   
@@ -186,12 +188,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   }, [groupId, dispatch, refetchChats, markAsRead, messagesData, user.id]);
 
   useEffect(() => {
-    if (messagesData?.items && messagesData.items.length > 0) {
+    if (messagesData?.items && messagesData.items.length > 0 && chatsLoaded) {
       setTimeout(() => {
         refetchChats();
       }, 1000);
     }
-  }, [messagesData?.items, refetchChats]);
+  }, [messagesData?.items, refetchChats, chatsLoaded]);
 
   const getTypingText = () => {
     const currentTypingUsers = typingUsers[groupId] || [];
@@ -295,6 +297,20 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
       </div>
 
       <div className={styles.chatFooter}>
+        <button 
+          className={styles.scrollToBottomButton}
+          onClick={() => {
+            const container = document.querySelector('[class*="messageList"]') as HTMLElement;
+            if (container) {
+              container.scrollTop = container.scrollHeight;
+            }
+          }}
+          title="Прокрутить вниз"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M19 12l-7 7-7-7"/>
+          </svg>
+        </button>
         <MessageInput groupId={groupId} sendMessage={sendMessage} />
       </div>
 

@@ -45,7 +45,9 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
   });
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -64,18 +66,20 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
   }, [messagesData, groupId, dispatch]);
 
   const currentMessages = messages[groupId];
-  const [isAtBottom, setIsAtBottom] = useState(false); 
-  const [hasInitialized, setHasInitialized] = useState(false); 
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const [hasInitiallyScrolled, setHasInitiallyScrolled] = useState(false);
   
+  // Scroll to bottom on initial load
   useEffect(() => {
-    if (currentMessages && currentMessages.length > 0 && !hasInitialized) {
+    if (currentMessages && currentMessages.length > 0 && !hasInitiallyScrolled) {
       scrollToBottom();
-      setTimeout(() => setHasInitialized(true), 0); 
+      setHasInitiallyScrolled(true);
     }
-  }, [currentMessages, hasInitialized]);
+  }, [currentMessages, hasInitiallyScrolled]);
   
+  // Reset scroll state when chat changes
   useEffect(() => {
-    setTimeout(() => setHasInitialized(false), 0); 
+    setHasInitiallyScrolled(false);
   }, [groupId]);
   
   useEffect(() => {
@@ -93,14 +97,8 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
       if (newIsAtBottom !== isAtBottom) {
         setIsAtBottom(newIsAtBottom);
       }
-      
-      if (newIsAtBottom && messages[groupId]?.length > 0) {
-        const lastMessage = messages[groupId][messages[groupId].length - 1];
-        if (lastMessage) {
-        }
-      }
     }
-  }, [messages, groupId, isAtBottom]);
+  }, [isAtBottom]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -458,7 +456,7 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
             </svg>
           </div>
           <h3>Нет сообщений</h3>
-          <p>Начните диалог первым!</p>
+          <h3>Начните диалог первым!</h3>
         </div>
       )}
       

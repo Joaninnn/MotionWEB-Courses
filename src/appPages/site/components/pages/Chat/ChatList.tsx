@@ -223,9 +223,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, activeGroupId }) => {
   if (error) {
     return (
       <div className={styles.chatList}>
-        <div className={styles.header}>
-          <h3>Чаты</h3>
-        </div>
+       
         <div className={styles.error}>
           <span>Сервер чата временно недоступен</span>
           <p>Попробуйте позже или обратитесь к администратору</p>
