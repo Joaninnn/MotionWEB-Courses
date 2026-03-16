@@ -67,19 +67,19 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
 
   const currentMessages = messages[groupId];
   const [isAtBottom, setIsAtBottom] = useState(false);
-  const [hasInitiallyScrolled, setHasInitiallyScrolled] = useState(false);
+  const hasInitiallyScrolled = useRef(false);
   
   // Scroll to bottom on initial load
   useEffect(() => {
-    if (currentMessages && currentMessages.length > 0 && !hasInitiallyScrolled) {
+    if (currentMessages && currentMessages.length > 0 && !hasInitiallyScrolled.current) {
       scrollToBottom();
-      setHasInitiallyScrolled(true);
+      hasInitiallyScrolled.current = true;
     }
-  }, [currentMessages, hasInitiallyScrolled]);
+  }, [currentMessages]);
   
   // Reset scroll state when chat changes
   useEffect(() => {
-    setHasInitiallyScrolled(false);
+    hasInitiallyScrolled.current = false;
   }, [groupId]);
   
   useEffect(() => {
