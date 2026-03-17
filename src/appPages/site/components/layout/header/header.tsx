@@ -1,7 +1,7 @@
 "use client";
 
 import style from "./Header.module.scss";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import ProfileIcon from "@/assets/Icons/profile.jpg";
@@ -37,6 +37,7 @@ const Header: React.FC = () => {
     const [logout] = useLogoutMutation();
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
     const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false);
+    const profileWrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (typeof window === 'undefined') return; 
@@ -68,6 +69,21 @@ const Header: React.FC = () => {
             document.body.style.top = '';
         };
     }, [isMenuOpen]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                profileWrapperRef.current &&
+                !profileWrapperRef.current.contains(event.target as Node) &&
+                showProfileMenu
+            ) {
+                setShowProfileMenu(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showProfileMenu]);
 
     const currentUser = useAppSelector((state) => state.user);
 
@@ -148,7 +164,7 @@ const Header: React.FC = () => {
                     </div>
 
                     <div className={style.rightBlock}>
-                        <div className={style.profileWrapper}>
+                        <div className={style.profileWrapper} ref={profileWrapperRef}>
                             <button
                                 onClick={handleProfileClick}
                                 className={`${style.buttonBlock} ${isMenuOpen ? style.disabled : ''}`}
@@ -174,22 +190,28 @@ const Header: React.FC = () => {
                             {isAuthenticated &&
                                 showProfileMenu &&
                                 currentUser && (
-                                    <div className={`${style.profileMenu} ${showProfileMenu ? style.active : ''}`}>
-                                        <div className={style.profileInfo}>
-                                            <p className={style.profileName}>
-                                                {currentUser.username}
-                                            </p>
-                                            <p className={style.profileStatus}>
-                                                {currentUser?.status === "mentor" ? "Ментор" : "Студент"}
-                                            </p>
+                                    <>
+                                        <div 
+                                            className={style.profileOverlay}
+                                            onClick={() => setShowProfileMenu(false)}
+                                        />
+                                        <div className={`${style.profileMenu} ${showProfileMenu ? style.active : ''}`}>
+                                            <div className={style.profileInfo}>
+                                                <p className={style.profileName}>
+                                                    {currentUser.username}
+                                                </p>
+                                                <p className={style.profileStatus}>
+                                                    {currentUser?.status === "mentor" ? "Ментор" : "Студент"}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={handleLogout}
+                                                className={style.logoutButton}
+                                            >
+                                                Выйти
+                                            </button>
                                         </div>
-                                        <button
-                                            onClick={handleLogout}
-                                            className={style.logoutButton}
-                                        >
-                                            Выйти
-                                        </button>
-                                    </div>
+                                    </>
                                 )}
                         </div>
 
