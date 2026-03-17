@@ -18,7 +18,8 @@ export const WS_EVENTS = {
   ERROR: 'error',
   MESSAGE_EDITED: 'message_edited',
   MESSAGE_DELETED: 'message_deleted',
-  TYPING: 'typing'
+  TYPING: 'typing',
+  ACTIVE_CHAT_SET: 'active_chat_set'
 } as const;
 
 export interface TypingUser {
@@ -51,6 +52,8 @@ export interface ChatState {
   messageInput: string;
   isTyping: boolean;
   uploadingFile: boolean;
+  
+  readReceipts: Record<number, Record<number, number[]>>; // groupId -> messageId -> readerIds
 }
 
 type SetActiveGroupPayload = { groupId: number; title: string };
@@ -63,6 +66,7 @@ type SetLoadingMessagesPayload = { groupId: number; loading: boolean };
 type SetGroupMembersPayload = { groupId: number; members: GroupMember[] };
 type SetTypingUserPayload = { groupId: number; user: TypingUser };
 type RemoveTypingUserPayload = { groupId: number; userId: number };
+type AddReadReceiptPayload = { groupId: number; messageId: number; readerId: number };
 
 const initialState: ChatState = {
   activeGroupId: null,
@@ -80,6 +84,7 @@ const initialState: ChatState = {
   messageInput: '',
   isTyping: false,
   uploadingFile: false,
+  readReceipts: {},
 };
 
 const chatSlice = createSlice({
@@ -229,6 +234,32 @@ const chatSlice = createSlice({
         );
       }
     },
+    
+    addReadReceipt: (state, action: PayloadAction<AddReadReceiptPayload>) => {
+      const { groupId, messageId, readerId } = action.payload;
+      
+      if (!state.readReceipts[groupId]) {
+        state.readReceipts[groupId] = {};
+      }
+      
+      if (!state.readReceipts[groupId][messageId]) {
+        state.readReceipts[groupId][messageId] = [];
+      }
+      
+      if (!state.readReceipts[groupId][messageId].includes(readerId)) {
+        state.readReceipts[groupId][messageId].push(readerId);
+      }
+      
+      // Update message read_by array
+      const message = state.messages[groupId]?.find(m => m.id === messageId);
+      if (message && !message.read_by) {
+        message.read_by = [];
+      }
+      if (message && !message.read_by?.includes(readerId)) {
+        message.read_by?.push(readerId);
+      }
+    },
+    
     setWsConnected: (state, action: PayloadAction<boolean>) => {
       state.wsConnected = action.payload;
     },
@@ -270,6 +301,9 @@ const chatSlice = createSlice({
               state.messages[groupId] = [];
             }
             
+            // Mark message as delivered when received
+            msg.delivered = true;
+            
             const existingMessageIndex = state.messages[groupId].findIndex(
               m => m.id === msg.id
             );
@@ -287,12 +321,52 @@ const chatSlice = createSlice({
             break;
           }
 
-          case WS_EVENTS.READ_RECEIPT:
+          case WS_EVENTS.READ_RECEIPT: {
+            const receipt = backendPayload as unknown as { group_id: number; reader_id: number; last_read_message_id: number };
+            
+            // Mark all messages up to last_read_message_id as read by reader_id
+            if (!state.messages[receipt.group_id]) {
+              break;
+            }
+            
+            state.messages[receipt.group_id].forEach(message => {
+              if (message.id <= receipt.last_read_message_id) {
+                if (!message.read_by) {
+                  message.read_by = [];
+                }
+                if (!message.read_by.includes(receipt.reader_id)) {
+                  message.read_by.push(receipt.reader_id);
+                }
+              }
+            });
+            
+            // Also update read receipts tracking
+            if (!state.readReceipts[receipt.group_id]) {
+              state.readReceipts[receipt.group_id] = {};
+            }
+            
+            state.messages[receipt.group_id].forEach(message => {
+              if (message.id <= receipt.last_read_message_id) {
+                if (!state.readReceipts[receipt.group_id][message.id]) {
+                  state.readReceipts[receipt.group_id][message.id] = [];
+                }
+                if (!state.readReceipts[receipt.group_id][message.id].includes(receipt.reader_id)) {
+                  state.readReceipts[receipt.group_id][message.id].push(receipt.reader_id);
+                }
+              }
+            });
+            
             break;
+          }
 
           case WS_EVENTS.ERROR:
             state.wsConnected = false;
             state.wsConnectionState = CONNECTION_STATES.DISCONNECTED;
+            break;
+
+          case WS_EVENTS.ACTIVE_CHAT_SET:
+            // This event confirms that the chat was set as active on the backend
+            // The read receipt will be handled separately via READ_RECEIPT event
             break;
         }
 
@@ -308,6 +382,10 @@ const chatSlice = createSlice({
             }
             
             const msg = message.data as Message;
+            
+            // Mark message as delivered when received
+            msg.delivered = true;
+            
             const existingMessageIndex = state.messages[message.group_id].findIndex(
               m => m.id === msg.id
             );

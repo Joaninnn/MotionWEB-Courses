@@ -25,6 +25,8 @@ export interface Message {
   file_url?: string;
   file_type?: string;
   attachments?: Attachment[];
+  delivered?: boolean;
+  read_by?: number[];
 }
 
 export interface Attachment {

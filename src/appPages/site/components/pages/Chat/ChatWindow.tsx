@@ -125,67 +125,39 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   useEffect(() => {
     dispatch(resetUnreadCount(groupId));
     
+    // Simple fallback: Mark last message as read when entering chat
     if (messagesData?.items && messagesData.items.length > 0) {
-      const otherUserMessages = messagesData.items.filter(msg => 
-        msg.user_id !== user.id && msg.group_id === groupId
-      );
+      const lastMessage = messagesData.items[messagesData.items.length - 1];
       
+      console.log('Checking last message for markAsRead:', lastMessage);
+      console.log('Current user ID:', user.id);
       
-      if (otherUserMessages.length > 0) {
-        const lastMessageFromOther = otherUserMessages[0]; 
-        
-        
-        if (lastMessageFromOther?.id) {
-          
-          const messageExists = messagesData?.items?.some(msg => 
-            msg.id === lastMessageFromOther.id && msg.group_id === groupId
-          );
-          
-          if (!messageExists) {
-            
-            const lastMessageInChat = messagesData?.items?.find(msg => 
-              msg.group_id === groupId && msg.user_id !== user.id
-            );
-            
-            if (lastMessageInChat) {
-              
-              markAsRead({ 
-                groupId, 
-                messageId: lastMessageInChat.id 
-              }).unwrap()
-                .then((response) => {
-                  setTimeout(() => {
-                    refetchChats();
-                  }, 500);
-                })
-                .catch((error) => {
-                });
-            } else {
-            }
-            return;
-          }
-          
-          markAsRead({ 
-            groupId, 
-            messageId: lastMessageFromOther.id 
-          }).unwrap()
-            .then((response) => {
-              setTimeout(() => {
-                refetchChats();
-              }, 500); 
-            })
-            .catch((error) => {
-              setTimeout(() => {
-                refetchChats();
-              }, 1000);
+      if (lastMessage?.id && lastMessage.user_id !== user.id) {
+        console.log('Calling markAsRead for message:', lastMessage.id);
+        markAsRead({ 
+          groupId, 
+          messageId: lastMessage.id 
+        }).unwrap()
+          .then((response) => {
+            console.log('Marked as read via HTTP API:', response);
+            // Update local state to show messages as read
+            dispatch({
+              type: 'chat/addReadReceipt',
+              payload: {
+                groupId,
+                messageId: lastMessage.id,
+                readerId: user.id
+              }
             });
-        } else {
-        }
+          })
+          .catch((error) => {
+            console.error('Failed to mark as read via HTTP API:', error);
+          });
       } else {
+        console.log('Not calling markAsRead - last message is from current user or no last message');
       }
-    } else {
     }
-  }, [groupId, dispatch, refetchChats, markAsRead, messagesData, user.id]);
+  }, [groupId, dispatch, markAsRead, messagesData, user.id]);
 
   useEffect(() => {
     if (messagesData?.items && messagesData.items.length > 0 && chatsLoaded) {

@@ -6,6 +6,7 @@ import { RootState } from '@/redux/store';
 import { useGetMessagesQuery, useGetGroupDetailFullQuery, useEditMessageMutation, useDeleteMessageMutation } from '@/redux/api/chat';
 import ImageModal from '@/components/ImageModal/ImageModal';
 import VoicePlayer from '@/components/VoicePlayer/VoicePlayer';
+import MessageStatus from './MessageStatus';
 import styles from './MessageList.module.scss';
 import { Message } from '../../../../../redux/api/chat/types';
 
@@ -49,6 +50,18 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   };
+
+  useEffect(() => {
+    if (groupDetail?.members) {
+      dispatch({
+        type: 'chat/setGroupMembers',
+        payload: {
+          groupId,
+          members: groupDetail.members
+        }
+      });
+    }
+  }, [groupDetail, groupId, dispatch]);
 
   useEffect(() => {
    
@@ -419,6 +432,14 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
               </>
             )}
           </div>
+          
+          {isOwn && (
+            <MessageStatus 
+              message={message} 
+              groupId={groupId} 
+              isOwn={isOwn} 
+            />
+          )}
         </div>
       </div>
     );
