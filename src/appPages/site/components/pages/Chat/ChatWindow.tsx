@@ -32,18 +32,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
 
   // Callback для обновления состояния скролла
   const handleScrollStateChange = (atBottom: boolean) => {
-    console.log('Scroll state changed:', atBottom); // Временная отладка
-    console.log('Current showScrollButton:', showScrollButton); // Отладка текущего состояния
     
     setIsAtBottom(atBottom);
     
     if (!atBottom) {
       // Показываем кнопку с небольшой задержкой
-      console.log('Showing scroll button...');
       setTimeout(() => setShowScrollButton(true), 100);
     } else {
       // Скрываем кнопку немедленно
-      console.log('Hiding scroll button...');
       setShowScrollButton(false);
     }
   };

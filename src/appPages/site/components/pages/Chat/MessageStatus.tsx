@@ -1,7 +1,5 @@
 import React from 'react';
 import { Message } from '@/redux/api/chat/types';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
 import styles from './MessageStatus.module.scss';
 
 interface MessageStatusProps {
@@ -11,8 +9,6 @@ interface MessageStatusProps {
 }
 
 const MessageStatus: React.FC<MessageStatusProps> = ({ message, isOwn, isGroupChat = false }) => {
-  const user = useSelector((state: RootState) => state.user);
-
   const getMessageStatus = () => {
     // If not own message, don't show status
     if (!isOwn) {
