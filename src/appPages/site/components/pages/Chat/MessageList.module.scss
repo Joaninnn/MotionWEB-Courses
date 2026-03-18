@@ -690,6 +690,18 @@
         .messageText {
           font-size: 14px;
         }
+        
+        // Мобильные стили для галочек под сообщениями
+        :global(.messageStatus) {
+          display: flex;
+          justify-content: flex-end;
+          margin-top: 4px;
+          opacity: 0.7;
+          
+          &:hover {
+            opacity: 1;
+          }
+        }
       }
     }
   }

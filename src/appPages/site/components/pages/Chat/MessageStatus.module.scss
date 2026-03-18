@@ -37,3 +37,25 @@
     }
   }
 }
+
+// Мобильные стили
+@media (max-width: 768px) {
+  .checkmark {
+    width: 14px; // Уменьшаем размер для мобильных устройств
+    height: 14px;
+  }
+  
+  .doubleCheck {
+    gap: -3px; // Немного меньше отрицательный gap для мобильных
+    
+    .checkmark {
+      &:first-child {
+        margin-right: -4px; // Немного меньше отступ для мобильных
+      }
+      
+      &:last-child {
+        margin-left: -2px; // Немного меньше отступ для мобильных
+      }
+    }
+  }
+}
