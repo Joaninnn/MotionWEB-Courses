@@ -9,38 +9,43 @@ interface MessageStatusProps {
 }
 
 const MessageStatus: React.FC<MessageStatusProps> = ({ message, isOwn, isGroupChat = false }) => {
+
   const getMessageStatus = () => {
     // If not own message, don't show status
     if (!isOwn) {
       return null;
     }
 
-    // Для групповых чатов используем read_by массив
+    // Для личных чатов используем is_read поле
+    if (!isGroupChat) {
+      if (message.is_read) {
+        return 'read';
+      }
+      if (message.delivered) {
+        return 'delivered';
+      }
+      return 'delivered';
+    }
+
+    // Для групповых чатов - сложная логика
     if (isGroupChat) {
-      // Если есть read_by массив и в нем есть кто-то кроме автора
+      // Автор смотрит свои сообщения:
+      // - Если кто-то другой прочитал -> две галочки
+      // - Если никто не прочитал -> одна галочка
+      
       if (message.read_by && message.read_by.length > 0) {
         // Проверяем что прочитал кто-то кроме автора
         const otherReaders = message.read_by.filter(id => id !== message.user_id);
         if (otherReaders.length > 0) {
-          return 'read'; // Двойная галочка - кто-то другой прочитал
+          return 'read'; // Кто-то другой прочитал
         }
       }
       
-      // Для групповых чатов показываем доставку если сообщение отправлено
+      // Никто не прочитал или только автор в read_by
       return message.delivered ? 'delivered' : 'delivered';
     }
     
-    // Для личных чатов используем is_read поле
-    if (message.is_read) {
-      return 'read';
-    }
-    
-    // Если сообщение существует и доставлено
-    if (message.delivered) {
-      return 'delivered';
-    }
-    
-    return 'delivered'; // Default to delivered for own messages
+    return null;
   };
 
   const status = getMessageStatus();

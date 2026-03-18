@@ -28,7 +28,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   const [showScrollButton, setShowScrollButton] = useState(false); // Для управления анимацией
   const [createDialog] = useGetOrCreateDialogMutation();
   const { data: chats, refetch: refetchChats } = useGetMyChatsQuery();
-  const [chatsLoaded, setChatsLoaded] = useState(false);
 
   // Callback для обновления состояния скролла
   const handleScrollStateChange = (atBottom: boolean) => {
@@ -49,7 +48,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
     { skip: !groupId }
   );
 
-  const { data: testData, error: testError } = useTestMeQuery();
 
   const { sendMessage, getConnectionStatus } = useWebSocket(groupId);
   

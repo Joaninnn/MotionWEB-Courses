@@ -103,9 +103,27 @@ const chatSlice = createSlice({
     setMessages: (state, action: PayloadAction<SetMessagesPayload>) => {
       const { groupId, messages, hasMore } = action.payload;
       
-      // Messages now come with is_read from backend, just store them as-is
-      state.messages[groupId] = messages;
+      // Сохраняем существующие сообщения для сохранения статуса прочитанных
+      const existingMessages = state.messages[groupId] || [];
       
+      // Создаем Map существующих сообщений для быстрого доступа
+      const existingMessageMap = new Map(existingMessages.map(msg => [msg.id, msg]));
+      
+      // Обновляем сообщения, сохраняя read_by и is_read статусы
+      const updatedMessages = messages.map(newMessage => {
+        const existingMessage = existingMessageMap.get(newMessage.id);
+        if (existingMessage) {
+          // Сохраняем read_by массив и is_read статус из существующего сообщения
+          return {
+            ...newMessage,
+            read_by: existingMessage.read_by || newMessage.read_by,
+            is_read: existingMessage.is_read !== undefined ? existingMessage.is_read : newMessage.is_read,
+          };
+        }
+        return newMessage;
+      });
+      
+      state.messages[groupId] = updatedMessages;
       state.hasMoreMessages[groupId] = hasMore;
       state.loadingMessages[groupId] = false;
     },
