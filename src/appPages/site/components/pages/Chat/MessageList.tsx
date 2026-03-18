@@ -145,7 +145,6 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
       const threshold = 20; // Уменьшаю порог до 20px для более точного определения
       const newIsAtBottom = scrollHeight - scrollTop - clientHeight < threshold;
       
-      console.log('Scroll event:', { scrollTop, scrollHeight, clientHeight, newIsAtBottom }); // Отладка
       
       if (newIsAtBottom !== isAtBottom) {
         setIsAtBottom(newIsAtBottom);
