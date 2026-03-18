@@ -66,6 +66,7 @@ class WebSocketManager {
             this.startPing();
             this.reconnectAttempts = 0;
             this.stopPing();
+            this.isWebSocketAvailable = true; // WebSocket доступен
             this.resolveConnecting?.();
             this.cleanupConnectingPromise();
           };

@@ -15,7 +15,6 @@ export const useWebSocket = (groupId: number) => {
   const isConnecting = useRef(false);
   const connectedOnce = useRef(false);
   
-  
   useEffect(() => {
     if (isConnecting.current) {
       return;
@@ -23,23 +22,11 @@ export const useWebSocket = (groupId: number) => {
 
     let cancelled = false;
     
-    const getToken = () => {
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('access_token='))
-        ?.split('=')[1];
-      
-      return token;
-    };
-    
-    const token = getToken();
-    
-    if (!token) {
-      dispatch(setWsConnected(false));
-      dispatch(setWsConnectionState('disconnected'));
-      return;
-    }
-    
+    const token = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('access_token='))
+      ?.split('=')[1] || '';
+
     isConnecting.current = true;
     dispatch(setWsConnectionState('connecting'));
     
@@ -48,16 +35,19 @@ export const useWebSocket = (groupId: number) => {
         if (cancelled) {
           return;
         }
-        connectedOnce.current = true;
-        setTimeout(() => {
-          if (!cancelled && wsManager.isConnected()) {
-            wsManager.sendMessage({ action: 'set_active_chat', group_id: groupId });
-          }
-        }, 100);
-        dispatch(setWsConnected(true));
-        dispatch(setWsConnectionState('connected'));
       })
-      .catch(error => {
+      .then(() => {
+        if (!cancelled) {
+          connectedOnce.current = true;
+          
+          // Отправляем set_active_chat сразу после подключения
+          wsManager.sendMessage({ action: 'set_active_chat', group_id: groupId });
+          
+          dispatch(setWsConnected(true));
+          dispatch(setWsConnectionState('connected'));
+        }
+      })
+      .catch(() => {
         if (!cancelled) {
           dispatch(setWsConnected(false));
           dispatch(setWsConnectionState('disconnected'));
@@ -98,7 +88,7 @@ export const useWebSocket = (groupId: number) => {
       dispatch(setWsConnectionState('disconnected'));
     };
   }, [groupId, dispatch]);
-  
+
   const sendMessage = useCallback(async (text: string, fileUrl?: string, fileType?: string) => {
     try {
       const payload: Record<string, unknown> = {
@@ -110,23 +100,31 @@ export const useWebSocket = (groupId: number) => {
       if (fileType) payload.file_type = fileType;
 
       wsManager.sendMessage(payload);
-      
       dispatch(resetUnreadCount(groupId));
-    } catch (error) {
+    } catch {
+      // Handle error silently
     }
   }, [groupId, dispatch]);
 
   const sendTyping: SendTypingFn = useCallback(() => {
     return;
   }, []);
-  
+
   const getConnectionStatus = useCallback(() => {
     if (!wsManager.isWebSocketEnabled()) {
+      return 'WebSocket недоступен';
+    }
+
+    if (wsManager.isConnected() && wsManager.isWebSocketEnabled()) {
       return 'Подключено';
     }
-    
-    const readyState = wsManager.getReadyState();
-    switch (readyState) {
+
+    // Если isConnected через HTTP fallback
+    if (wsManager.isConnected() && !wsManager.isWebSocketEnabled()) {
+      return 'Подключено (HTTP)';
+    }
+
+    switch (wsManager.getReadyState()) {
       case WebSocket.CONNECTING:
         return 'Подключение...';
       case WebSocket.OPEN:
@@ -139,8 +137,8 @@ export const useWebSocket = (groupId: number) => {
         return 'Подключено'; 
     }
   }, []);
-  
-  return { 
+
+  return {
     sendMessage,
     sendTyping,
     getConnectionStatus,

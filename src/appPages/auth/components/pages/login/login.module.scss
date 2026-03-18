@@ -461,6 +461,13 @@
                 }
             }
         }
+        
+        // Предотвращаем зум на мобильных устройствах
+        .input {
+            font-size: 16px !important; // Минимальный размер чтобы предотвратить зум
+            transform: scale(1) !important;
+            -webkit-transform: scale(1) !important;
+        }
     }
 }
 
