@@ -1,26 +1,45 @@
 import React from 'react';
 import { Message } from '@/redux/api/chat/types';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 import styles from './MessageStatus.module.scss';
 
 interface MessageStatusProps {
   message: Message;
   isOwn: boolean;
+  isGroupChat?: boolean;
 }
 
-const MessageStatus: React.FC<MessageStatusProps> = ({ message, isOwn }) => {
+const MessageStatus: React.FC<MessageStatusProps> = ({ message, isOwn, isGroupChat = false }) => {
+  const user = useSelector((state: RootState) => state.user);
+
   const getMessageStatus = () => {
     // If not own message, don't show status
     if (!isOwn) {
       return null;
     }
 
-    // Use is_read field for both private and group chats
-    // Backend should set this field when someone reads the message
+    // Для групповых чатов используем read_by массив
+    if (isGroupChat) {
+      // Если есть read_by массив и в нем есть кто-то кроме автора
+      if (message.read_by && message.read_by.length > 0) {
+        // Проверяем что прочитал кто-то кроме автора
+        const otherReaders = message.read_by.filter(id => id !== message.user_id);
+        if (otherReaders.length > 0) {
+          return 'read'; // Двойная галочка - кто-то другой прочитал
+        }
+      }
+      
+      // Для групповых чатов показываем доставку если сообщение отправлено
+      return message.delivered ? 'delivered' : 'delivered';
+    }
+    
+    // Для личных чатов используем is_read поле
     if (message.is_read) {
       return 'read';
     }
     
-    // If message exists and is delivered, show 1 checkmark
+    // Если сообщение существует и доставлено
     if (message.delivered) {
       return 'delivered';
     }

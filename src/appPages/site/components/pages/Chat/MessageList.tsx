@@ -458,6 +458,7 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
             <MessageStatus 
               message={message} 
               isOwn={isOwn} 
+              isGroupChat={!groupDetail?.is_private}
             />
           )}
         </div>
