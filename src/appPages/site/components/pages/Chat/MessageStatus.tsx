@@ -30,9 +30,16 @@ const MessageStatus: React.FC<MessageStatusProps> = ({ message, isOwn, isGroupCh
     // Для групповых чатов - сложная логика
     if (isGroupChat) {
       // Автор смотрит свои сообщения:
-      // - Если кто-то другой прочитал -> две галочки
-      // - Если никто не прочитал -> одна галочка
+      // - Если is_read=true (кто-то когда-то читал) -> две галочки
+      // - Если кто-то другой в read_by -> две галочки  
+      // - Если никто не читал -> одна галочка
       
+      // Если is_read=true, значит кто-то когда-то читал это сообщение
+      if (message.is_read) {
+        return 'read';
+      }
+      
+      // Если есть read_by массив и в нем есть кто-то кроме автора
       if (message.read_by && message.read_by.length > 0) {
         // Проверяем что прочитал кто-то кроме автора
         const otherReaders = message.read_by.filter(id => id !== message.user_id);
@@ -41,7 +48,7 @@ const MessageStatus: React.FC<MessageStatusProps> = ({ message, isOwn, isGroupCh
         }
       }
       
-      // Никто не прочитал или только автор в read_by
+      // Никто не читал
       return message.delivered ? 'delivered' : 'delivered';
     }
     
