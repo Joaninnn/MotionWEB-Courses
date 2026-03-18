@@ -148,7 +148,6 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
       console.log('Scroll event:', { scrollTop, scrollHeight, clientHeight, newIsAtBottom }); // Отладка
       
       if (newIsAtBottom !== isAtBottom) {
-        console.log('Updating isAtBottom from', isAtBottom, 'to', newIsAtBottom);
         setIsAtBottom(newIsAtBottom);
       }
     }
