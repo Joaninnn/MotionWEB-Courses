@@ -7,7 +7,6 @@ import MessageInput from './MessageInput';
 import WebSocketDebugger from '../../../../../components/WebSocketDebugger'; // ДОБАВЛЕНО
 import { useGetGroupDetailFullQuery, useGetOrCreateDialogMutation, useGetMessagesQuery, useGetMyChatsQuery, useMarkAsReadMutation, useTestMeQuery } from '../../../../../redux/api/chat';
 import { GroupMember } from '../../../../../redux/api/chat/types';
-import { getUserNameById, getUserRoleById, getDisplayRole } from '../../../../../constants/userNames';
 import { useWebSocket } from '../../../../../hooks/useWebSocket';
 import { useDispatch } from 'react-redux';
 import { resetUnreadCount } from '../../../../../redux/slices/chatSlice';
@@ -26,18 +25,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   const [showMembers, setShowMembers] = useState(false);
   const [showDebugger, setShowDebugger] = useState(false);
   const [createDialog] = useGetOrCreateDialogMutation();
+  const { data: chats, refetch: refetchChats } = useGetMyChatsQuery();
+  const [chatsLoaded, setChatsLoaded] = useState(false);
 
   const { data: messagesData } = useGetMessagesQuery(
     { groupId, limit: 50 },
     { skip: !groupId }
   );
 
-  const { refetch: refetchChats, isSuccess: chatsLoaded } = useGetMyChatsQuery(undefined, {
-    skip: !user.id
-  });
-  
-  const [markAsRead] = useMarkAsReadMutation();
-  
   const { data: testData, error: testError } = useTestMeQuery();
 
   const { sendMessage, getConnectionStatus } = useWebSocket(groupId);
@@ -100,11 +95,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   };
 
   const getMemberRole = (member: GroupMember) => {
-    
     if (member.role === 'mentor') {
       return 'Ментор';
     }
-    
+    return 'Студент';
+  };
+
+  const getDisplayRole = (role: string) => {
+    if (role === 'mentor') {
+      return 'Ментор';
+    }
     return 'Студент';
   };
   const formatChatTitle = (title: string) => {
@@ -120,59 +120,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   });
 
   useEffect(() => {
-  }, [groupId]);
-
-  useEffect(() => {
     dispatch(resetUnreadCount(groupId));
-    
-    // Simple fallback: Mark last message as read when entering chat
-    // Temporarily disabled until backend adds the endpoint
-    if (false && messagesData?.items && messagesData.items.length > 0) {
-      const lastMessage = messagesData.items[messagesData.items.length - 1];
-      
-      console.log('Checking last message for markAsRead:', lastMessage);
-      console.log('Current user ID:', user.id);
-      
-      if (lastMessage?.id && lastMessage.user_id !== user.id) {
-        console.log('Calling markAsRead for message:', lastMessage.id);
-        console.log('Request payload:', { groupId, messageId: lastMessage.id });
-        
-        markAsRead({ 
-          groupId, 
-          messageId: lastMessage.id 
-        }).unwrap()
-          .then((response) => {
-            console.log('Marked as read via HTTP API:', response);
-            
-            // Backend now handles is_read field, no need to update local state manually
-            // The next message fetch will include the correct is_read status
-          })
-          .catch((error) => {
-            console.error('Failed to mark as read via HTTP API:', error);
-            console.error('Error details:', {
-              status: error.status,
-              data: error.data,
-              message: error.message
-            });
-            
-            // Try to get more error info
-            if (error.error) {
-              console.error('Original error:', error.error);
-            }
-          });
-      } else {
-        console.log('Not calling markAsRead - last message is from current user or no last message');
-      }
-    }
-  }, [groupId, dispatch, markAsRead, messagesData, user.id]);
+  }, [groupId, dispatch]);
 
   useEffect(() => {
-    if (messagesData?.items && messagesData.items.length > 0 && chatsLoaded) {
+    if (messagesData?.items && messagesData.items.length > 0) {
       setTimeout(() => {
         refetchChats();
       }, 1000);
     }
-  }, [messagesData?.items, refetchChats, chatsLoaded]);
+  }, [messagesData?.items, refetchChats]);
 
   const getTypingText = () => {
     const currentTypingUsers = typingUsers[groupId] || [];
@@ -341,5 +298,5 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
     </div>
   );
 };
-
+  
 export default ChatWindow;

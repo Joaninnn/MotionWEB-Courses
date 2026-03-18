@@ -433,10 +433,10 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
             )}
           </div>
           
+          {/* Галочки для своих сообщений под всем блоком сообщения */}
           {isOwn && (
             <MessageStatus 
               message={message} 
-              groupId={groupId} 
               isOwn={isOwn} 
             />
           )}

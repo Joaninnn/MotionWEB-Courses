@@ -240,7 +240,7 @@
         .messageTimeWrapper {
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 4px; // Уменьшаю отступ с 10px до 4px для более компактного расположения
           align-items: flex-end;
 
           .messageTime {
@@ -331,8 +331,21 @@
       .messageFooter {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-top: 8px;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 4px;
+
+        .messageDots {
+          color: var(--text-muted);
+          font-size: 12px;
+          letter-spacing: 2px;
+          opacity: 0.6;
+        }
+
+        .messageStatus {
+          margin-left: 0;
+          margin-top: 0;
+        }
 
         .editedIndicator {
           color: var(--text-muted);
@@ -381,11 +394,36 @@
         }
       }
 
+      // Стили для галочек под сообщением
+      :global(.messageStatus) {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 4px;
+        opacity: 0.7;
+        
+        &:hover {
+          opacity: 1;
+        }
+      }
+
       .messageFooter {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-top: 8px;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 4px;
+
+        .messageDots {
+          color: var(--text-muted);
+          font-size: 12px;
+          letter-spacing: 2px;
+          opacity: 0.6;
+        }
+
+        .messageStatus {
+          margin-left: 0;
+          margin-top: 0;
+        }
 
         .editedIndicator {
           color: var(--text-muted);
