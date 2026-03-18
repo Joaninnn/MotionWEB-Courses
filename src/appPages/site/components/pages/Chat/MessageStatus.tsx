@@ -20,40 +20,26 @@ const MessageStatus: React.FC<MessageStatusProps> = ({ message, groupId, isOwn }
       return null;
     }
 
-    // Check if message has been read by anyone
-    const hasBeenRead = message.read_by && message.read_by.length > 0;
-    
-    // Better private chat detection - check if title starts with 'dialog_' or has exactly 2 members
-    const isPrivateChat = groupMembers.length === 2;
-    
-    if (isPrivateChat) {
-      // In private chat, show 2 checkmarks if recipient has read it
-      const recipientRead = message.read_by && 
-        message.read_by.some(readerId => readerId !== currentUser.id);
-      
-      if (recipientRead) {
-        return 'read';
-      }
-      
-      // If message exists and is delivered, show 1 checkmark
-      if (message.delivered) {
-        return 'delivered';
-      }
-      
-      return 'delivered'; // Default to delivered for own messages
+    // Debug logging
+    console.log('MessageStatus debug:', {
+      messageId: message.id,
+      is_read: message.is_read,
+      read_by: message.read_by,
+      isOwn
+    });
+
+    // Use is_read field for both private and group chats
+    // Backend should set this field when someone reads the message
+    if (message.is_read) {
+      return 'read';
     }
     
-    // For group chats
-    if (hasBeenRead && message.read_by) {
-      // Show 2 checkmarks if at least one person has read it (excluding sender)
-      const someoneElseRead = message.read_by.some(readerId => readerId !== currentUser.id);
-      if (someoneElseRead) {
-        return 'read';
-      }
+    // If message exists and is delivered, show 1 checkmark
+    if (message.delivered) {
+      return 'delivered';
     }
     
-    // If message exists, it's at least delivered
-    return 'delivered';
+    return 'delivered'; // Default to delivered for own messages
   };
 
   const status = getMessageStatus();

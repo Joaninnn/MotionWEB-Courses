@@ -126,7 +126,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
     dispatch(resetUnreadCount(groupId));
     
     // Simple fallback: Mark last message as read when entering chat
-    if (messagesData?.items && messagesData.items.length > 0) {
+    // Temporarily disabled until backend adds the endpoint
+    if (false && messagesData?.items && messagesData.items.length > 0) {
       const lastMessage = messagesData.items[messagesData.items.length - 1];
       
       console.log('Checking last message for markAsRead:', lastMessage);
@@ -134,24 +135,30 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
       
       if (lastMessage?.id && lastMessage.user_id !== user.id) {
         console.log('Calling markAsRead for message:', lastMessage.id);
+        console.log('Request payload:', { groupId, messageId: lastMessage.id });
+        
         markAsRead({ 
           groupId, 
           messageId: lastMessage.id 
         }).unwrap()
           .then((response) => {
             console.log('Marked as read via HTTP API:', response);
-            // Update local state to show messages as read
-            dispatch({
-              type: 'chat/addReadReceipt',
-              payload: {
-                groupId,
-                messageId: lastMessage.id,
-                readerId: user.id
-              }
-            });
+            
+            // Backend now handles is_read field, no need to update local state manually
+            // The next message fetch will include the correct is_read status
           })
           .catch((error) => {
             console.error('Failed to mark as read via HTTP API:', error);
+            console.error('Error details:', {
+              status: error.status,
+              data: error.data,
+              message: error.message
+            });
+            
+            // Try to get more error info
+            if (error.error) {
+              console.error('Original error:', error.error);
+            }
           });
       } else {
         console.log('Not calling markAsRead - last message is from current user or no last message');

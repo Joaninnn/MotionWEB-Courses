@@ -27,6 +27,7 @@ export interface Message {
   attachments?: Attachment[];
   delivered?: boolean;
   read_by?: number[];
+  is_read?: boolean; // Added from backend
 }
 
 export interface Attachment {

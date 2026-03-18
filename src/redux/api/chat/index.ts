@@ -127,7 +127,7 @@ export const chatApi = createApi({
       query: ({ groupId, messageId }) => {
         
         return {
-          url: `/chats/${groupId}/read`,
+          url: `/groups/${groupId}/messages/read`,
           method: 'POST',
           params: { message_id: messageId },
         };

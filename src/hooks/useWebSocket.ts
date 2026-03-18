@@ -86,6 +86,10 @@ export const useWebSocket = (groupId: number) => {
       cancelled = true;
 
       if (connectedOnce.current) {
+        // Send clear_active_chat before disconnecting
+        if (wsManager.isConnected()) {
+          wsManager.sendMessage({ action: 'clear_active_chat' });
+        }
         wsManager.disconnect();
       }
 

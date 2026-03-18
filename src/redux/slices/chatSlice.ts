@@ -19,7 +19,8 @@ export const WS_EVENTS = {
   MESSAGE_EDITED: 'message_edited',
   MESSAGE_DELETED: 'message_deleted',
   TYPING: 'typing',
-  ACTIVE_CHAT_SET: 'active_chat_set'
+  ACTIVE_CHAT_SET: 'active_chat_set',
+  ACTIVE_CHAT_CLEARED: 'active_chat_cleared'
 } as const;
 
 export interface TypingUser {
@@ -52,8 +53,6 @@ export interface ChatState {
   messageInput: string;
   isTyping: boolean;
   uploadingFile: boolean;
-  
-  readReceipts: Record<number, Record<number, number[]>>; // groupId -> messageId -> readerIds
 }
 
 type SetActiveGroupPayload = { groupId: number; title: string };
@@ -84,7 +83,6 @@ const initialState: ChatState = {
   messageInput: '',
   isTyping: false,
   uploadingFile: false,
-  readReceipts: {},
 };
 
 const chatSlice = createSlice({
@@ -104,7 +102,10 @@ const chatSlice = createSlice({
     
     setMessages: (state, action: PayloadAction<SetMessagesPayload>) => {
       const { groupId, messages, hasMore } = action.payload;
+      
+      // Messages now come with is_read from backend, just store them as-is
       state.messages[groupId] = messages;
+      
       state.hasMoreMessages[groupId] = hasMore;
       state.loadingMessages[groupId] = false;
     },
@@ -235,28 +236,18 @@ const chatSlice = createSlice({
       }
     },
     
-    addReadReceipt: (state, action: PayloadAction<AddReadReceiptPayload>) => {
+    updateMessageReadStatus: (state, action: PayloadAction<AddReadReceiptPayload>) => {
       const { groupId, messageId, readerId } = action.payload;
       
-      if (!state.readReceipts[groupId]) {
-        state.readReceipts[groupId] = {};
-      }
-      
-      if (!state.readReceipts[groupId][messageId]) {
-        state.readReceipts[groupId][messageId] = [];
-      }
-      
-      if (!state.readReceipts[groupId][messageId].includes(readerId)) {
-        state.readReceipts[groupId][messageId].push(readerId);
-      }
-      
-      // Update message read_by array
+      // Find and update the message in the messages array
       const message = state.messages[groupId]?.find(m => m.id === messageId);
-      if (message && !message.read_by) {
-        message.read_by = [];
-      }
-      if (message && !message.read_by?.includes(readerId)) {
-        message.read_by?.push(readerId);
+      if (message) {
+        if (!message.read_by) {
+          message.read_by = [];
+        }
+        if (!message.read_by.includes(readerId)) {
+          message.read_by.push(readerId);
+        }
       }
     },
     
@@ -331,27 +322,17 @@ const chatSlice = createSlice({
             
             state.messages[receipt.group_id].forEach(message => {
               if (message.id <= receipt.last_read_message_id) {
+                // Update read_by array for compatibility
                 if (!message.read_by) {
                   message.read_by = [];
                 }
                 if (!message.read_by.includes(receipt.reader_id)) {
                   message.read_by.push(receipt.reader_id);
                 }
-              }
-            });
-            
-            // Also update read receipts tracking
-            if (!state.readReceipts[receipt.group_id]) {
-              state.readReceipts[receipt.group_id] = {};
-            }
-            
-            state.messages[receipt.group_id].forEach(message => {
-              if (message.id <= receipt.last_read_message_id) {
-                if (!state.readReceipts[receipt.group_id][message.id]) {
-                  state.readReceipts[receipt.group_id][message.id] = [];
-                }
-                if (!state.readReceipts[receipt.group_id][message.id].includes(receipt.reader_id)) {
-                  state.readReceipts[receipt.group_id][message.id].push(receipt.reader_id);
+                
+                // Update is_read field for real-time UI updates
+                if (message.user_id !== receipt.reader_id) {
+                  message.is_read = true;
                 }
               }
             });
@@ -367,6 +348,11 @@ const chatSlice = createSlice({
           case WS_EVENTS.ACTIVE_CHAT_SET:
             // This event confirms that the chat was set as active on the backend
             // The read receipt will be handled separately via READ_RECEIPT event
+            break;
+
+          case WS_EVENTS.ACTIVE_CHAT_CLEARED:
+            // This event is sent when user leaves chat
+            // No specific action needed - backend handles clearing active chat
             break;
         }
 
@@ -477,6 +463,7 @@ export const {
   setGroupMembers,
   setTypingUser,
   removeTypingUser,
+  updateMessageReadStatus,
   setWsConnected,
   setWsConnectionState,
   setMessageInput,
