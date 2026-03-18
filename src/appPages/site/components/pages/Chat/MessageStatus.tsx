@@ -1,32 +1,18 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
 import { Message } from '@/redux/api/chat/types';
 import styles from './MessageStatus.module.scss';
 
 interface MessageStatusProps {
   message: Message;
-  groupId: number;
   isOwn: boolean;
 }
 
-const MessageStatus: React.FC<MessageStatusProps> = ({ message, groupId, isOwn }) => {
-  const currentUser = useSelector((state: RootState) => state.user);
-  const groupMembers = useSelector((state: RootState) => state.chat.groupMembers[groupId] || []);
-
+const MessageStatus: React.FC<MessageStatusProps> = ({ message, isOwn }) => {
   const getMessageStatus = () => {
     // If not own message, don't show status
     if (!isOwn) {
       return null;
     }
-
-    // Debug logging
-    console.log('MessageStatus debug:', {
-      messageId: message.id,
-      is_read: message.is_read,
-      read_by: message.read_by,
-      isOwn
-    });
 
     // Use is_read field for both private and group chats
     // Backend should set this field when someone reads the message
