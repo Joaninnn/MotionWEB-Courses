@@ -128,13 +128,27 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
     }
   }, [isAtBottom, onScrollStateChange]);
 
+  // Инициализация состояния скролла при монтировании
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const threshold = 20;
+      const newIsAtBottom = scrollHeight - scrollTop - clientHeight < threshold;
+      setIsAtBottom(newIsAtBottom);
+    }
+  }, [groupId]); // Вызвать при изменении groupId
+
   const handleScroll = useCallback(() => {
     if (containerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
       const threshold = 20; // Уменьшаю порог до 20px для более точного определения
       const newIsAtBottom = scrollHeight - scrollTop - clientHeight < threshold;
       
+      console.log('Scroll event:', { scrollTop, scrollHeight, clientHeight, newIsAtBottom }); // Отладка
+      
       if (newIsAtBottom !== isAtBottom) {
+        console.log('Updating isAtBottom from', isAtBottom, 'to', newIsAtBottom);
         setIsAtBottom(newIsAtBottom);
       }
     }
