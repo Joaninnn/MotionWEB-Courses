@@ -12,9 +12,10 @@ import { Message } from '../../../../../redux/api/chat/types';
 
 interface MessageListProps {
   groupId: number;
+  onScrollStateChange?: (isAtBottom: boolean) => void;
 }
 
-const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
+const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange }) => {
   const dispatch = useDispatch();
   const { messages } = useSelector((state: RootState) => state.chat);
   const user = useSelector((state: RootState) => state.user);
@@ -120,10 +121,17 @@ const MessageList: React.FC<MessageListProps> = ({ groupId }) => {
     prevMessagesLength.current = currentLength;
   }, [currentMessages, isAtBottom, user?.id]);
 
+  // Вызываем callback при изменении состояния скролла
+  useEffect(() => {
+    if (onScrollStateChange) {
+      onScrollStateChange(isAtBottom);
+    }
+  }, [isAtBottom, onScrollStateChange]);
+
   const handleScroll = useCallback(() => {
     if (containerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-      const threshold = 100; 
+      const threshold = 20; // Уменьшаю порог до 20px для более точного определения
       const newIsAtBottom = scrollHeight - scrollTop - clientHeight < threshold;
       
       if (newIsAtBottom !== isAtBottom) {

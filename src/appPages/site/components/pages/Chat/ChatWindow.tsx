@@ -24,9 +24,23 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   const dispatch = useDispatch();
   const [showMembers, setShowMembers] = useState(false);
   const [showDebugger, setShowDebugger] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(true); // По умолчанию считаем что внизу
+  const [showScrollButton, setShowScrollButton] = useState(false); // Для управления анимацией
   const [createDialog] = useGetOrCreateDialogMutation();
   const { data: chats, refetch: refetchChats } = useGetMyChatsQuery();
   const [chatsLoaded, setChatsLoaded] = useState(false);
+
+  // Callback для обновления состояния скролла
+  const handleScrollStateChange = (atBottom: boolean) => {
+    console.log('Scroll state changed:', atBottom); // Временная отладка
+    setIsAtBottom(atBottom);
+    if (!atBottom) {
+      // Показываем кнопку с небольшой задержкой
+      setTimeout(() => setShowScrollButton(true), 100);
+    } else {
+      setShowScrollButton(false);
+    }
+  };
 
   const { data: messagesData } = useGetMessagesQuery(
     { groupId, limit: 50 },
@@ -218,7 +232,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
       </div>
 
       <div className={styles.chatBody}>
-        <MessageList groupId={groupId} />
+        <MessageList groupId={groupId} onScrollStateChange={handleScrollStateChange} />
         
         {typingUsers[groupId] && typingUsers[groupId].length > 0 && (
           <div className={styles.typingIndicator}>
@@ -233,20 +247,23 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
       </div>
 
       <div className={styles.chatFooter}>
-        <button 
-          className={styles.scrollToBottomButton}
-          onClick={() => {
-            const container = document.querySelector('[class*="messageList"]') as HTMLElement;
-            if (container) {
-              container.scrollTop = container.scrollHeight;
-            }
-          }}
-          title="Прокрутить вниз"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 5v14M19 12l-7 7-7-7"/>
-          </svg>
-        </button>
+        {/* Кнопка прокрутки вниз появляется только когда пользователь не в самом низу */}
+        {showScrollButton && (
+          <button 
+            className={`${styles.scrollToBottomButton} ${styles.visible}`}
+            onClick={() => {
+              const container = document.querySelector('[class*="messageList"]') as HTMLElement;
+              if (container) {
+                container.scrollTop = container.scrollHeight;
+              }
+            }}
+            title="Прокрутить вниз"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 5v14M19 12l-7 7-7-7"/>
+            </svg>
+          </button>
+        )}
         <MessageInput groupId={groupId} sendMessage={sendMessage} />
       </div>
 
