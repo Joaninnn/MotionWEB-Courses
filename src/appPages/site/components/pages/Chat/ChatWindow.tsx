@@ -16,9 +16,10 @@ interface ChatWindowProps {
   groupId: number;
   title: string;
   onBack?: () => void;
+  onSelectChat?: (groupId: number, title: string) => void;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack, onSelectChat }) => {
   const { typingUsers, wsConnected } = useSelector((state: RootState) => state.chat);
   const user = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
@@ -49,7 +50,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
   );
 
 
-  const { sendMessage, getConnectionStatus } = useWebSocket(groupId);
+  const { sendMessage } = useWebSocket(groupId);
   
   const getChatPartnerName = () => {
     const isPrivateChat = title.startsWith('dialog_') || groupDetail?.is_private;
@@ -100,11 +101,79 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
       return;
     }
 
+    // Проверяем, что ID пользователя не null
+    if (!user.id) {
+      console.error('User ID is null, cannot create dialog');
+      return;
+    }
+
     try {
       const result = await createDialog(member.user_id).unwrap();
+      console.log('Dialog creation result:', result);
       
-      
+      // Если диалог создан успешно и есть callback для перехода
+      if (result && onSelectChat) {
+        // Пробуем сразу использовать результат, если это ID
+        const dialogId = parseInt(result);
+        if (!isNaN(dialogId)) {
+          // Если результат - это ID чата
+          const dialogTitle = `dialog_${Math.min(user.id!, member.user_id)}_${Math.max(user.id!, member.user_id)}`;
+          setShowMembers(false); // Закрываем панель участников
+          onSelectChat(dialogId, dialogTitle);
+          return;
+        }
+        
+        // Если результат - это название, ищем в списке чатов
+        setTimeout(() => {
+          refetchChats().then(() => {
+            // Ищем созданный диалог в обновленном списке чатов
+            const updatedChats = chats || [];
+            console.log('Available chats after refetch:', updatedChats);
+            
+            // Сначала ищем по точному названию
+            let createdDialog = updatedChats.find(chat => chat.title === result);
+            
+            // Если не нашли, ищем по шаблону dialog_
+            if (!createdDialog) {
+              const currentUserId = user.id!;
+              const memberUserId = member.user_id;
+              
+              const expectedTitle1 = `dialog_${Math.min(currentUserId, memberUserId)}_${Math.max(currentUserId, memberUserId)}`;
+              const expectedTitle2 = `dialog_${Math.max(currentUserId, memberUserId)}_${Math.min(currentUserId, memberUserId)}`;
+              
+              createdDialog = updatedChats.find(chat => 
+                chat.is_private && 
+                chat.title.startsWith('dialog_') && 
+                (chat.title === expectedTitle1 || chat.title === expectedTitle2)
+              );
+            }
+            
+            // Если все еще не нашли, ищем любой приватный чат с этими пользователями
+            if (!createdDialog) {
+              const currentUserId = user.id!;
+              const memberUserId = member.user_id;
+              
+              createdDialog = updatedChats.find(chat => 
+                chat.is_private && 
+                chat.title.startsWith('dialog_') && 
+                ((chat.title.includes(`_${currentUserId}_`) && chat.title.includes(`_${memberUserId}_`)) ||
+                 (chat.title.includes(`_${memberUserId}_`) && chat.title.includes(`_${currentUserId}_`)))
+              );
+            }
+            
+            console.log('Found dialog:', createdDialog);
+            
+            if (createdDialog) {
+              setShowMembers(false); // Закрываем панель участников
+              onSelectChat(createdDialog.group_id, createdDialog.title);
+            } else {
+              console.error('Dialog not found after creation');
+            }
+          });
+        }, 1000); // Увеличим задержку для надежности
+      }
     } catch (error) {
+      console.error('Failed to create dialog:', error);
     }
   };
 
@@ -204,9 +273,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack }) => {
               <div className={styles.chatStatus}>
                 <span className={`${styles.connectionIndicator} ${wsConnected ? styles.connected : styles.disconnected}`}>
                   {wsConnected ? '●' : '●'}
-                </span>
-                <span className={styles.statusText}>
-                  {getConnectionStatus()}
                 </span>
               </div>
             </div>

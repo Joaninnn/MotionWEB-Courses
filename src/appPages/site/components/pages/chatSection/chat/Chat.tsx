@@ -10,6 +10,8 @@ function Chat() {
   const scrollLockRef = useRef<{ locked: boolean; position: number; allowScroll: boolean }>({ locked: false, position: 0, allowScroll: false });
 
   const handleSelectChat = (groupId: number, title: string) => {
+    console.log('Selecting chat:', { groupId, title });
+    
     scrollLockRef.current = { locked: true, position: window.scrollY, allowScroll: false };
     
     document.body.classList.add('scroll-locked');
@@ -43,6 +45,8 @@ function Chat() {
 
   const handleBackToList = () => {
     setSelectedChat(null);
+    // Закрываем панель участников при возврате к списку чатов
+    // Это нужно на случай, если пользователь вернется в групповой чат
   };
 
   return (
@@ -62,6 +66,7 @@ function Chat() {
                 groupId={selectedChat.groupId}
                 title={selectedChat.title}
                 onBack={handleBackToList}
+                onSelectChat={handleSelectChat}
               />
             ) : (
               <div className={styles.emptyState}>

@@ -14,8 +14,20 @@ export const useWebSocket = (groupId: number) => {
   const dispatch = useAppDispatch();
   const isConnecting = useRef(false);
   const connectedOnce = useRef(false);
+  const lastGroupId = useRef<number | null>(null);
   
   useEffect(() => {
+    // Если groupId не изменился, не переподключаемся
+    if (lastGroupId.current === groupId && isConnecting.current) {
+      return;
+    }
+    
+    // Если groupId изменился, сбрасываем флаг подключения
+    if (lastGroupId.current !== groupId) {
+      isConnecting.current = false;
+      lastGroupId.current = groupId;
+    }
+    
     if (isConnecting.current) {
       return;
     }
@@ -110,38 +122,9 @@ export const useWebSocket = (groupId: number) => {
     return;
   }, []);
 
-  const getConnectionStatus = useCallback(() => {
-    if (!wsManager.isWebSocketEnabled()) {
-      return 'WebSocket недоступен';
-    }
-
-    if (wsManager.isConnected() && wsManager.isWebSocketEnabled()) {
-      return 'Подключено';
-    }
-
-    // Если isConnected через HTTP fallback
-    if (wsManager.isConnected() && !wsManager.isWebSocketEnabled()) {
-      return 'Подключено (HTTP)';
-    }
-
-    switch (wsManager.getReadyState()) {
-      case WebSocket.CONNECTING:
-        return 'Подключение...';
-      case WebSocket.OPEN:
-        return 'Подключено';
-      case WebSocket.CLOSING:
-        return 'Закрывается...';
-      case WebSocket.CLOSED:
-        return 'Отключено';
-      default:
-        return 'Подключено'; 
-    }
-  }, []);
-
   return {
     sendMessage,
     sendTyping,
-    getConnectionStatus,
     isConnected: wsManager.isConnected()
   };
 };

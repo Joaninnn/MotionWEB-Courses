@@ -15,8 +15,22 @@ class WebSocketManager {
   private pollingInterval: NodeJS.Timeout | null = null; // Для HTTP polling fallback
   
   connect(groupId: number, token: string): Promise<void> {
+    // Если уже подключены к тому же чату, возвращаем resolved promise
     if (this.ws?.readyState === WebSocket.OPEN && this.groupId === groupId) {
       return Promise.resolve();
+    }
+
+    // Принудительно отключаемся при смене чата
+    if (this.groupId !== groupId) {
+      this.shouldReconnect = false;
+      this.cleanupConnectingPromise(); // Очищаем promise при смене чата
+      if (this.ws && this.ws.readyState !== WebSocket.CLOSED) {
+        this.ws.close(1000, 'Смена чата');
+      }
+      this.ws = null;
+      this.stopPing();
+      this.stopPolling();
+      this.shouldReconnect = true;
     }
 
     this.groupId = groupId;
@@ -316,7 +330,17 @@ class WebSocketManager {
   }
   
   isConnected(): boolean {
-    return this.ws?.readyState === WebSocket.OPEN || !this.isWebSocketAvailable;
+    // Если WebSocket подключен, возвращаем true
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      return true;
+    }
+    
+    // Если WebSocket недоступен, но есть HTTP fallback, считаем подключенным
+    if (!this.isWebSocketAvailable && this.groupId && this.token) {
+      return true;
+    }
+    
+    return false;
   }
   
   isWebSocketEnabled(): boolean {
