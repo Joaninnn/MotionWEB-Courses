@@ -4,8 +4,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../../../redux/store';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import WebSocketDebugger from '../../../../../components/WebSocketDebugger'; // ДОБАВЛЕНО
-import { useGetGroupDetailFullQuery, useGetOrCreateDialogMutation, useGetMessagesQuery, useGetMyChatsQuery, useMarkAsReadMutation, useTestMeQuery } from '../../../../../redux/api/chat';
+import { useGetGroupDetailFullQuery, useGetOrCreateDialogMutation, useGetMessagesQuery, useMarkAsReadMutation, useTestMeQuery } from '../../../../../redux/api/chat';
 import { GroupMember } from '../../../../../redux/api/chat/types';
 import { useWebSocket } from '../../../../../hooks/useWebSocket';
 import { useDispatch } from 'react-redux';
@@ -24,11 +23,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack, onSelec
   const user = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
   const [showMembers, setShowMembers] = useState(false);
-  const [showDebugger, setShowDebugger] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true); // По умолчанию считаем что внизу
   const [showScrollButton, setShowScrollButton] = useState(false); // Для управления анимацией
   const [createDialog] = useGetOrCreateDialogMutation();
-  const { data: chats, refetch: refetchChats } = useGetMyChatsQuery();
 
   // Callback для обновления состояния скролла
   const handleScrollStateChange = (atBottom: boolean) => {
@@ -111,63 +108,32 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack, onSelec
       
       // Если диалог создан успешно и есть callback для перехода
       if (result && onSelectChat) {
-        // Пробуем сразу использовать результат, если это ID
-        const dialogId = parseInt(result);
-        if (!isNaN(dialogId)) {
-          // Если результат - это ID чата
-          const dialogTitle = `dialog_${Math.min(user.id!, member.user_id)}_${Math.max(user.id!, member.user_id)}`;
-          setShowMembers(false); // Закрываем панель участников
-          onSelectChat(dialogId, dialogTitle);
-          return;
+        // Бэкенд должен возвращать { dialogId: number, title: string } или просто number
+        let dialogId: number;
+        let dialogTitle: string;
+        
+        if (typeof result === 'number') {
+          // Если вернулся просто ID
+          dialogId = result;
+          dialogTitle = `dialog_${Math.min(user.id!, member.user_id)}_${Math.max(user.id!, member.user_id)}`;
+        } else if (typeof result === 'object' && result !== null && 'dialogId' in result) {
+          // Если вернулся объект с dialogId
+          const resultObj = result as { dialogId: number; title?: string };
+          dialogId = resultObj.dialogId;
+          dialogTitle = resultObj.title || `dialog_${Math.min(user.id!, member.user_id)}_${Math.max(user.id!, member.user_id)}`;
+        } else {
+          // Fallback на случай если вернулась строка с title
+          dialogId = 0; // Будет обработано ниже
+          dialogTitle = typeof result === 'string' ? result : 'Unknown Dialog';
         }
         
-        // Если результат - это название, ищем в списке чатов
-        setTimeout(() => {
-          refetchChats().then(() => {
-            // Ищем созданный диалог в обновленном списке чатов
-            const updatedChats = chats || [];
-            
-            // Сначала ищем по точному названию
-            let createdDialog = updatedChats.find(chat => chat.title === result);
-            
-            // Если не нашли, ищем по шаблону dialog_
-            if (!createdDialog) {
-              const currentUserId = user.id!;
-              const memberUserId = member.user_id;
-              
-              const expectedTitle1 = `dialog_${Math.min(currentUserId, memberUserId)}_${Math.max(currentUserId, memberUserId)}`;
-              const expectedTitle2 = `dialog_${Math.max(currentUserId, memberUserId)}_${Math.min(currentUserId, memberUserId)}`;
-              
-              createdDialog = updatedChats.find(chat => 
-                chat.is_private && 
-                chat.title.startsWith('dialog_') && 
-                (chat.title === expectedTitle1 || chat.title === expectedTitle2)
-              );
-            }
-            
-            // Если все еще не нашли, ищем любой приватный чат с этими пользователями
-            if (!createdDialog) {
-              const currentUserId = user.id!;
-              const memberUserId = member.user_id;
-              
-              createdDialog = updatedChats.find(chat => 
-                chat.is_private && 
-                chat.title.startsWith('dialog_') && 
-                ((chat.title.includes(`_${currentUserId}_`) && chat.title.includes(`_${memberUserId}_`)) ||
-                 (chat.title.includes(`_${memberUserId}_`) && chat.title.includes(`_${currentUserId}_`)))
-              );
-            }
-            
-            
-            if (createdDialog) {
-              setShowMembers(false); // Закрываем панель участников
-              onSelectChat(createdDialog.group_id, createdDialog.title);
-            } else {
-            }
-          });
-        }, 1000); // Увеличим задержку для надежности
+        if (dialogId && dialogId > 0) {
+          setShowMembers(false); // Закрываем панель участников
+          onSelectChat(dialogId, dialogTitle);
+        }
       }
     } catch (error) {
+      console.error('Failed to create dialog:', error);
     }
   };
 
@@ -200,14 +166,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack, onSelec
     dispatch(resetUnreadCount(groupId));
   }, [groupId, dispatch]);
 
-  useEffect(() => {
-    if (messagesData?.items && messagesData.items.length > 0) {
-      setTimeout(() => {
-        refetchChats();
-      }, 1000);
-    }
-  }, [messagesData?.items, refetchChats]);
-
   const getTypingText = () => {
     const currentTypingUsers = typingUsers[groupId] || [];
     if (currentTypingUsers.length === 0) return '';
@@ -225,27 +183,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack, onSelec
 
   return (
     <div className={styles.chatWindow} ref={chatWindowRef}>
-      {showDebugger && (
-        <div style={{ marginBottom: '10px' }}>
-          <WebSocketDebugger groupId={groupId} />
-          <button 
-            onClick={() => setShowDebugger(false)}
-            style={{
-              width: '100%',
-              padding: '8px',
-              background: '#dc3545',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginTop: '10px'
-            }}
-          >
-            Скрыть дебаггер (закрыть после проверки)
-          </button>
-        </div>
-      )}
-      
       <div className={styles.chatHeader}>
         <div className={styles.headerLeft}>
           {onBack && (

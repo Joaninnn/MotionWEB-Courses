@@ -35,9 +35,6 @@ const api = index.injectEndpoints({
                     formData.append("description", data.description);
                 }
 
-                for (const [key, value] of formData.entries()) {
-                }
-
                 return {
                     url: `video-create/`,
                     method: "POST",
@@ -74,7 +71,7 @@ const api = index.injectEndpoints({
 
         getCategoryLessonList: build.query<{ id: number; ct_lesson_name: string }[], void>({
             query: () => ({
-                url: `/cactegory_lesson_list/`,
+                url: `/category_lesson_list/`,
                 method: "GET",
             }),
             providesTags: ["course"],
