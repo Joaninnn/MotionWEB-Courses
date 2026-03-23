@@ -12,7 +12,7 @@ const api = index.injectEndpoints({
 
         getMentorVideoDetail: build.query<MENTOR.GetVideoDetailResponse, number>({
             query: (id) => ({
-                url: `video-update/${id}/`,
+                url: `video/${id}`,
                 method: "GET",
             }),
             providesTags: ["mentor"],
@@ -22,11 +22,15 @@ const api = index.injectEndpoints({
             query: (data) => {
                 const formData = new FormData();
                 formData.append("course", data.course.toString());
-                formData.append("category_lesson", data.category_lesson.toString());
-                formData.append("video", data.video);
-                if (data.lesson_number !== undefined) {
-                    formData.append("lesson_number", data.lesson_number.toString());
+                formData.append("them_lesson", data.them_lesson.toString());
+                
+                // Отправляем либо файл либо строку (YouTube ссылка)
+                if (data.video instanceof File) {
+                    formData.append("video", data.video);
+                } else {
+                    formData.append("video", data.video);
                 }
+                
                 if (data.description) {
                     formData.append("description", data.description);
                 }

@@ -16,17 +16,12 @@ interface UploadedVideosProps {
     setEditingId?: (id: number | null) => void;
 }
 
-interface CategoryLesson {
-    id: number;
-    ct_lesson_name: string;
-}
-
 interface VideoResponse {
     id: number;
     course: number;
-    category_lesson: CategoryLesson | number;
+    them_lesson: string;
+    created_at?: string;
     video: string;
-    lesson_number: number;
     description?: string;
 }
 
@@ -145,16 +140,11 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
         if (!item || typeof item !== 'object') return false;
         
         const searchLower = search.toLowerCase();
-        const categoryName = typeof item.category_lesson === 'object' 
-            ? item.category_lesson?.ct_lesson_name 
-            : item.category_lesson;
-        
         const courseName = item.course ? courses.find(c => c.id === item.course)?.course_name || `ID: ${item.course}` : 'Не указан';
             
         const matchesSearch = 
             (courseName?.toString().toLowerCase() || "").includes(searchLower) ||
-            (categoryName?.toString().toLowerCase() || "").includes(searchLower) ||
-            (item.lesson_number?.toString().toLowerCase() || "").includes(searchLower) ||
+            (item.them_lesson?.toString().toLowerCase() || "").includes(searchLower) ||
             (item.description?.toString().toLowerCase() || "").includes(searchLower);
 
         return matchesSearch;
@@ -209,7 +199,7 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
                     </h2>
                     <div className={style.filterBlock}>
                         <input
-                            placeholder="поиск по курсу, категории или номеру урока"
+                            placeholder="поиск по названию или по курсу"
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -229,10 +219,6 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
                             <p className={style.empty}>Ошибка загрузки видео</p>
                         ) : filteredData.length > 0 ? (
                             filteredData.map((item, index) => {
-                                const categoryName = typeof item.category_lesson === 'object'
-                                    ? item.category_lesson?.ct_lesson_name
-                                    : item.category_lesson;
-                                
                                 const courseName = item.course ? courses.find(c => c.id === item.course)?.course_name || `ID: ${item.course}` : 'Не указан';
 
                                 return (
@@ -252,11 +238,11 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
                                                     Курс: {courseName}
                                                 </h2>
                                                 <span className={style.lessonDesc}>
-                                                    Категория: {categoryName || 'Не указана'}
+                                                    Название видео: {item.them_lesson || 'Не указано'}
                                                 </span>
                                                 <div className={style.infoLastBlock}>
                                                     <h2 className={style.lessonTheme}>
-                                                        Урок №{item.lesson_number || 'Не указан'}
+                                                        Дата: {item.created_at ? new Date(item.created_at).toLocaleDateString('ru-RU') : 'Не указана'}
                                                     </h2>
                                                   
                                                 </div>
@@ -272,7 +258,7 @@ function UploadedVideos({ setEditingId: externalSetEditingId }: UploadedVideosPr
                                             </button>
                                             <button 
                                                 className={style.delete}
-                                                onClick={() => item.id && handleDelete(item.id, `Курс: ${courseName}, Урок №${item.lesson_number}`)}
+                                                onClick={() => item.id && handleDelete(item.id, `Курс: ${courseName}, Видео: ${item.them_lesson}`)}
                                                 disabled={isDeleting}
                                             >
                                                 {isDeleting ? 'Удаление...' : 'Удалить'}

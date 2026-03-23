@@ -103,13 +103,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack, onSelec
 
     // Проверяем, что ID пользователя не null
     if (!user.id) {
-      console.error('User ID is null, cannot create dialog');
       return;
     }
 
     try {
       const result = await createDialog(member.user_id).unwrap();
-      console.log('Dialog creation result:', result);
       
       // Если диалог создан успешно и есть callback для перехода
       if (result && onSelectChat) {
@@ -128,7 +126,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack, onSelec
           refetchChats().then(() => {
             // Ищем созданный диалог в обновленном списке чатов
             const updatedChats = chats || [];
-            console.log('Available chats after refetch:', updatedChats);
             
             // Сначала ищем по точному названию
             let createdDialog = updatedChats.find(chat => chat.title === result);
@@ -161,19 +158,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack, onSelec
               );
             }
             
-            console.log('Found dialog:', createdDialog);
             
             if (createdDialog) {
               setShowMembers(false); // Закрываем панель участников
               onSelectChat(createdDialog.group_id, createdDialog.title);
             } else {
-              console.error('Dialog not found after creation');
             }
           });
         }, 1000); // Увеличим задержку для надежности
       }
     } catch (error) {
-      console.error('Failed to create dialog:', error);
     }
   };
 
@@ -270,11 +264,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack, onSelec
                   {getChatPartnerRole()}
                 </span>
               )}
-              <div className={styles.chatStatus}>
-                <span className={`${styles.connectionIndicator} ${wsConnected ? styles.connected : styles.disconnected}`}>
-                  {wsConnected ? '●' : '●'}
-                </span>
-              </div>
+             
             </div>
           </div>
         </div>

@@ -10,7 +10,6 @@ function Chat() {
   const scrollLockRef = useRef<{ locked: boolean; position: number; allowScroll: boolean }>({ locked: false, position: 0, allowScroll: false });
 
   const handleSelectChat = (groupId: number, title: string) => {
-    console.log('Selecting chat:', { groupId, title });
     
     scrollLockRef.current = { locked: true, position: window.scrollY, allowScroll: false };
     

@@ -4,9 +4,11 @@ import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import style from "./lessonDetail.module.scss";
 import { useGetVideosDetailQuery } from "@/redux/api/video";
-import { useGetMentorVideoDetailQuery, useGetCategoryLessonListQuery } from "@/redux/api/mentor";
+import { useGetMentorVideoDetailQuery } from "@/redux/api/mentor";
 import { useGetCourseVideosQuery, useGetLessonDetailQuery } from "@/redux/api/lessons";
 import { useAppSelector } from "@/redux/hooks";
+
+type VideoDetailType = MENTOR.VideoResponse | VIDEO.VideoDetailItem;
 
 function LessonDetailContent() {
     const router = useRouter();
@@ -16,24 +18,6 @@ function LessonDetailContent() {
 
     const isMentor = currentUser?.status === "mentor";
 
-    const { data: categories = [] } = useGetCategoryLessonListQuery();
-
-    const getCategoryName = (category: { ct_lesson_name?: string } | number | undefined) => {
-        if (typeof category === 'object' && category?.ct_lesson_name) {
-            return category.ct_lesson_name;
-        }
-        
-        if (typeof category === 'number') {
-            const foundCategory = categories.find(cat => cat.id === category);
-            if (foundCategory) {
-                return foundCategory.ct_lesson_name;
-            }
-            return `Категория ID: ${category}`;
-        }
-        
-        return 'Не указана';
-    };
-
     const studentVideoQuery = useGetVideosDetailQuery(Number(id), {
         skip: !id || isMentor, 
     });
@@ -42,7 +26,7 @@ function LessonDetailContent() {
         skip: !id || !isMentor,
     });
 
-    const videoDetail = isMentor ? mentorVideoQuery.data : studentVideoQuery.data;
+    const videoDetail: VideoDetailType | undefined = isMentor ? mentorVideoQuery.data : studentVideoQuery.data;
     const isVideoLoading = isMentor ? mentorVideoQuery.isLoading : studentVideoQuery.isLoading;
     const videoError = isMentor ? mentorVideoQuery.error : studentVideoQuery.error;
 
@@ -67,34 +51,24 @@ function LessonDetailContent() {
 
     const videoRef = useRef<HTMLVideoElement | null>(null);
 
-    const hasAccess = isMentor ? 
-        !!videoDetail : 
-        (videoDetail && videoDetail.course === currentUser?.course);
+  
 
-    
+    const hasAccess = !!videoDetail;
 
     const allNextLessons = useMemo(() => {
         if (isMentor) return []; 
         
         return courseVideos
             .filter((video) => {
-                const categoryId = typeof videoDetail?.category_lesson === 'object' 
-                    ? videoDetail.category_lesson?.id 
-                    : videoDetail?.category_lesson;
-                
-                const videoCategoryId = typeof video.category_lesson === 'object' 
-                    ? video.category_lesson?.id 
-                    : video.category_lesson;
-                
-                const sameCategory = categoryId && videoCategoryId && categoryId === videoCategoryId;
                 const notCurrent = video.id !== Number(id);
-                const isNext = videoDetail && 
-                    video.lesson_number > videoDetail.lesson_number;
-                
-                return sameCategory && notCurrent && isNext;
+                return notCurrent;
             })
-            .sort((a, b) => a.lesson_number - b.lesson_number);
-    }, [courseVideos, videoDetail, id, isMentor]);
+            .sort((a, b) => {
+                const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+                const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+                return dateA - dateB;
+            });
+    }, [courseVideos, id, isMentor]);
 
     const nextLessons = allNextLessons.slice(0, visibleCount);
     
@@ -170,7 +144,7 @@ function LessonDetailContent() {
                     <p>
                         У вас нет доступа к этому видео. 
                         <br />
-                        Видео курса ID: {videoDetail.course}
+                        Видео курса ID: {(videoDetail as VideoDetailType)?.course || 'неизвестен'}
                         <br />
                         Ваш курс ID: {currentUser?.course || 'не назначен'}
                     </p>
@@ -184,64 +158,87 @@ function LessonDetailContent() {
         );
     }
 
+    const getYouTubeEmbedUrl = (url: string) => {
+        // Универсальное регулярное выражение для всех YouTube URL
+        const regExp = /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+        const match = url.match(regExp);
+        
+        if (match && match[1]) {
+            return `https://www.youtube.com/embed/${match[1]}`;
+        }
+        
+        return url;
+    };
+
     return (
         <section className={style.LessonDetail}>
             <div className="container">
                 <div className={style.content}>
                     <div className={style.detailContent}>
-                        {videoDetail.video && (
-                            <video
-                                ref={videoRef}
-                                className={style.lessonVideo}
-                                src={videoDetail.video}
-                                controls
-                                autoPlay={false}
-                                loop={false}
-                                controlsList="nodownload noplaybackrate"
-                                disablePictureInPicture
-                                onContextMenu={(e) => e.preventDefault()}
-                                onDragStart={(e) => e.preventDefault()}
-                                playsInline
-                            >
-                                Ваш браузер не поддерживает видео тег.
-                            </video>
-                        )}
-
-                        <div className={style.lessonInfo}>
-                            <h2 className={style.title}>
-                                {getCategoryName(videoDetail.category_lesson)}
-                            </h2>
-                            <div className={style.hr}></div>
-
-                            {courseDetail && (
-                                <>
-                                    <div className={style.themeBlock}>
-                                        <h2 className={style.themeTitle}>Курс:</h2>
-                                        <h2 className={style.theme}>
-                                            {courseDetail.course_name}
+                        <div className={style.videoInfoContainer}>
+                            <div className={style.videoColumn}>
+                                {videoDetail.video && (
+                                    videoDetail.video?.includes('youtube.com') || videoDetail.video?.includes('youtu.be') ? (
+                                        <iframe
+                                            width="100%"
+                                            height="400"
+                                            src={getYouTubeEmbedUrl(videoDetail.video)}
+                                            title="Video player"
+                                            frameBorder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        />
+                                    ) : (
+                                        <video
+                                            ref={videoRef}
+                                            className={style.lessonVideo}
+                                            src={videoDetail.video}
+                                            controls
+                                            autoPlay={false}
+                                            loop={false}
+                                            controlsList="nodownload noplaybackrate"
+                                            disablePictureInPicture
+                                            onContextMenu={(e) => e.preventDefault()}
+                                            onDragStart={(e) => e.preventDefault()}
+                                            playsInline
+                                        >
+                                            Ваш браузер не поддерживает видео тег.
+                                        </video>
+                                    )
+                                )}
+                            </div>
+                            <div className={style.infoColumn}>
+                                <div className={style.lessonInfo}>
+                                    <h2 className={style.title}>
+                                        {videoDetail.them_lesson}
+                                    </h2>
+                                    <div className={style.hr}></div>
+                                    {courseDetail && (
+                                        <>
+                                            <div className={style.themeBlock}>
+                                                <h2 className={style.themeTitle}>Курс:</h2>
+                                                <h2 className={style.theme}>
+                                                    {courseDetail.course_name}
+                                                </h2>
+                                            </div>
+                                        </>
+                                    )}
+                                    <div className={style.numberBlock}>
+                                        <h2 className={style.numberTitle}>
+                                            Дата загрузки:
+                                        </h2>
+                                        <h2 className={style.number}>
+                                            {videoDetail.created_at ? new Date(videoDetail.created_at as string).toLocaleDateString('ru-RU') : 'Не указана'}
                                         </h2>
                                     </div>
-
-                                 
-                                </>
-                            )}
-
-                            <div className={style.numberBlock}>
-                                <h2 className={style.numberTitle}>
-                                    Урок по счету:
-                                </h2>
-                                <h2 className={style.number}>
-                                    {videoDetail.lesson_number}
-                                </h2>
-                            </div>
-
-                            <div className={style.hr}></div>
-
-                            <div className={style.descBlock}>
-                                <h2 className={style.desctitle}>ОПИСАНИЕ</h2>
-                                <p className={style.desc}>
-                                    {videoDetail.description || 'Описание отсутствует'}
-                                </p>
+                                    <div className={style.hr}></div>
+                                    <div className={style.descBlock}>
+                                        <h2 className={style.desctitle}>ОПИСАНИЕ</h2>
+                                        <p className={style.desc}>
+                                            {videoDetail.description || 'Описание отсутствует'}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -249,7 +246,7 @@ function LessonDetailContent() {
                     {allNextLessons.length > 0 && (
                         <div className={style.table}>
                             <h2 className={style.title}>
-                                СЛЕДУЮЩИЕ УРОКИ ПО ТЕМЕ: {getCategoryName(videoDetail.category_lesson)}
+                                ДРУГИЕ ВИДЕО КУРСА
                             </h2>
                             <div className={style.cards}>
                                 {nextLessons.map((video) => (
@@ -259,15 +256,14 @@ function LessonDetailContent() {
                                         onClick={() => handleVideoClick(video)}
                                     >
                                         <h3 className={style.cardTitle}>
-                                            {getCategoryName(video.category_lesson)}
+                                            {video.them_lesson}
                                         </h3>
                                         <p className={style.cardNumber}>
-                                            Номер урока: {video.lesson_number}
+                                            Дата: {video.created_at ? new Date(video.created_at).toLocaleDateString('ru-RU') : 'Не указана'}
                                         </p>
                                     </div>
                                 ))}
                             </div>
-
                             {hasMore && (
                                 <div className={style.showMoreContainer}>
                                     <button 

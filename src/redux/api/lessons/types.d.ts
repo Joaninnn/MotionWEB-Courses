@@ -9,8 +9,8 @@ namespace LESSONS {
      interface VideoListItem {
         id: number;
         course: number;
-        category_lesson: CategoryLesson;
-        lesson_number: number;
+        them_lesson: string;
+        created_at: string;
     }
 
     interface VideoItem {

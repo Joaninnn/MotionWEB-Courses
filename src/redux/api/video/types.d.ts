@@ -7,25 +7,24 @@ namespace VIDEO {
     interface VideoListItem {
         id: number;
         course: number;
-        category_lesson: CategoryLesson;
-        lesson_number: number;
+        them_lesson: string;
+        created_at: string;
     }
 
     interface VideoDetailItem {
         id: number;
         course: number;
-        category_lesson: CategoryLesson;
+        them_lesson: string;
         video: string;
-        lesson_number: number;
-        description: string;
+        description?: string;
+        created_at?: string;
     }
 
     type GetVideoListResponse = VideoListItem[];
     type GetVideoDetailResponse = VideoDetailItem;
 
     type GetVideoListRequest = {
-        category_lesson?: string;
-        lesson_number?: string;
+        them_lesson?: string;
     };
 
     type GetVideoDetailRequest = number; // ID видео

@@ -22,10 +22,10 @@ interface ApiError {
 
 interface FieldErrors {
     course?: string;
-    category_lesson?: string;
-    lesson_number?: string;
+    them_lesson?: string;
     description?: string;
     video?: string;
+    videoUrl?: string;
 }
 
 interface ToastMessage {
@@ -38,18 +38,18 @@ function Upload({ editingId, onCancel }: UploadProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [formData, setFormData] = useState<{
         course: number | null;
-        category_lesson: number | null;
-        lesson_number: string;
+        them_lesson: string;
         description: string;
         videoFile: File | null;
         videoPreview: string | null;
+        videoUrl: string;
     }>({
         course: null,
-        category_lesson: null,
-        lesson_number: "",
+        them_lesson: "",
         description: "",
         videoFile: null,
         videoPreview: null,
+        videoUrl: "",
     });
 
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -75,11 +75,11 @@ function Upload({ editingId, onCancel }: UploadProps) {
     const resetForm = () => {
         setFormData({
             course: null,
-            category_lesson: null,
-            lesson_number: "",
+            them_lesson: "",
             description: "",
             videoFile: null,
             videoPreview: null,
+            videoUrl: "",
         });
         setFieldErrors({});
         loadedVideoIdRef.current = null;
@@ -96,11 +96,11 @@ function Upload({ editingId, onCancel }: UploadProps) {
             const timeoutId = setTimeout(() => {
                 setFormData({
                     course: typeof editingVideo.course === 'number' ? editingVideo.course : null,
-                    category_lesson: typeof editingVideo.category_lesson === 'number' ? editingVideo.category_lesson : null,
-                    lesson_number: editingVideo.lesson_number.toString(),
+                    them_lesson: editingVideo.them_lesson || "",
                     description: editingVideo.description || "",
                     videoFile: null,
                     videoPreview: editingVideo.video,
+                    videoUrl: editingVideo.video || "",
                 });
                 setFieldErrors({});
                 
@@ -139,8 +139,8 @@ function Upload({ editingId, onCancel }: UploadProps) {
             switch (field) {
                 case 'course':
                     return 'Курс с таким ID не найден';
-                case 'category_lesson':
-                    return 'Категория урока с таким ID не найдена';
+                case 'them_lesson':
+                    return 'Название видео обязательно';
                 default:
                     return 'Объект не найден';
             }
@@ -158,8 +158,8 @@ function Upload({ editingId, onCancel }: UploadProps) {
         e.preventDefault();
         setFieldErrors({});
         
-        if (!formData.videoFile && !editingId) {
-            setFieldErrors({ video: 'Выберите видео для загрузки' });
+        if (!formData.videoFile && !formData.videoUrl && !editingId) {
+            setFieldErrors({ video: 'Выберите видео файл или вставьте YouTube ссылку' });
             return;
         }
 
@@ -168,8 +168,8 @@ function Upload({ editingId, onCancel }: UploadProps) {
             return;
         }
 
-        if (!formData.category_lesson) {
-            setFieldErrors({ category_lesson: 'Пожалуйста, выберите категорию урока' });
+        if (!formData.them_lesson.trim()) {
+            setFieldErrors({ them_lesson: 'Пожалуйста, введите название видео' });
             return;
         }
 
@@ -178,20 +178,20 @@ function Upload({ editingId, onCancel }: UploadProps) {
                 const updateData: {
                     id: number;
                     course: number;
-                    category_lesson: number;
-                    lesson_number?: number;
+                    them_lesson: string;
                     description?: string;
-                    video?: File;
+                    video?: File | string;
                 } = {
                     id: editingId,
                     course: formData.course,
-                    category_lesson: formData.category_lesson,
-                    lesson_number: parseInt(formData.lesson_number) || undefined,
+                    them_lesson: formData.them_lesson,
                     description: formData.description || undefined,
                 };
                 
                 if (formData.videoFile) {
                     updateData.video = formData.videoFile;
+                } else if (formData.videoUrl) {
+                    updateData.video = formData.videoUrl;
                 }
                 
                 await updateVideo(updateData).unwrap();
@@ -201,9 +201,8 @@ function Upload({ editingId, onCancel }: UploadProps) {
             } else {
                 await createVideo({
                     course: formData.course,
-                    category_lesson: formData.category_lesson,
-                    video: formData.videoFile!,
-                    lesson_number: parseInt(formData.lesson_number) || undefined,
+                    them_lesson: formData.them_lesson,
+                    video: formData.videoFile || formData.videoUrl!,
                     description: formData.description || undefined,
                 }).unwrap();
                 showToast('success', 'Видео успешно загружено!');
@@ -237,6 +236,16 @@ function Upload({ editingId, onCancel }: UploadProps) {
         }
     };
 
+    const getYouTubeVideoId = (url: string): string | null => {
+        const regExp = /^.*((youtu.be\/)|(v\/)|(u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[11].length === 11) ? match[11] : null;
+    };
+
+    const getYouTubeThumbnail = (videoId: string): string => {
+        return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    };
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -260,6 +269,26 @@ function Upload({ editingId, onCancel }: UploadProps) {
 
                 URL.revokeObjectURL(video.src);
             });
+        }
+    };
+
+    const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const url = e.target.value;
+        setFormData(prev => ({
+            ...prev,
+            videoUrl: url,
+            videoPreview: null
+        }));
+
+        if (url) {
+            const videoId = getYouTubeVideoId(url);
+            if (videoId) {
+                const thumbnail = getYouTubeThumbnail(videoId);
+                setFormData(prev => ({
+                    ...prev,
+                    videoPreview: thumbnail
+                }));
+            }
         }
     };
 
@@ -304,12 +333,9 @@ function Upload({ editingId, onCancel }: UploadProps) {
                                     Курс: {formData.course ? courses.find(c => c.id === formData.course)?.course_name : 'Не указан'}
                                 </h2>
                                 <span className={style.lessonDesc}>
-                                    Категория: {formData.category_lesson ? categories.find(c => c.id === formData.category_lesson)?.ct_lesson_name : 'Не указана'}
+                                    Название видео: {formData.them_lesson || 'Не указано'}
                                 </span>
                                 <div className={style.infoLastBlock}>
-                                    <h2 className={style.lessonTheme}>
-                                        Урок №{formData.lesson_number || 'Не указан'}
-                                    </h2>
                                     <h2 className={style.lessonData}>
                                         {formData.description || 'Нет описания'}
                                     </h2>
@@ -354,75 +380,57 @@ function Upload({ editingId, onCancel }: UploadProps) {
                                 </div>
                                 <div className={style.inputBlock}>
                                     <h2 className={style.inputTitle}>
-                                        Категория урока
+                                        Название видео
                                     </h2>
-                                    <select
-                                        name="category_lesson"
-                                        value={formData.category_lesson || ''}
+                                    <input
+                                        name="them_lesson"
+                                        value={formData.them_lesson}
                                         onChange={(e) => {
-                                            const categoryId = e.target.value ? parseInt(e.target.value) : null;
                                             setFormData(prev => ({
                                                 ...prev,
-                                                category_lesson: categoryId
+                                                them_lesson: e.target.value
                                             }));
-                                            if (fieldErrors.category_lesson) {
+                                            if (fieldErrors.them_lesson) {
                                                 setFieldErrors(prev => ({
                                                     ...prev,
-                                                    category_lesson: undefined
+                                                    them_lesson: undefined
                                                 }));
                                             }
                                         }}
-                                        className={`${style.input} ${fieldErrors.category_lesson ? style.error : ''}`}
+                                        placeholder="Введите название видео"
+                                        type="text"
+                                        className={`${style.input} ${fieldErrors.them_lesson ? style.error : ''}`}
                                         required
-                                    >
-                                        <option value="">Выберите категорию</option>
-                                        {categories.map((category) => (
-                                            <option key={category.id} value={category.id}>
-                                                {category.ct_lesson_name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {fieldErrors.category_lesson && (
-                                        <span className={style.errorMessage}>{fieldErrors.category_lesson}</span>
+                                    />
+                                    {fieldErrors.them_lesson && (
+                                        <span className={style.errorMessage}>{fieldErrors.them_lesson}</span>
                                     )}
                                 </div>
                                 <div className={style.inputBlock}>
                                     <h2 className={style.inputTitle}>
-                                        Номер урока
+                                        YouTube ссылка
                                     </h2>
                                     <input
-                                        name="lesson_number"
-                                        value={formData.lesson_number}
+                                        name="videoUrl"
+                                        value={formData.videoUrl}
                                         onChange={(e) => {
                                             setFormData(prev => ({
                                                 ...prev,
-                                                lesson_number: e.target.value
+                                                videoUrl: e.target.value
                                             }));
+                                            if (fieldErrors.videoUrl) {
+                                                setFieldErrors(prev => ({
+                                                    ...prev,
+                                                    videoUrl: undefined
+                                                }));
+                                            }
                                         }}
-                                        placeholder="Номер урока (необязательно)"
-                                        type="number"
-                                        className={`${style.input} ${fieldErrors.lesson_number ? style.error : ''}`}
+                                        placeholder="https://youtube.com/watch?v=..."
+                                        type="text"
+                                        className={`${style.input} ${fieldErrors.videoUrl ? style.error : ''}`}
                                     />
-                                    {fieldErrors.lesson_number && (
-                                        <span className={style.errorMessage}>{fieldErrors.lesson_number}</span>
-                                    )}
-                                </div>
-                                <div className={style.inputBlock}>
-                                    <h2 className={style.inputTitle}>
-                                        {editingId ? 'Новое видео (необязательно)' : 'Видео'}
-                                    </h2>
-                                    <input
-                                        ref={fileInputRef}
-                                        name="videoFile"
-                                        onChange={handleFileChange}
-                                        placeholder="видео"
-                                        type="file"
-                                        accept="video/*"
-                                        className={`${style.input} ${fieldErrors.video ? style.error : ''}`}
-                                        required={!editingId}
-                                    />
-                                    {fieldErrors.video && (
-                                        <span className={style.errorMessage}>{fieldErrors.video}</span>
+                                    {fieldErrors.videoUrl && (
+                                        <span className={style.errorMessage}>{fieldErrors.videoUrl}</span>
                                     )}
                                 </div>
                             </div>
