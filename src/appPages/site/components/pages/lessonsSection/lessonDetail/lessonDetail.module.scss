@@ -124,8 +124,8 @@
         }
 
         .videoColumn {
-            flex: 1;
-            max-width: 60%;
+            flex: 3;
+            max-width: 75%;
             padding: 20px;
             border: 2px solid var(--accent-primary);
             border-radius: var(--radius-lg);
@@ -149,7 +149,7 @@
 
         .infoColumn {
             flex: 1;
-            min-width: 40%;
+            min-width: 30%;
             padding: 20px;
             border: 2px solid var(--accent-primary);
             border-radius: var(--radius-lg);
