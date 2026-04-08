@@ -8,7 +8,7 @@ import { useGetGroupDetailFullQuery, useGetOrCreateDialogMutation, useGetMessage
 import { GroupMember } from '../../../../../redux/api/chat/types';
 import { useWebSocket } from '../../../../../hooks/useWebSocket';
 import { useDispatch } from 'react-redux';
-import { resetUnreadCount } from '../../../../../redux/slices/chatSlice';
+import { resetUnreadCount, clearMessages } from '../../../../../redux/slices/chatSlice';
 import styles from './ChatWindow.module.scss';
 
 interface ChatWindowProps {
@@ -116,10 +116,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack, onSelec
           // Если вернулся просто ID
           dialogId = result;
           dialogTitle = `dialog_${Math.min(user.id!, member.user_id)}_${Math.max(user.id!, member.user_id)}`;
-        } else if (typeof result === 'object' && result !== null && 'dialogId' in result) {
-          // Если вернулся объект с dialogId
-          const resultObj = result as { dialogId: number; title?: string };
-          dialogId = resultObj.dialogId;
+        } else if (typeof result === 'object' && result !== null && ('dialogId' in result || 'dialog_id' in result)) {
+          // Если вернулся объект с dialogId (backend uses dialog_id)
+          const resultObj = result as { dialog_id?: number; dialogId?: number; title?: string };
+          dialogId = resultObj.dialog_id || resultObj.dialogId || 0;
           dialogTitle = resultObj.title || `dialog_${Math.min(user.id!, member.user_id)}_${Math.max(user.id!, member.user_id)}`;
         } else {
           // Fallback на случай если вернулась строка с title
@@ -164,6 +164,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack, onSelec
 
   useEffect(() => {
     dispatch(resetUnreadCount(groupId));
+    // Clear messages when switching to a different chat
+    dispatch(clearMessages(groupId));
   }, [groupId, dispatch]);
 
   const getTypingText = () => {

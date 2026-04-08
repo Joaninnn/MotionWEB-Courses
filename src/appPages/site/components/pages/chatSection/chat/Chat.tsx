@@ -62,6 +62,7 @@ function Chat() {
           <div className={`${styles.activeChat} ${!selectedChat ? styles.mobileHidden : ''}`}>
             {selectedChat ? (
               <ChatWindow
+                key={selectedChat.groupId}
                 groupId={selectedChat.groupId}
                 title={selectedChat.title}
                 onBack={handleBackToList}

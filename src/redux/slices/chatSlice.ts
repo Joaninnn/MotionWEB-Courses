@@ -127,6 +127,13 @@ const chatSlice = createSlice({
       state.hasMoreMessages[groupId] = hasMore;
       state.loadingMessages[groupId] = false;
     },
+
+    clearMessages: (state, action: PayloadAction<number>) => {
+      const groupId = action.payload;
+      state.messages[groupId] = [];
+      state.hasMoreMessages[groupId] = false;
+      state.loadingMessages[groupId] = false;
+    },
     
     addMessages: (state, action: PayloadAction<AddMessagesPayload>) => {
       const { groupId, messages } = action.payload;
@@ -326,6 +333,12 @@ const chatSlice = createSlice({
             const chatIndex = state.chats.findIndex(chat => chat.group_id === groupId);
             if (chatIndex !== -1) {
               state.chats[chatIndex].last_message = msg;
+              
+              // Increment unread count if message is not from current user
+              const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+              if (msg.user_id !== currentUser.id) {
+                state.chats[chatIndex].unread_count += 1;
+              }
             }
             break;
           }
@@ -354,6 +367,15 @@ const chatSlice = createSlice({
                 }
               }
             });
+            
+            // Update unread count in chat list if this is the current user reading
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            if (receipt.reader_id === currentUser.id) {
+              const chatIndex = state.chats.findIndex(chat => chat.group_id === receipt.group_id);
+              if (chatIndex !== -1) {
+                state.chats[chatIndex].unread_count = 0;
+              }
+            }
             
             break;
           }
@@ -470,6 +492,7 @@ export const {
   setActiveGroup,
   clearActiveGroup,
   setMessages,
+  clearMessages,
   addMessages,
   addMessage,
   addIncomingMessage,

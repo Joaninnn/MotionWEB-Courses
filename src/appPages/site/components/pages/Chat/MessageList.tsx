@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { useGetMessagesQuery, useGetGroupDetailFullQuery, useEditMessageMutation, useDeleteMessageMutation } from '@/redux/api/chat';
+import { useGetMessagesQuery, useGetGroupDetailFullQuery, useEditMessageMutation, useDeleteMessageMutation, useMarkAsReadMutation } from '@/redux/api/chat';
 import ImageModal from '@/components/ImageModal/ImageModal';
 import VoicePlayer from '@/components/VoicePlayer/VoicePlayer';
 import MessageStatus from './MessageStatus';
@@ -22,6 +22,7 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
   
   const [editMessage] = useEditMessageMutation();
   const [deleteMessage] = useDeleteMessageMutation();
+  const [markAsRead] = useMarkAsReadMutation();
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
   const [editingText, setEditingText] = useState('');
   const [showMenuId, setShowMenuId] = useState<number | null>(null);
@@ -98,6 +99,23 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
     prevMessagesLength.current = 0;
   }, [groupId]);
   
+  // Mark messages as read functionality
+  const markMessagesAsRead = useCallback(() => {
+    if (!currentMessages || !user?.id) return;
+    
+    // Find the last message that's not from current user
+    const lastOtherUserMessage = currentMessages
+      .filter(msg => msg.user_id !== user.id)
+      .pop();
+    
+    if (lastOtherUserMessage) {
+      markAsRead({ 
+        groupId: groupId, 
+        messageId: lastOtherUserMessage.id 
+      });
+    }
+  }, [currentMessages, user, groupId, markAsRead]);
+  
   // Auto-scroll when new messages arrive
   useEffect(() => {
     if (!currentMessages || currentMessages.length === 0) return;
@@ -108,6 +126,8 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
     // Always scroll if user is at bottom
     if (isAtBottom) {
       scrollToBottom();
+      // Mark messages as read when user is at bottom
+      markMessagesAsRead();
     } 
     // Or if new messages were added (length increased)
     else if (currentLength > previousLength) {
@@ -119,7 +139,14 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
     }
     
     prevMessagesLength.current = currentLength;
-  }, [currentMessages, isAtBottom, user?.id]);
+  }, [currentMessages, isAtBottom, user?.id, markMessagesAsRead]);
+
+  // Mark messages as read when user is at bottom
+  useEffect(() => {
+    if (isAtBottom && currentMessages && currentMessages.length > 0) {
+      markMessagesAsRead();
+    }
+  }, [isAtBottom, currentMessages, markMessagesAsRead]);
 
   // Вызываем callback при изменении состояния скролла
   useEffect(() => {
