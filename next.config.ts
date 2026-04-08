@@ -16,7 +16,7 @@ const nextConfig = {
             } as const,
             {
                 protocol: "https",
-                hostname: "chat.apibackendokukg.space",
+                hostname: "chat.apibackendmotionweb.com.kg",
                 port: "",
                 pathname: "/media/**",
             } as const,
