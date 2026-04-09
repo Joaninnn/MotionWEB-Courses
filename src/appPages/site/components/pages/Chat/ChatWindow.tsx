@@ -143,8 +143,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack, onSelec
 
   useEffect(() => {
     dispatch(resetUnreadCount(groupId));
-    // Clear messages when switching to a different chat
-    dispatch(clearMessages(groupId));
+    // Не очищаем сообщения при смене чата - они должны сохраняться
+    // для мгновенного отображения при повторном входе
   }, [groupId, dispatch]);
 
   const getTypingText = () => {

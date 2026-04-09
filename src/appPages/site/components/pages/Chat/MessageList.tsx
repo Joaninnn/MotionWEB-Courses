@@ -30,10 +30,12 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastMarkedMessageIdRef = useRef<number | null>(null); // Отслеживаем последнее отмеченное сообщение
 
   const {
     data: messagesData,
     isLoading,
+    isFetching,
     error,
   } = useGetMessagesQuery(
     { groupId, limit: 50 },
@@ -88,8 +90,11 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
   // Scroll to bottom on initial load
   useEffect(() => {
     if (currentMessages && currentMessages.length > 0 && !hasInitiallyScrolled.current) {
-      scrollToBottom();
-      hasInitiallyScrolled.current = true;
+      // Таймаут чтобы DOM успел обновиться перед скроллом
+      setTimeout(() => {
+        scrollToBottom();
+        hasInitiallyScrolled.current = true;
+      }, 100);
     }
   }, [currentMessages]);
   
@@ -97,6 +102,7 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
   useEffect(() => {
     hasInitiallyScrolled.current = false;
     prevMessagesLength.current = 0;
+    lastMarkedMessageIdRef.current = null; // Сброс при смене чата
   }, [groupId]);
   
   // Mark messages as read functionality
@@ -109,6 +115,12 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
       .pop();
     
     if (lastOtherUserMessage) {
+      // Не вызываем markAsRead если уже отметили это сообщение
+      if (lastMarkedMessageIdRef.current === lastOtherUserMessage.id) {
+        return;
+      }
+      
+      lastMarkedMessageIdRef.current = lastOtherUserMessage.id;
       markAsRead({ 
         groupId: groupId, 
         messageId: lastOtherUserMessage.id 
@@ -499,7 +511,9 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
     </div>
   );
 
-  if (isLoading) {
+  // Показываем полный экран загрузки только при первой загрузке (isLoading)
+  // При refetch (isFetching) не размонтируем сообщения - показываем индикатор поверх
+  if (isLoading && !currentMessages?.length) {
     return (
       <div className={styles.messageList}>
         <div className={styles.loading}>
@@ -530,13 +544,15 @@ const MessageList: React.FC<MessageListProps> = ({ groupId, onScrollStateChange 
 
   return (
     <div className={styles.messageList} ref={containerRef}>
-      {isLoading && (
+      {/* Индикатор загрузки сверху при refetch */}
+      {isFetching && groupMessages.length > 0 && (
         <div className={styles.loading}>
-          Загрузка сообщений...
+          Обновление...
         </div>
       )}
       
-      {!isLoading && (!groupMessages || groupMessages.length === 0) && (
+      {/* Показываем empty state только если нет сообщений и нет загрузки */}
+      {(!isLoading && !isFetching) && (!groupMessages || groupMessages.length === 0) && (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
