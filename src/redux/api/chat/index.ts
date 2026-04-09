@@ -7,6 +7,7 @@ import {
   MessagesResponse,
   ChatItem,
   CreateGroupRequest,
+  DialogResponse,
 } from './types';
 
 const chatBaseQuery = fetchBaseQuery({
@@ -135,7 +136,7 @@ export const chatApi = createApi({
       invalidatesTags: ['Chat', 'Message'], 
     }),
     
-    getOrCreateDialog: builder.mutation<string, number>({
+    getOrCreateDialog: builder.mutation<DialogResponse, number>({
       query: (otherUserId) => ({
         url: `/dialogs/${otherUserId}`,
         method: 'POST',

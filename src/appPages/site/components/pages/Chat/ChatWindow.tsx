@@ -106,31 +106,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ groupId, title, onBack, onSelec
     try {
       const result = await createDialog(member.user_id).unwrap();
       
-      // Если диалог создан успешно и есть callback для перехода
-      if (result && onSelectChat) {
-        // Бэкенд должен возвращать { dialogId: number, title: string } или просто number
-        let dialogId: number;
-        let dialogTitle: string;
-        
-        if (typeof result === 'number') {
-          // Если вернулся просто ID
-          dialogId = result;
-          dialogTitle = `dialog_${Math.min(user.id!, member.user_id)}_${Math.max(user.id!, member.user_id)}`;
-        } else if (typeof result === 'object' && result !== null && ('dialogId' in result || 'dialog_id' in result)) {
-          // Если вернулся объект с dialogId (backend uses dialog_id)
-          const resultObj = result as { dialog_id?: number; dialogId?: number; title?: string };
-          dialogId = resultObj.dialog_id || resultObj.dialogId || 0;
-          dialogTitle = resultObj.title || `dialog_${Math.min(user.id!, member.user_id)}_${Math.max(user.id!, member.user_id)}`;
-        } else {
-          // Fallback на случай если вернулась строка с title
-          dialogId = 0; // Будет обработано ниже
-          dialogTitle = typeof result === 'string' ? result : 'Unknown Dialog';
-        }
-        
-        if (dialogId && dialogId > 0) {
-          setShowMembers(false); // Закрываем панель участников
-          onSelectChat(dialogId, dialogTitle);
-        }
+      // Бэкенд возвращает { dialog_id: number, title: string, created: boolean }
+      if (result?.dialog_id && onSelectChat) {
+        setShowMembers(false); // Закрываем панель участников
+        onSelectChat(result.dialog_id, result.title);
       }
     } catch (error) {
       console.error('Failed to create dialog:', error);

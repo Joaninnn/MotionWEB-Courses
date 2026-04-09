@@ -107,3 +107,9 @@ export interface MessageData {
   file_url?: string;
   file_type?: string;
 }
+
+export interface DialogResponse {
+  dialog_id: number;
+  created: boolean;
+  title: string;
+}
