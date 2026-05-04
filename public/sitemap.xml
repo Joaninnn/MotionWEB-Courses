@@ -1,38 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://your-domain.com/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://motion-web-academy.com/</loc>
+    <lastmod>2026-05-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://motion-web-academy.com/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://motion-web-academy.com/"/>
+  </url>
+  <url>
+    <loc>https://motion-web-academy.com/home</loc>
+    <lastmod>2026-05-05</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/home</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://motion-web-academy.com/lessons</loc>
+    <lastmod>2026-05-05</lastmod>
+    <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/lessons</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>daily</changefreq>
+    <loc>https://motion-web-academy.com/chat</loc>
+    <lastmod>2026-05-05</lastmod>
+    <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/chat</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>daily</changefreq>
+    <loc>https://motion-web-academy.com/mentor</loc>
+    <lastmod>2026-05-05</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/mentor</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://your-domain.com/login</loc>
-    <lastmod>2026-01-30</lastmod>
+    <loc>https://motion-web-academy.com/login</loc>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

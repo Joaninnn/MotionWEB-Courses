@@ -1,0 +1,33 @@
+{
+  "name": "Motion Web Academy - Online Course Motion Web",
+  "short_name": "Motion Web",
+  "description": "Online course Motion Web - курсы Python, Django, JavaScript, React. Онлайн курс Моушн Веб - обучение программированию с менторами.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "ru",
+  "dir": "ltr",
+  "categories": ["education", "programming", "development"],
+  "icons": [
+    {
+      "src": "/Logo.svg",
+      "sizes": "72x72 96x96 128x128 144x144 152x152 192x192 384x384 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/Logo.svg",
+      "sizes": "650x650",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "Motion Web Academy - Online Course Motion Web"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

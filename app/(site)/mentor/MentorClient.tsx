@@ -1,0 +1,39 @@
+"use client";
+
+import Mentor from "@/appPages/site/components/pages/Mentor";
+import { useAppSelector } from "@/redux/hooks";
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
+
+export default function MentorClient() {
+    const router = useRouter();
+    const currentUser = useAppSelector((state) => state.user);
+
+    useEffect(() => {
+        const hasToken = !!Cookies.get("access_token");
+
+        if (!hasToken) {
+            router.replace("/login");
+            return;
+        }
+
+        // Ждем пока восстановятся данные пользователя из localStorage
+        if (!currentUser?.username) return;
+
+        if (currentUser.status !== "mentor") {
+            router.replace("/lessons");
+        }
+    }, [currentUser?.username, currentUser?.status, router]);
+
+    // Единый UI на первый рендер, чтобы не ловить hydration mismatch
+    if (!currentUser?.username) {
+        return <div>Загрузка</div>;
+    }
+
+    if (currentUser.status !== "mentor") {
+        return <div>Загрузка</div>;
+    }
+
+    return <Mentor />;
+}

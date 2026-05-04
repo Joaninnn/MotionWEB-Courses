@@ -1,41 +1,12 @@
-"use client";
+import { Metadata } from "next";
+import MentorClient from "./MentorClient";
 
-import Mentor from "@/appPages/site/components/pages/Mentor";
-import { useAppSelector } from "@/redux/hooks";
-import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+export const metadata: Metadata = {
+    title: "Ментор | Online Course Motion Web - Онлайн Курс Моушн Веб",
+    description: "Панель ментора Motion Web Academy. Управление курсами Python, Django, JavaScript, React. Онлайн курс Моушн Веб - обучение программированию.",
+    keywords: ["ментор motion web", "преподаватель программирование", "курсы python", "менторство it", "онлайн курс моушн веб"],
+};
 
-function Page() {
-    const router = useRouter();
-    const currentUser = useAppSelector((state) => state.user);
-
-    useEffect(() => {
-        const hasToken = !!Cookies.get("access_token");
-
-        if (!hasToken) {
-            router.replace("/login");
-            return;
-        }
-
-        // Ждем пока восстановятся данные пользователя из localStorage
-        if (!currentUser?.username) return;
-
-        if (currentUser.status !== "mentor") {
-            router.replace("/lessons");
-        }
-    }, [currentUser?.username, currentUser?.status, router]);
-
-    // Единый UI на первый рендер, чтобы не ловить hydration mismatch
-    if (!currentUser?.username) {
-        return <div>Загрузка</div>;
-    }
-
-    if (currentUser.status !== "mentor") {
-        return <div>Загрузка</div>;
-    }
-
-    return <Mentor />;
+export default function Page() {
+    return <MentorClient />;
 }
-
-export default Page;
