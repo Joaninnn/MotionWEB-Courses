@@ -119,6 +119,9 @@ export default function RootLayout({
                 <meta name="msapplication-TileColor" content="#000000" />
                 <meta name="msapplication-config" content="/browserconfig.xml" />
 
+                {/* Google Site Verification - НЕ УДАЛЯТЬ */}
+                <meta name="google-site-verification" content="Gl9_VbWYuYd_-41RfSLrAcF92EkKOEnTDw4prwKSVdE" />
+
                 {/* Preconnect для улучшения производительности */}
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
