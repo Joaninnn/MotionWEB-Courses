@@ -3,7 +3,7 @@ import "./global.scss";
 import StoreProvider from "@/redux/storeProvider";
 
 // Определяем базовые URL и константы для SEO
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://motion-web-academy.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://online-course.motion.kg';
 const SITE_NAME = 'Motion Web Academy - Online Course Motion Web';
 
 export const metadata: Metadata = {
